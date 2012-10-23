@@ -1,0 +1,73 @@
+#!/usr/bin/env python
+
+import os.path
+import argparse
+import subprocess
+import hashlib
+import shutil
+
+from whack import downloads
+from whack.filelock import FileLock
+
+def main():
+    args = parse_args()
+    package = args.package
+    install_dir = args.install_dir
+    
+    package_name, package_version = package.split("=")
+    cache_dir = _cache_dir_for(package, install_dir)
+    scripts_dir = _fetch_scripts(package_name)
+    with FileLock(scripts_dir), FileLock(cache_dir):
+        if not os.path.exists(cache_dir):
+            _build(scripts_dir, cache_dir, install_dir)
+        
+        subprocess.check_call(
+            [os.path.join(scripts_dir, "install"), install_dir],
+            cwd=cache_dir
+        )
+        
+def _build(scripts_dir, cache_dir, install_dir):
+    try:
+        downloads_file_path = os.path.join(scripts_dir, "downloads")
+        download_urls = _read_downloads_file(downloads_file_path)
+        for url in download_urls:
+            downloads.download_to_dir(url, cache_dir)
+        
+        subprocess.check_call(
+            [os.path.join(scripts_dir, "build"), install_dir],
+            cwd=cache_dir
+        )
+    except:
+        if os.path.exists(cache_dir):
+            shutil.rmtree(cache_dir)
+        raise
+
+def _fetch_scripts(package):
+    builders_repo_uri = "git+https://github.com/mwilliamson/whack-builders.git"
+    repo_dir = downloads.fetch_source_control_uri(builders_repo_uri)
+    # FIXME: race condition between this and when we acquire the lock
+    package_dir = os.path.join(repo_dir, package)
+    if os.path.exists(package_dir):
+        return package_dir
+    else:
+        raise RuntimeError("No builders found for package: {0}".format(package))
+
+def _cache_dir_for(package, install_dir):
+    dir_name = hashlib.sha1("{0}\n{1}".format(package, install_dir)).hexdigest()
+    return os.path.join(os.path.expanduser("~/.cache/whack/builds"), dir_name)
+
+def _read_downloads_file(path):
+    if os.path.exists(path):
+        return [line.strip() for line in open(path) if line]
+    else:
+        return []
+    
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('package')
+    parser.add_argument('install_dir', metavar="install-dir")
+    return parser.parse_args()
+
+
+if __name__ == "__main__":
+    main()
