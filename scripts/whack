@@ -1,10 +1,13 @@
 #!/usr/bin/env python
 
+import os
 import os.path
 import argparse
 import subprocess
 import hashlib
 import shutil
+import contextlib
+import tempfile
 
 from whack import downloads
 from whack.filelock import FileLock
@@ -13,12 +16,12 @@ def main():
     args = parse_args()
     package = args.package
     install_dir = args.install_dir
+    should_cache = args.cache
     
     package_name, package_version = package.split("=")
-    cache_dir = _cache_dir_for(package, install_dir)
     scripts_dir = _fetch_scripts(package_name)
-    with FileLock(scripts_dir), FileLock(cache_dir):
-        if not os.path.exists(cache_dir):
+    with FileLock(scripts_dir), _cache_dir_for(package, install_dir, should_cache) as cache_dir:
+        if not os.path.exists(cache_dir) or os.listdir(cache_dir) == []:
             _build(scripts_dir, cache_dir, install_dir)
         
         subprocess.check_call(
@@ -52,9 +55,16 @@ def _fetch_scripts(package):
     else:
         raise RuntimeError("No builders found for package: {0}".format(package))
 
-def _cache_dir_for(package, install_dir):
-    dir_name = hashlib.sha1("{0}\n{1}".format(package, install_dir)).hexdigest()
-    return os.path.join(os.path.expanduser("~/.cache/whack/builds"), dir_name)
+@contextlib.contextmanager
+def _cache_dir_for(package, install_dir, should_cache):
+    # TODO: Should also hash scripts content so that we re-build if the build scripts change
+    if should_cache:
+        dir_name = hashlib.sha1("{0}\n{1}".format(package, install_dir)).hexdigest()
+        yield os.path.join(os.path.expanduser("~/.cache/whack/builds"), dir_name)
+    else:
+        cache_dir = tempfile.mkdtemp()
+        yield cache_dir
+        shutil.rmtree(cache_dir)
 
 def _read_downloads_file(path):
     if os.path.exists(path):
@@ -66,6 +76,7 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('package')
     parser.add_argument('install_dir', metavar="install-dir")
+    parser.add_argument("--cache", default=False, action="store_true")
     return parser.parse_args()
 
 
