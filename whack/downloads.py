@@ -26,11 +26,6 @@ def download_to_cache(url):
             subprocess.check_call(["curl", url, "--create-dirs", "-o", cache_file])
     return cache_file
 
-def download_tarball(url, destination):
-    cache_file = download_to_cache(url)
-    subprocess.check_call(["mkdir", "-p", destination])
-    subprocess.check_call(["tar", "xzf", cache_file, "-C", destination])
-
 def fetch_source_control_uri(uri):
     cache_dir = _whack_cache_dir("repos/")
     repo_hash = hashlib.sha1(uri).hexdigest()
