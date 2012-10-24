@@ -20,21 +20,18 @@ def main():
     
     package_name, package_version = package.split("=")
     scripts_dir = _fetch_scripts(package_name)
-    with FileLock(scripts_dir), _cache_dir_for(package, install_dir, should_cache) as cache_dir:
-        if not os.path.exists(cache_dir) or os.listdir(cache_dir) == []:
+    with _cache_dir_for(package, install_dir, should_cache) as cache_dir:
+        if not _already_built(cache_dir):
             _build(scripts_dir, cache_dir, install_dir)
         
-        subprocess.check_call(
-            [os.path.join(scripts_dir, "install"), install_dir],
-            cwd=cache_dir
-        )
-        
+        _install(scripts_dir, cache_dir, install_dir)
+
+def _already_built(cache_dir):
+    return os.path.exists(cache_dir) and os.listdir(cache_dir) != []
+
 def _build(scripts_dir, cache_dir, install_dir):
     try:
-        downloads_file_path = os.path.join(scripts_dir, "downloads")
-        download_urls = _read_downloads_file(downloads_file_path)
-        for url in download_urls:
-            downloads.download_to_dir(url, cache_dir)
+        _fetch_downloads(scripts_dir, cache_dir)
         
         subprocess.check_call(
             [os.path.join(scripts_dir, "build"), install_dir],
@@ -45,6 +42,12 @@ def _build(scripts_dir, cache_dir, install_dir):
             shutil.rmtree(cache_dir)
         raise
 
+def _fetch_downloads(scripts_dir, cache_dir):
+    downloads_file_path = os.path.join(scripts_dir, "downloads")
+    download_urls = _read_downloads_file(downloads_file_path)
+    for url in download_urls:
+        downloads.download_to_dir(url, cache_dir)
+
 def _fetch_scripts(package):
     builders_repo_uri = "git+https://github.com/mwilliamson/whack-builders.git"
     repo_dir = downloads.fetch_source_control_uri(builders_repo_uri)
@@ -54,6 +57,12 @@ def _fetch_scripts(package):
         return package_dir
     else:
         raise RuntimeError("No builders found for package: {0}".format(package))
+
+def _install(scripts_dir, cache_dir, install_dir):
+    subprocess.check_call(
+        [os.path.join(scripts_dir, "install"), install_dir],
+        cwd=cache_dir
+    )
 
 @contextlib.contextmanager
 def _cache_dir_for(package, install_dir, should_cache):
