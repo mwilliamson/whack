@@ -20,33 +20,33 @@ def main():
     
     package_name, package_version = package.split("=")
     scripts_dir = _fetch_scripts(package_name)
-    with _cache_dir_for(package, install_dir, should_cache) as cache_dir:
-        if not _already_built(cache_dir):
-            _build(scripts_dir, cache_dir, install_dir)
+    with _build_dir_for(package, install_dir, should_cache) as build_dir:
+        if not _already_built(build_dir):
+            _build(scripts_dir, build_dir, install_dir)
         
-        _install(scripts_dir, cache_dir, install_dir)
+        _install(scripts_dir, build_dir, install_dir)
 
-def _already_built(cache_dir):
-    return os.path.exists(cache_dir) and os.listdir(cache_dir) != []
+def _already_built(build_dir):
+    return os.path.exists(build_dir) and os.listdir(build_dir) != []
 
-def _build(scripts_dir, cache_dir, install_dir):
+def _build(scripts_dir, build_dir, install_dir):
     try:
-        _fetch_downloads(scripts_dir, cache_dir)
+        _fetch_downloads(scripts_dir, build_dir)
         
         subprocess.check_call(
             [os.path.join(scripts_dir, "build"), install_dir],
-            cwd=cache_dir
+            cwd=build_dir
         )
     except:
-        if os.path.exists(cache_dir):
-            shutil.rmtree(cache_dir)
+        if os.path.exists(build_dir):
+            shutil.rmtree(build_dir)
         raise
 
-def _fetch_downloads(scripts_dir, cache_dir):
+def _fetch_downloads(scripts_dir, build_dir):
     downloads_file_path = os.path.join(scripts_dir, "downloads")
     download_urls = _read_downloads_file(downloads_file_path)
     for url in download_urls:
-        downloads.download_to_dir(url, cache_dir)
+        downloads.download_to_dir(url, build_dir)
 
 def _fetch_scripts(package):
     builders_repo_uri = "git+https://github.com/mwilliamson/whack-builders.git"
@@ -58,24 +58,24 @@ def _fetch_scripts(package):
     else:
         raise RuntimeError("No builders found for package: {0}".format(package))
 
-def _install(scripts_dir, cache_dir, install_dir):
+def _install(scripts_dir, build_dir, install_dir):
     subprocess.check_call(
         [os.path.join(scripts_dir, "install"), install_dir],
-        cwd=cache_dir
+        cwd=build_dir
     )
 
 @contextlib.contextmanager
-def _cache_dir_for(package, install_dir, should_cache):
+def _build_dir_for(package, install_dir, should_cache):
     # TODO: Should also hash scripts content so that we re-build if the build scripts change
     if should_cache:
         dir_name = hashlib.sha1("{0}\n{1}".format(package, install_dir)).hexdigest()
         yield os.path.join(os.path.expanduser("~/.cache/whack/builds"), dir_name)
     else:
         try:
-            cache_dir = tempfile.mkdtemp()
-            yield cache_dir
+            build_dir = tempfile.mkdtemp()
+            yield build_dir
         finally:
-            shutil.rmtree(cache_dir)
+            shutil.rmtree(build_dir)
 
 def _read_downloads_file(path):
     if os.path.exists(path):
