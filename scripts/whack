@@ -20,7 +20,7 @@ def main():
     
     package_name, package_version = package.split("=")
     scripts_dir = _fetch_scripts(package_name)
-    with _build_dir_for(package, install_dir, should_cache) as build_dir:
+    with _build_dir_for(package, scripts_dir, install_dir, should_cache) as build_dir:
         if not _already_built(build_dir):
             _build(scripts_dir, build_dir, install_dir)
         
@@ -65,10 +65,9 @@ def _install(scripts_dir, build_dir, install_dir):
     )
 
 @contextlib.contextmanager
-def _build_dir_for(package, install_dir, should_cache):
-    # TODO: Should also hash scripts content so that we re-build if the build scripts change
+def _build_dir_for(package, scripts_dir, install_dir, should_cache):
     if should_cache:
-        dir_name = hashlib.sha1("{0}\n{1}".format(package, install_dir)).hexdigest()
+        dir_name = _generate_build_dir(package, scripts_dir, install_dir)
         yield os.path.join(os.path.expanduser("~/.cache/whack/builds"), dir_name)
     else:
         try:
@@ -76,6 +75,27 @@ def _build_dir_for(package, install_dir, should_cache):
             yield build_dir
         finally:
             shutil.rmtree(build_dir)
+
+def _generate_build_dir(package, scripts_dir, install_dir):
+    build_dir_hash = hashlib.sha1()
+    for file_path in _all_files(scripts_dir):
+        build_dir_hash.update(_sha1(file_path))
+        build_dir_hash.update(_sha1(open(file_path).read()))
+    build_dir_hash.update(_sha1(install_dir))
+    build_dir_hash.update(_sha1(package))
+    return build_dir_hash.hexdigest()
+
+def _all_files(top):
+    all_files = []
+    
+    for root, dirs, files in os.walk(top):
+        for name in files:
+            all_files.append(os.path.join(root, name))
+    
+    return all_files
+
+def _sha1(str):
+    return hashlib.sha1(str).hexdigest()
 
 def _read_downloads_file(path):
     if os.path.exists(path):
