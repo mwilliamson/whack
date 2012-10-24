@@ -4,13 +4,12 @@ import os
 import os.path
 import argparse
 import subprocess
-import hashlib
 import shutil
 import contextlib
 import tempfile
 
 from whack import downloads
-from whack.filelock import FileLock
+from whack.hashes import Hasher
 
 def main():
     args = parse_args()
@@ -77,25 +76,11 @@ def _build_dir_for(package, scripts_dir, install_dir, should_cache):
             shutil.rmtree(build_dir)
 
 def _generate_build_dir(package, scripts_dir, install_dir):
-    build_dir_hash = hashlib.sha1()
-    for file_path in _all_files(scripts_dir):
-        build_dir_hash.update(_sha1(file_path))
-        build_dir_hash.update(_sha1(open(file_path).read()))
-    build_dir_hash.update(_sha1(install_dir))
-    build_dir_hash.update(_sha1(package))
-    return build_dir_hash.hexdigest()
-
-def _all_files(top):
-    all_files = []
-    
-    for root, dirs, files in os.walk(top):
-        for name in files:
-            all_files.append(os.path.join(root, name))
-    
-    return all_files
-
-def _sha1(str):
-    return hashlib.sha1(str).hexdigest()
+    hasher = Hasher()
+    hasher.update_with_dir(scripts_dir)
+    hasher.update(install_dir)
+    hasher.update(package)
+    return hasher.hexdigest()
 
 def _read_downloads_file(path):
     if os.path.exists(path):
