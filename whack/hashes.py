@@ -8,7 +8,7 @@ class Hasher(object):
     def update(self, arg):
         self._hash.update(_sha1(arg))
     
-    def update_with_dir(dir_path)
+    def update_with_dir(self, dir_path):
         for file_path in _all_files(dir_path):
             self._update_with_file(file_path)
     
