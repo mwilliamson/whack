@@ -25,14 +25,7 @@ chmod +x hello
 INSTALL_DIR=$1
 cp hello $INSTALL_DIR/hello
 """
-    with _temporary_dir() as repo_dir, _temporary_dir() as install_dir:
-        _create_test_builder(repo_dir, _TEST_BUILDER_BUILD, _TEST_BUILDER_INSTALL)
-        
-        builders = Builders(should_cache=False, builder_repo_uris=[repo_dir])
-        builders.build_and_install("hello=1", install_dir)
-        
-        output = subprocess.check_output([os.path.join(install_dir, "hello")])
-        assert_equal("Hello there\n", output)
+    test_builder(_TEST_BUILDER_BUILD, _TEST_BUILDER_INSTALL, "Hello there\n")
 
 @istest
 def can_build_simple_application_with_install_dir_used_in_build_script():
@@ -51,15 +44,18 @@ chmod +x hello
 INSTALL_DIR=`cat install-dir`
 cp hello $INSTALL_DIR/hello
 """
+    test_builder(_TEST_BUILDER_BUILD, _TEST_BUILDER_INSTALL, "Hello there\n")
+
+def test_builder(build, install, expected_output):
     with _temporary_dir() as repo_dir, _temporary_dir() as install_dir:
-        _create_test_builder(repo_dir, _TEST_BUILDER_BUILD, _TEST_BUILDER_INSTALL)
+        _create_test_builder(repo_dir, build, install)
         
         builders = Builders(should_cache=False, builder_repo_uris=[repo_dir])
         builders.build_and_install("hello=1", install_dir)
         
         output = subprocess.check_output([os.path.join(install_dir, "hello")])
-        assert_equal("Hello there\n", output)
-    
+        assert_equal(expected_output, output)
+
 @contextlib.contextmanager
 def _temporary_dir():
     try:
