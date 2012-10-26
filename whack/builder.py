@@ -101,7 +101,17 @@ class Builder(object):
 
     def _read_downloads_file(self, path):
         if os.path.exists(path):
-            return [line.strip() for line in open(path) if line]
+            first_line = open(path).readline()
+            if first_line.startswith("#!"):
+                downloads_output = subprocess.check_output(
+                    [path],
+                    env={"VERSION": self._package_version}
+                )
+                lines = downloads_output.split("\n")
+            else:
+                lines = open(path)
+                
+            return [line.strip() for line in lines if line]
         else:
             return []
 
