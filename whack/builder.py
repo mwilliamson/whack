@@ -49,11 +49,12 @@ class Builder(object):
             self._install(build_dir, install_dir)
 
     def _already_built(self, build_dir):
-        return os.path.exists(build_dir) and os.listdir(build_dir) != []
+        return os.path.exists(build_dir)
 
     def _build(self, build_dir, install_dir):
         try:
-            subprocess.check_call(["mkdir", "-p", build_dir])
+            ignore = shutil.ignore_patterns(".svn", ".hg", ".hgignore", ".git", ".gitignore")
+            shutil.copytree(self._scripts_dir, build_dir, ignore=ignore)
             self._fetch_downloads(build_dir)
             
             build_env = os.environ.copy()
@@ -69,14 +70,14 @@ class Builder(object):
             raise
 
     def _fetch_downloads(self, build_dir):
-        downloads_file_path = os.path.join(self._scripts_dir, "downloads")
+        downloads_file_path = os.path.join(build_dir, "downloads")
         download_urls = self._read_downloads_file(downloads_file_path)
         for url in download_urls:
             downloads.download_to_dir(url, build_dir)
 
     def _install(self, build_dir, install_dir):
         subprocess.check_call(
-            [os.path.join(self._scripts_dir, "install"), install_dir],
+            [os.path.join(build_dir, "install"), install_dir],
             cwd=build_dir
         )
 
@@ -88,7 +89,7 @@ class Builder(object):
         else:
             try:
                 build_dir = tempfile.mkdtemp()
-                yield build_dir
+                yield os.path.join(build_dir, "build")
             finally:
                 shutil.rmtree(build_dir)
 
