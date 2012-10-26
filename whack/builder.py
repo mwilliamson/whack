@@ -53,6 +53,7 @@ class Builder(object):
 
     def _build(self, build_dir, install_dir):
         try:
+            subprocess.check_call(["mkdir", "-p", build_dir])
             self._fetch_downloads(build_dir)
             
             subprocess.check_call(
