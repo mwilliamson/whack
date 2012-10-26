@@ -54,6 +54,25 @@ def changing_install_dir_results_in_rebuild_when_caching():
         output = subprocess.check_output([os.path.join(install_dir_2, "hello")])
         assert_equal("Hello there\n", output)
 
+@istest
+def version_is_passed_to_build_script():
+    _TEST_BUILDER_BUILD = r"""#!/bin/sh
+INSTALL_DIR=$1
+echo '#!/bin/sh' >> hello
+echo echo ${VERSION} >> hello
+chmod +x hello
+"""
+
+    _TEST_BUILDER_INSTALL = r"""#!/bin/sh
+INSTALL_DIR=$1
+cp hello $INSTALL_DIR/hello
+"""
+    test_single_build(
+        build=_TEST_BUILDER_BUILD,
+        install=_TEST_BUILDER_INSTALL,
+        expected_output="1\n"
+    )
+
 def test_single_build(build, install, expected_output):
     for should_cache in [True, False]:
         with _temporary_dir() as repo_dir, _temporary_dir() as install_dir:

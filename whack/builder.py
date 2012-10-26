@@ -56,9 +56,12 @@ class Builder(object):
             subprocess.check_call(["mkdir", "-p", build_dir])
             self._fetch_downloads(build_dir)
             
+            build_env = os.environ.copy()
+            build_env["VERSION"] = self._package_version
             subprocess.check_call(
                 [os.path.join(self._scripts_dir, "build"), install_dir],
-                cwd=build_dir
+                cwd=build_dir,
+                env=build_env
             )
         except:
             if os.path.exists(build_dir):
