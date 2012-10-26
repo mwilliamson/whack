@@ -6,7 +6,8 @@ import whack.builder
 
 def main():
     args = parse_args()
-    builder_uris = ["git+https://github.com/mwilliamson/whack-builders.git"]
+    builder_uris = ["git+https://github.com/mwilliamson/whack-builders.git"] + \
+        (args.add_builder_repo or [])
     builder = whack.builder.Builders(args.cache, builder_uris)
     builder.build_and_install(args.package, args.install_dir)
     
@@ -15,6 +16,7 @@ def parse_args():
     parser.add_argument('package')
     parser.add_argument('install_dir', metavar="install-dir")
     parser.add_argument("--cache", default=False, action="store_true")
+    parser.add_argument("--add-builder-repo", action="append")
     return parser.parse_args()
 
 
