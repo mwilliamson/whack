@@ -8,7 +8,7 @@ import tempfile
 from whack import downloads
 from whack.hashes import Hasher
 
-class Builder(object):
+class Builders(object):
     def __init__(self, should_cache, builder_repo_urls):
         self._should_cache = should_cache
         self._builder_repo_urls = builder_repo_urls
@@ -16,33 +16,8 @@ class Builder(object):
     def build_and_install(self, package, install_dir):
         package_name, package_version = package.split("=")
         scripts_dir = self._fetch_scripts(package_name)
-        with self._build_dir_for(package, scripts_dir, install_dir) as build_dir:
-            if not self._already_built(build_dir):
-                self._build(scripts_dir, build_dir, install_dir)
-            
-            self._install(scripts_dir, build_dir, install_dir)
-
-    def _already_built(self, build_dir):
-        return os.path.exists(build_dir) and os.listdir(build_dir) != []
-
-    def _build(self, scripts_dir, build_dir, install_dir):
-        try:
-            self._fetch_downloads(scripts_dir, build_dir)
-            
-            subprocess.check_call(
-                [os.path.join(scripts_dir, "build"), install_dir],
-                cwd=build_dir
-            )
-        except:
-            if os.path.exists(build_dir):
-                shutil.rmtree(build_dir)
-            raise
-
-    def _fetch_downloads(self, scripts_dir, build_dir):
-        downloads_file_path = os.path.join(scripts_dir, "downloads")
-        download_urls = self._read_downloads_file(downloads_file_path)
-        for url in download_urls:
-            downloads.download_to_dir(url, build_dir)
+        builder = Builder(self._should_cache, scripts_dir, package_version)
+        return builder.build_and_install(install_dir)
 
     def _fetch_scripts(self, package):
         for uri in self._builder_repo_urls:
@@ -54,16 +29,51 @@ class Builder(object):
                 
         raise RuntimeError("No builders found for package: {0}".format(package))
 
-    def _install(self, scripts_dir, build_dir, install_dir):
+class Builder(object):
+    def __init__(self, should_cache, scripts_dir, package_version):
+        self._should_cache = should_cache
+        self._scripts_dir = scripts_dir
+        self._package_version = package_version
+    
+    def build_and_install(self, install_dir):
+        with self._build_dir_for(install_dir) as build_dir:
+            if not self._already_built(build_dir):
+                self._build(build_dir, install_dir)
+            
+            self._install(build_dir, install_dir)
+
+    def _already_built(self, build_dir):
+        return os.path.exists(build_dir) and os.listdir(build_dir) != []
+
+    def _build(self, build_dir, install_dir):
+        try:
+            self._fetch_downloads(build_dir)
+            
+            subprocess.check_call(
+                [os.path.join(self._scripts_dir, "build"), install_dir],
+                cwd=build_dir
+            )
+        except:
+            if os.path.exists(build_dir):
+                shutil.rmtree(build_dir)
+            raise
+
+    def _fetch_downloads(self, build_dir):
+        downloads_file_path = os.path.join(self._scripts_dir, "downloads")
+        download_urls = self._read_downloads_file(downloads_file_path)
+        for url in download_urls:
+            downloads.download_to_dir(url, build_dir)
+
+    def _install(self, build_dir, install_dir):
         subprocess.check_call(
-            [os.path.join(scripts_dir, "install"), install_dir],
+            [os.path.join(self._scripts_dir, "install"), install_dir],
             cwd=build_dir
         )
 
     @contextlib.contextmanager
-    def _build_dir_for(self, package, scripts_dir, install_dir):
+    def _build_dir_for(self, install_dir):
         if self._should_cache:
-            dir_name = self._generate_build_dir(package, scripts_dir, install_dir)
+            dir_name = self._generate_build_dir(install_dir)
             yield os.path.join(os.path.expanduser("~/.cache/whack/builds"), dir_name)
         else:
             try:
@@ -72,11 +82,11 @@ class Builder(object):
             finally:
                 shutil.rmtree(build_dir)
 
-    def _generate_build_dir(self, package, scripts_dir, install_dir):
+    def _generate_build_dir(self, install_dir):
         hasher = Hasher()
-        hasher.update_with_dir(scripts_dir)
+        hasher.update_with_dir(self._scripts_dir)
         hasher.update(install_dir)
-        hasher.update(package)
+        hasher.update(self._package_version)
         return hasher.hexdigest()
 
     def _read_downloads_file(self, path):
