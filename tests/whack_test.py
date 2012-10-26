@@ -25,7 +25,7 @@ chmod +x hello
 INSTALL_DIR=$1
 cp hello $INSTALL_DIR/hello
 """
-    test_builder(
+    test_single_build(
         build=_TEST_BUILDER_BUILD,
         install=_TEST_BUILDER_INSTALL,
         expected_output="Hello there\n"
@@ -33,28 +33,28 @@ cp hello $INSTALL_DIR/hello
 
 @istest
 def can_build_simple_application_with_install_dir_used_in_build_script():
-    _TEST_BUILDER_BUILD = r"""#!/bin/sh
-INSTALL_DIR=$1
-echo $INSTALL_DIR > install-dir
-cat > hello << EOF
-#!/bin/sh
-echo Hello there
-EOF
-
-chmod +x hello
-"""
-
-    _TEST_BUILDER_INSTALL = r"""#!/bin/sh
-INSTALL_DIR=`cat install-dir`
-cp hello $INSTALL_DIR/hello
-"""
-    test_builder(
-        build=_TEST_BUILDER_BUILD,
-        install=_TEST_BUILDER_INSTALL,
+    test_single_build(
+        build=_TEST_BUILDER_BUILD_USE_INSTALL_DIR_IN_BUILD,
+        install=_TEST_BUILDER_INSTALL_USE_INSTALL_DIR_IN_BUILD,
         expected_output="Hello there\n"
     )
 
-def test_builder(build, install, expected_output):
+@istest
+def changing_install_dir_results_in_rebuild_when_caching():
+    with _temporary_dir() as repo_dir, _temporary_dir() as install_dir_1, _temporary_dir() as install_dir_2:
+        _create_test_builder(repo_dir,
+            _TEST_BUILDER_BUILD_USE_INSTALL_DIR_IN_BUILD,
+            _TEST_BUILDER_INSTALL_USE_INSTALL_DIR_IN_BUILD
+        )
+        
+        builders = Builders(should_cache=True, builder_repo_uris=[repo_dir])
+        builders.build_and_install("hello=1", install_dir_1)
+        builders.build_and_install("hello=1", install_dir_2)
+        
+        output = subprocess.check_output([os.path.join(install_dir_2, "hello")])
+        assert_equal("Hello there\n", output)
+
+def test_single_build(build, install, expected_output):
     for should_cache in [True, False]:
         with _temporary_dir() as repo_dir, _temporary_dir() as install_dir:
             _create_test_builder(repo_dir, build, install)
@@ -88,3 +88,19 @@ def _make_executable(path):
 
 def _write_file(path, contents):
     open(path, "w").write(contents)
+
+_TEST_BUILDER_BUILD_USE_INSTALL_DIR_IN_BUILD = r"""#!/bin/sh
+INSTALL_DIR=$1
+echo $INSTALL_DIR > install-dir
+cat > hello << EOF
+#!/bin/sh
+echo Hello there
+EOF
+
+chmod +x hello
+"""
+
+_TEST_BUILDER_INSTALL_USE_INSTALL_DIR_IN_BUILD = r"""#!/bin/sh
+INSTALL_DIR=`cat install-dir`
+cp hello $INSTALL_DIR/hello
+"""
