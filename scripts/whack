@@ -6,7 +6,9 @@ import whack.builder
 
 def main():
     args = parse_args()
-    whack.builder.build(args.package, args.install_dir, args.cache)
+    builder_uris = ["git+https://github.com/mwilliamson/whack-builders.git"]
+    builder = whack.builder.Builder(args.cache, builder_uris)
+    builder.build_and_install(args.package, args.install_dir)
     
 def parse_args():
     parser = argparse.ArgumentParser()
