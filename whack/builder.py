@@ -42,16 +42,16 @@ class Builder(object):
         self._package_version = package_version
     
     def build_and_install(self, install_dir):
-        with self._build_dir_for(install_dir) as build_dir:
+        with self._build_dir_for() as build_dir:
             if not self._already_built(build_dir):
-                self._build(build_dir, install_dir)
+                self._build(build_dir)
             
             self._install(build_dir, install_dir)
 
     def _already_built(self, build_dir):
         return os.path.exists(build_dir)
 
-    def _build(self, build_dir, install_dir):
+    def _build(self, build_dir):
         try:
             ignore = shutil.ignore_patterns(".svn", ".hg", ".hgignore", ".git", ".gitignore")
             shutil.copytree(self._scripts_dir, build_dir, ignore=ignore)
@@ -60,7 +60,7 @@ class Builder(object):
             build_env = os.environ.copy()
             build_env["VERSION"] = self._package_version
             subprocess.check_call(
-                [os.path.join(self._scripts_dir, "build"), install_dir],
+                [os.path.join(self._scripts_dir, "build")],
                 cwd=build_dir,
                 env=build_env
             )
@@ -82,9 +82,9 @@ class Builder(object):
         )
 
     @contextlib.contextmanager
-    def _build_dir_for(self, install_dir):
+    def _build_dir_for(self):
         if self._should_cache:
-            dir_name = self._generate_build_dir(install_dir)
+            dir_name = self._generate_build_dir()
             yield os.path.join(os.path.expanduser("~/.cache/whack/builds"), dir_name)
         else:
             try:
@@ -93,10 +93,9 @@ class Builder(object):
             finally:
                 shutil.rmtree(build_dir)
 
-    def _generate_build_dir(self, install_dir):
+    def _generate_build_dir(self):
         hasher = Hasher()
         hasher.update_with_dir(self._scripts_dir)
-        hasher.update(install_dir)
         hasher.update(self._package_version)
         return hasher.hexdigest()
 
