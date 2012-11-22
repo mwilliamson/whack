@@ -10,7 +10,7 @@ setup(
     name='whack',
     version='0.1.0',
     description='Utility for installing binaries from source with a single command',
-    #long_description=read("README"),
+    long_description=read("README"),
     author='Michael Williamson',
     url='http://github.com/mwilliamson/whack',
     scripts=["scripts/whack"],
