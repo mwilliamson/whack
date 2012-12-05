@@ -9,8 +9,8 @@ from whack import downloads
 from whack.hashes import Hasher
 
 class PackageInstaller(object):
-    def __init__(self, scripts_dir, should_cache=True):
-        self._scripts_dir = scripts_dir
+    def __init__(self, package_dir, should_cache=True):
+        self._package_dir = package_dir
         self._should_cache = should_cache
     
     def install(self, install_dir, params={}):
@@ -26,14 +26,14 @@ class PackageInstaller(object):
     def _build(self, build_dir, params):
         try:
             ignore = shutil.ignore_patterns(".svn", ".hg", ".hgignore", ".git", ".gitignore")
-            shutil.copytree(self._scripts_dir, build_dir, ignore=ignore)
+            shutil.copytree(self._package_dir, build_dir, ignore=ignore)
             self._fetch_downloads(build_dir)
             
             build_env = os.environ.copy()
             for name, value in params.iteritems():
                 build_env[name] = str(value)
             subprocess.check_call(
-                [os.path.join(self._scripts_dir, "build")],
+                [os.path.join(self._package_dir, "build")],
                 cwd=build_dir,
                 env=build_env
             )
@@ -68,7 +68,7 @@ class PackageInstaller(object):
 
     def _generate_build_dir(self, params):
         hasher = Hasher()
-        hasher.update_with_dir(self._scripts_dir)
+        hasher.update_with_dir(self._package_dir)
         hasher.update(json.dumps(params))
         return hasher.hexdigest()
 
