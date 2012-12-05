@@ -108,14 +108,12 @@ class DirectoryCache(object):
 # TODO: eurgh, what a horrible name
 class NoCachingStrategy(object):
     def cache_for_install(self, install_id):
-        cache_dir = tempfile.mkdtemp()
-        return NoCache(cache_dir)
+        return NoCache(os.path.join(tempfile.mkdtemp(), "build"))
         
 
 class NoCache(object):
-    def  __init__(self, cache_dir):
-        self._cache_dir = cache_dir
-        self.build_dir = os.path.join(cache_dir, "build")
+    def  __init__(self, build_dir):
+        self.build_dir = build_dir
     
     def already_built(self):
         return False
@@ -124,4 +122,4 @@ class NoCache(object):
         return self
     
     def __exit__(self, *args):
-        shutil.rmtree(self._cache_dir)
+        shutil.rmtree(self.build_dir)
