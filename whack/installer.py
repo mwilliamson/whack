@@ -1,3 +1,3 @@
 import whack.builder
 
-PackageInstaller = whack.builder.Builder
+PackageInstaller = whack.builder.PackageInstaller

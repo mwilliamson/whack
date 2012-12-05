@@ -17,7 +17,7 @@ class Builders(object):
     def build_and_install(self, package, install_dir):
         package_name, package_version = package.split("=")
         scripts_dir = self._fetch_scripts(package_name)
-        builder = Builder(scripts_dir, self._should_cache)
+        builder = PackageInstaller(scripts_dir, self._should_cache)
         return builder.install(install_dir, version=package_version)
 
     def _fetch_scripts(self, package):
@@ -36,7 +36,7 @@ class Builders(object):
     def _is_local_uri(self, uri):
         return "://" not in uri
 
-class Builder(object):
+class PackageInstaller(object):
     def __init__(self, scripts_dir, should_cache=True):
         self._scripts_dir = scripts_dir
         self._should_cache = should_cache
