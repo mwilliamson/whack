@@ -4,6 +4,7 @@ import subprocess
 import shutil
 import contextlib
 import tempfile
+import json
 
 from whack import downloads
 from whack.hashes import Hasher
@@ -16,8 +17,8 @@ class Builders(object):
     def build_and_install(self, package, install_dir):
         package_name, package_version = package.split("=")
         scripts_dir = self._fetch_scripts(package_name)
-        builder = Builder(self._should_cache, scripts_dir, package_version)
-        return builder.build_and_install(install_dir)
+        builder = Builder(scripts_dir, self._should_cache)
+        return builder.install(install_dir, version=package_version)
 
     def _fetch_scripts(self, package):
         for uri in self._builder_repo_urls:
@@ -36,29 +37,31 @@ class Builders(object):
         return "://" not in uri
 
 class Builder(object):
-    def __init__(self, should_cache, scripts_dir, package_version):
-        self._should_cache = should_cache
+    def __init__(self, scripts_dir, should_cache=True):
         self._scripts_dir = scripts_dir
-        self._package_version = package_version
+        self._should_cache = should_cache
     
-    def build_and_install(self, install_dir):
-        with self._build_dir_for() as build_dir:
+    def install(self, install_dir, version="1", params={}):
+        params = params.copy()
+        params["VERSION"] = version
+        with self._build_dir_for(params) as build_dir:
             if not self._already_built(build_dir):
-                self._build(build_dir)
+                self._build(build_dir, params)
             
             self._install(build_dir, install_dir)
 
     def _already_built(self, build_dir):
         return os.path.exists(build_dir)
 
-    def _build(self, build_dir):
+    def _build(self, build_dir, params):
         try:
             ignore = shutil.ignore_patterns(".svn", ".hg", ".hgignore", ".git", ".gitignore")
             shutil.copytree(self._scripts_dir, build_dir, ignore=ignore)
             self._fetch_downloads(build_dir)
             
             build_env = os.environ.copy()
-            build_env["VERSION"] = self._package_version
+            for name, value in params.iteritems():
+                build_env[name] = str(value)
             subprocess.check_call(
                 [os.path.join(self._scripts_dir, "build")],
                 cwd=build_dir,
@@ -82,9 +85,9 @@ class Builder(object):
         )
 
     @contextlib.contextmanager
-    def _build_dir_for(self):
+    def _build_dir_for(self, params):
         if self._should_cache:
-            dir_name = self._generate_build_dir()
+            dir_name = self._generate_build_dir(params)
             yield os.path.join(os.path.expanduser("~/.cache/whack/builds"), dir_name)
         else:
             try:
@@ -93,10 +96,10 @@ class Builder(object):
             finally:
                 shutil.rmtree(build_dir)
 
-    def _generate_build_dir(self):
+    def _generate_build_dir(self, params):
         hasher = Hasher()
         hasher.update_with_dir(self._scripts_dir)
-        hasher.update(self._package_version)
+        hasher.update(json.dumps(params))
         return hasher.hexdigest()
 
     def _read_downloads_file(self, path):
