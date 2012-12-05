@@ -101,6 +101,24 @@ def result_of_build_command_is_reused_when_no_params_are_set(test_runner):
     
     assert_equal("building\n", package.read_build_log())
     assert_equal("installing\ninstalling\n", package.read_install_log())
+    
+@test
+def result_of_build_command_is_reused_when_params_are_the_same(test_runner):
+    package = _create_logging_package(test_runner)
+    test_runner.install(package.package_dir, params={"VERSION": "2.4"})
+    test_runner.install(package.package_dir, params={"VERSION": "2.4"})
+    
+    assert_equal("building\n", package.read_build_log())
+    assert_equal("installing\ninstalling\n", package.read_install_log())
+    
+@test
+def result_of_build_command_is_not_reused_when_params_are_not_the_same(test_runner):
+    package = _create_logging_package(test_runner)
+    test_runner.install(package.package_dir, params={"VERSION": "2.4"})
+    test_runner.install(package.package_dir, params={"VERSION": "2.5"})
+    
+    assert_equal("building\nbuilding\n", package.read_build_log())
+    assert_equal("installing\ninstalling\n", package.read_install_log())
 
 def _create_logging_package(test_runner):
     build_log = test_runner.create_temporary_path()
