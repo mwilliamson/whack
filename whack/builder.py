@@ -1,13 +1,6 @@
 import os
-import os.path
-import subprocess
-import shutil
-import contextlib
-import tempfile
-import json
 
-from whack import downloads
-from whack.hashes import Hasher
+from whack.installer import PackageInstaller
 
 class Builders(object):
     def __init__(self, should_cache, builder_repo_uris):
@@ -36,85 +29,5 @@ class Builders(object):
     def _is_local_uri(self, uri):
         return "://" not in uri
 
-class PackageInstaller(object):
-    def __init__(self, scripts_dir, should_cache=True):
-        self._scripts_dir = scripts_dir
-        self._should_cache = should_cache
-    
-    def install(self, install_dir, version="1", params={}):
-        params = params.copy()
-        params["VERSION"] = version
-        with self._build_dir_for(params) as build_dir:
-            if not self._already_built(build_dir):
-                self._build(build_dir, params)
-            
-            self._install(build_dir, install_dir)
 
-    def _already_built(self, build_dir):
-        return os.path.exists(build_dir)
-
-    def _build(self, build_dir, params):
-        try:
-            ignore = shutil.ignore_patterns(".svn", ".hg", ".hgignore", ".git", ".gitignore")
-            shutil.copytree(self._scripts_dir, build_dir, ignore=ignore)
-            self._fetch_downloads(build_dir)
-            
-            build_env = os.environ.copy()
-            for name, value in params.iteritems():
-                build_env[name] = str(value)
-            subprocess.check_call(
-                [os.path.join(self._scripts_dir, "build")],
-                cwd=build_dir,
-                env=build_env
-            )
-        except:
-            if os.path.exists(build_dir):
-                shutil.rmtree(build_dir)
-            raise
-
-    def _fetch_downloads(self, build_dir):
-        downloads_file_path = os.path.join(build_dir, "downloads")
-        download_urls = self._read_downloads_file(downloads_file_path)
-        for url in download_urls:
-            downloads.download_to_dir(url, build_dir)
-
-    def _install(self, build_dir, install_dir):
-        subprocess.check_call(
-            [os.path.join(build_dir, "install"), install_dir],
-            cwd=build_dir
-        )
-
-    @contextlib.contextmanager
-    def _build_dir_for(self, params):
-        if self._should_cache:
-            dir_name = self._generate_build_dir(params)
-            yield os.path.join(os.path.expanduser("~/.cache/whack/builds"), dir_name)
-        else:
-            try:
-                build_dir = tempfile.mkdtemp()
-                yield os.path.join(build_dir, "build")
-            finally:
-                shutil.rmtree(build_dir)
-
-    def _generate_build_dir(self, params):
-        hasher = Hasher()
-        hasher.update_with_dir(self._scripts_dir)
-        hasher.update(json.dumps(params))
-        return hasher.hexdigest()
-
-    def _read_downloads_file(self, path):
-        if os.path.exists(path):
-            first_line = open(path).readline()
-            if first_line.startswith("#!"):
-                downloads_output = subprocess.check_output(
-                    [path],
-                    env={"VERSION": self._package_version}
-                )
-                lines = downloads_output.split("\n")
-            else:
-                lines = open(path)
-                
-            return [line.strip() for line in lines if line]
-        else:
-            return []
 
