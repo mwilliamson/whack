@@ -14,7 +14,8 @@ class PackageInstaller(object):
         self._should_cache = should_cache
     
     def install(self, install_dir, params={}):
-        with self._build_dir_for(params) as build_dir:
+        install_id = self._generate_install_id(params)
+        with self._build_dir_for(install_id) as build_dir:
             if not self._already_built(build_dir):
                 self._build(build_dir, params)
             
@@ -55,10 +56,9 @@ class PackageInstaller(object):
         )
 
     @contextlib.contextmanager
-    def _build_dir_for(self, params):
+    def _build_dir_for(self, install_id):
         if self._should_cache:
-            dir_name = self._generate_build_dir(params)
-            yield os.path.join(os.path.expanduser("~/.cache/whack/builds"), dir_name)
+            yield os.path.join(os.path.expanduser("~/.cache/whack/builds"), install_id)
         else:
             try:
                 build_dir = tempfile.mkdtemp()
@@ -66,7 +66,7 @@ class PackageInstaller(object):
             finally:
                 shutil.rmtree(build_dir)
 
-    def _generate_build_dir(self, params):
+    def _generate_install_id(self, params):
         hasher = Hasher()
         hasher.update_with_dir(self._package_dir)
         hasher.update(json.dumps(params))
