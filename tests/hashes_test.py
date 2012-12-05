@@ -41,48 +41,37 @@ def hashing_multiple_values_in_different_order_gives_different_hash():
 @istest
 def hash_of_directories_are_the_same_if_they_have_the_same_files():
     with TestRunner() as test_runner:
-        first_dir = test_runner.create_files({"hello": "Hello world!"})
-        second_dir = test_runner.create_files({"hello": "Hello world!"})
+        first_hash = test_runner.hash_for_files({"hello": "Hello world!"})
+        second_hash = test_runner.hash_for_files({"hello": "Hello world!"})
         
-        first_hasher = Hasher()
-        first_hasher.update_with_dir(first_dir)
-        
-        second_hasher = Hasher()
-        second_hasher.update_with_dir(second_dir)
-        
-        assert_equal(first_hasher.hexdigest(), second_hasher.hexdigest())
+        assert_equal(first_hash, second_hash)
         
 @istest
 def hash_of_directories_are_different_if_they_have_different_file_names():
     with TestRunner() as test_runner:
-        first_dir = test_runner.create_files({"one": "Hello world!"})
-        second_dir = test_runner.create_files({"two": "Hello world!"})
+        first_hash = test_runner.hash_for_files({"one": "Hello world!"})
+        second_hash = test_runner.hash_for_files({"two": "Hello world!"})
         
-        first_hasher = Hasher()
-        first_hasher.update_with_dir(first_dir)
-        
-        second_hasher = Hasher()
-        second_hasher.update_with_dir(second_dir)
-        
-        assert_not_equal(first_hasher.hexdigest(), second_hasher.hexdigest())
+        assert_not_equal(first_hash, second_hash)
         
 @istest
 def hash_of_directories_are_different_if_they_have_different_file_contents():
     with TestRunner() as test_runner:
-        first_dir = test_runner.create_files({"hello": "Hello world!"})
-        second_dir = test_runner.create_files({"hello": "Goodbye world!"})
+        first_hash = test_runner.hash_for_files({"hello": "Hello world!"})
+        second_hash = test_runner.hash_for_files({"hello": "Goodbye world!"})
         
-        first_hasher = Hasher()
-        first_hasher.update_with_dir(first_dir)
-        
-        second_hasher = Hasher()
-        second_hasher.update_with_dir(second_dir)
-        
-        assert_not_equal(first_hasher.hexdigest(), second_hasher.hexdigest())
+        assert_not_equal(first_hash, second_hash)
 
 class TestRunner(object):
     def __init__(self):
         self._test_dir = tempfile.mkdtemp()
+    
+    def hash_for_files(self, files):
+        files_dir = self.create_files(files)
+        
+        hasher = Hasher()
+        hasher.update_with_dir(files_dir)
+        return hasher.hexdigest()
     
     def create_files(self, files):
         root = os.path.join(self._test_dir, str(uuid.uuid4()))
