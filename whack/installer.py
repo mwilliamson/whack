@@ -15,14 +15,13 @@ class PackageInstaller(object):
     
     def install(self, install_dir, params={}):
         install_id = self._generate_install_id(params)
-        with self._build_dir_for(install_id) as build_dir:
-            if not self._already_built(build_dir):
+        cacher = _create_cacher(self._should_cache)
+        with cacher.cache_for_install(install_id) as cache:
+            build_dir = cache.build_dir
+            if not cache.already_built():
                 self._build(build_dir, params)
             
             self._run_install_script(build_dir, install_dir)
-
-    def _already_built(self, build_dir):
-        return os.path.exists(build_dir)
 
     def _build(self, build_dir, params):
         try:
@@ -55,17 +54,6 @@ class PackageInstaller(object):
             cwd=build_dir
         )
 
-    @contextlib.contextmanager
-    def _build_dir_for(self, install_id):
-        if self._should_cache:
-            yield os.path.join(os.path.expanduser("~/.cache/whack/builds"), install_id)
-        else:
-            try:
-                build_dir = tempfile.mkdtemp()
-                yield os.path.join(build_dir, "build")
-            finally:
-                shutil.rmtree(build_dir)
-
     def _generate_install_id(self, params):
         hasher = Hasher()
         hasher.update_with_dir(self._package_dir)
@@ -87,3 +75,53 @@ class PackageInstaller(object):
             return [line.strip() for line in lines if line]
         else:
             return []
+
+def _create_cacher(should_cache):
+    if should_cache:
+        return DirectoryCacher(os.path.expanduser("~/.cache/whack/builds"))
+    else:
+        return NoCachingStrategy()
+
+class DirectoryCacher(object):
+    def __init__(self, cacher_dir):
+        self._cacher_dir = cacher_dir
+        
+    def cache_for_install(self, install_id):
+        return DirectoryCache(os.path.join(self._cacher_dir, install_id))
+        
+
+class DirectoryCache(object):
+    def __init__(self, cache_dir):
+        self._cache_dir = cache_dir
+        self.build_dir = self._cache_dir
+
+    def already_built(self):
+        return os.path.exists(self._cache_dir)
+        
+    def __enter__(self):
+        # TODO: lock
+        return self
+        
+    def __exit__(self, *args):
+        pass
+
+# TODO: eurgh, what a horrible name
+class NoCachingStrategy(object):
+    def cache_for_install(self, install_id):
+        cache_dir = tempfile.mkdtemp()
+        return NoCache(cache_dir)
+        
+
+class NoCache(object):
+    def  __init__(self, cache_dir):
+        self._cache_dir = cache_dir
+        self.build_dir = os.path.join(cache_dir, "build")
+    
+    def already_built(self):
+        return False
+    
+    def __enter__(self):
+        return self
+    
+    def __exit__(self, *args):
+        shutil.rmtree(self._cache_dir)
