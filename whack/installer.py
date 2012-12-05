@@ -18,7 +18,7 @@ class PackageInstaller(object):
             if not self._already_built(build_dir):
                 self._build(build_dir, params)
             
-            self._install(build_dir, install_dir)
+            self._run_install_script(build_dir, install_dir)
 
     def _already_built(self, build_dir):
         return os.path.exists(build_dir)
@@ -48,7 +48,7 @@ class PackageInstaller(object):
         for url in download_urls:
             downloads.download_to_dir(url, build_dir)
 
-    def _install(self, build_dir, install_dir):
+    def _run_install_script(self, build_dir, install_dir):
         subprocess.check_call(
             [os.path.join(build_dir, "install"), install_dir],
             cwd=build_dir
