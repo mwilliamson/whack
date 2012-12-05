@@ -55,6 +55,14 @@ def hash_of_directories_are_different_if_they_have_different_file_names():
         assert_not_equal(first_hash, second_hash)
         
 @istest
+def hash_of_directories_are_different_if_files_are_in_different_subdirectories():
+    with TestRunner() as test_runner:
+        first_hash = test_runner.hash_for_files({"one/hello": "Hello world!"})
+        second_hash = test_runner.hash_for_files({"two/hello": "Hello world!"})
+        
+        assert_not_equal(first_hash, second_hash)
+        
+@istest
 def hash_of_directories_are_different_if_they_have_different_file_contents():
     with TestRunner() as test_runner:
         first_hash = test_runner.hash_for_files({"hello": "Hello world!"})
@@ -75,9 +83,11 @@ class TestRunner(object):
     
     def create_files(self, files):
         root = os.path.join(self._test_dir, str(uuid.uuid4()))
-        os.mkdir(root)
         for name, contents in files.iteritems():
             path = os.path.join(root, name)
+            parent_dir = os.path.dirname(path)
+            if not os.path.exists(parent_dir):
+                os.makedirs(parent_dir)
             open(path, "w").write(contents)
         return root
     
