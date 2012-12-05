@@ -1,6 +1,5 @@
 import os
 import os.path
-import contextlib
 import tempfile
 import subprocess
 import shutil
@@ -9,7 +8,6 @@ import uuid
 
 from nose.tools import istest, assert_equal
 
-from whack.builder import Builders
 from whack.installer import PackageInstaller, DirectoryCacher
 
 def test(func):
