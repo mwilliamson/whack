@@ -95,6 +95,14 @@ cp hello $INSTALL_DIR/hello
     
 @test
 def result_of_build_command_is_reused_when_no_params_are_set(test_runner):
+    package = _create_logging_package(test_runner)
+    test_runner.install(package.package_dir, params={})
+    test_runner.install(package.package_dir, params={})
+    
+    assert_equal("building\n", package.read_build_log())
+    assert_equal("installing\ninstalling\n", package.read_install_log())
+
+def _create_logging_package(test_runner):
     build_log = test_runner.create_temporary_path()
     install_log = test_runner.create_temporary_path()
     
@@ -107,11 +115,19 @@ echo installing >> {0}
 """.format(install_log)
 
     package_dir = test_runner.create_local_package(build=_BUILD, install=_INSTALL)
-    install_dir = test_runner.install(package_dir, params={})
-    install_dir = test_runner.install(package_dir, params={})
+    return LoggingPackage(package_dir, build_log, install_log)
     
-    assert_equal("building\n", open(build_log).read())
-    assert_equal("installing\ninstalling\n", open(install_log).read())
+class LoggingPackage(object):
+    def __init__(self, package_dir, build_log, install_log):
+        self.package_dir = package_dir
+        self._build_log = build_log
+        self._install_log = install_log
+        
+    def read_build_log(self):
+        return open(self._build_log).read()
+        
+    def read_install_log(self):
+        return open(self._install_log).read()
 
 def _write_script(path, contents):
     _write_file(path, contents)
