@@ -10,12 +10,8 @@ class Hasher(object):
     
     def update_with_dir(self, dir_path):
         for file_path in _all_files(dir_path):
-            self._update_with_file(file_path)
-    
-    def _update_with_file(self, path):
-        self.update(path)
-        self.update(open(path).read())
-        
+            self.update(os.path.relpath(file_path, dir_path))
+            self.update(open(file_path).read())
     
     def hexdigest(self):
         return self._hash.hexdigest()
