@@ -11,7 +11,7 @@ class Builders(object):
         package_name, package_version = package.split("=")
         scripts_dir = self._fetch_scripts(package_name)
         builder = PackageInstaller(scripts_dir, self._should_cache)
-        return builder.install(install_dir, version=package_version)
+        return builder.install(install_dir, params={"VERSION": package_version})
 
     def _fetch_scripts(self, package):
         for uri in self._builder_repo_urls:

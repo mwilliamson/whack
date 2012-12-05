@@ -13,9 +13,7 @@ class PackageInstaller(object):
         self._scripts_dir = scripts_dir
         self._should_cache = should_cache
     
-    def install(self, install_dir, version="1", params={}):
-        params = params.copy()
-        params["VERSION"] = version
+    def install(self, install_dir, params={}):
         with self._build_dir_for(params) as build_dir:
             if not self._already_built(build_dir):
                 self._build(build_dir, params)
