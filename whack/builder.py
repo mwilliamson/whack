@@ -1,6 +1,6 @@
 import os
 
-from whack.installer import PackageInstaller
+from whack.installer import PackageInstaller, DirectoryCacher, NoCachingStrategy
 
 class Builders(object):
     def __init__(self, should_cache, builder_repo_uris):
@@ -10,7 +10,7 @@ class Builders(object):
     def build_and_install(self, package, install_dir):
         package_name, package_version = package.split("=")
         scripts_dir = self._fetch_scripts(package_name)
-        builder = PackageInstaller(scripts_dir, self._should_cache)
+        builder = PackageInstaller(scripts_dir, self._create_cacher())
         return builder.install(install_dir, params={"VERSION": package_version})
 
     def _fetch_scripts(self, package):
@@ -25,7 +25,13 @@ class Builders(object):
                 return package_dir
                 
         raise RuntimeError("No builders found for package: {0}".format(package))
-        
+
+    def _create_cacher(self):
+        if self._should_cache:
+            return DirectoryCacher(os.path.expanduser("~/.cache/whack/builds"))
+        else:
+            return NoCachingStrategy()
+            
     def _is_local_uri(self, uri):
         return "://" not in uri
 

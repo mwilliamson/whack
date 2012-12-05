@@ -9,14 +9,13 @@ from whack import downloads
 from whack.hashes import Hasher
 
 class PackageInstaller(object):
-    def __init__(self, package_dir, should_cache=True):
+    def __init__(self, package_dir, cacher):
         self._package_dir = package_dir
-        self._should_cache = should_cache
+        self._cacher = cacher
     
     def install(self, install_dir, params={}):
         install_id = self._generate_install_id(params)
-        cacher = _create_cacher(self._should_cache)
-        with cacher.cache_for_install(install_id) as cache:
+        with self._cacher.cache_for_install(install_id) as cache:
             build_dir = cache.build_dir
             if not cache.already_built():
                 self._build(build_dir, params)
@@ -75,12 +74,6 @@ class PackageInstaller(object):
             return [line.strip() for line in lines if line]
         else:
             return []
-
-def _create_cacher(should_cache):
-    if should_cache:
-        return DirectoryCacher(os.path.expanduser("~/.cache/whack/builds"))
-    else:
-        return NoCachingStrategy()
 
 class DirectoryCacher(object):
     def __init__(self, cacher_dir):

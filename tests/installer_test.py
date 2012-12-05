@@ -10,7 +10,7 @@ import uuid
 from nose.tools import istest, assert_equal
 
 from whack.builder import Builders
-from whack.installer import PackageInstaller
+from whack.installer import PackageInstaller, DirectoryCacher
 
 def test(func):
     @functools.wraps(func)
@@ -23,6 +23,7 @@ def test(func):
 class TestRunner(object):
     def __init__(self):
         self._test_dir = tempfile.mkdtemp()
+        self._cacher = DirectoryCacher(os.path.join(self._test_dir, "cache"))
     
     def create_local_package(self, **files):
         package_dir = self.create_temporary_dir()
@@ -41,7 +42,7 @@ class TestRunner(object):
     def install(self, package_dir, params):
         install_dir = self.create_temporary_dir()
         
-        installer = PackageInstaller(package_dir)
+        installer = PackageInstaller(package_dir, cacher=self._cacher)
         installer.install(install_dir, params=params)
         return install_dir
         
