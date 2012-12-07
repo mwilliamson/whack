@@ -1,6 +1,7 @@
 import os
 
 from whack.installer import PackageInstaller, DirectoryCacher, NoCachingStrategy
+from whack import downloads
 
 class Builders(object):
     def __init__(self, should_cache, builder_repo_uris):

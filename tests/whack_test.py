@@ -9,25 +9,36 @@ from nose.tools import istest, assert_equal
 
 from whack.builder import Builders
 
-@istest
-def application_is_installed_by_running_build_then_install_scripts():
-    _TEST_BUILDER_BUILD = r"""#!/bin/sh
+_HELLO_WORLD_BUILD = r"""#!/bin/sh
 cat > hello << EOF
 #!/bin/sh
-echo Hello there
+echo Hello world!
 EOF
 
 chmod +x hello
 """
 
-    _TEST_BUILDER_INSTALL = r"""#!/bin/sh
+_HELLO_WORLD_INSTALL = r"""#!/bin/sh
 INSTALL_DIR=$1
 cp hello $INSTALL_DIR/hello
 """
+
+@istest
+def cli_application_is_installed_by_running_build_then_install_scripts():
+    with _temporary_dir() as repo_dir, _temporary_dir() as install_dir:
+        _create_test_builder(repo_dir, _HELLO_WORLD_BUILD, _HELLO_WORLD_INSTALL)
+        
+        subprocess.check_call(["whack", "install", "hello=1", install_dir, "--add-builder-repo", repo_dir])
+        
+        output = subprocess.check_output([os.path.join(install_dir, "hello")])
+        assert_equal("Hello world!\n", output)
+
+@istest
+def application_is_installed_by_running_build_then_install_scripts():
     test_single_build(
-        build=_TEST_BUILDER_BUILD,
-        install=_TEST_BUILDER_INSTALL,
-        expected_output="Hello there\n"
+        build=_HELLO_WORLD_BUILD,
+        install=_HELLO_WORLD_INSTALL,
+        expected_output="Hello world!\n"
     )
 
 @istest
