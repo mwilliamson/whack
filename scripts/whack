@@ -1,10 +1,36 @@
 #!/usr/bin/env python
 
-from whack.main import Main
-from whack import WhackOperations
+import argparse
+
+import whack.builder
 
 def main():
-    Main(WhackOperations()).main()
+    parser = argparse.ArgumentParser()
+    subparsers = parser.add_subparsers()
+    
+    for command_name, command in _commands.iteritems():
+        subparser = subparsers.add_parser(command_name)
+        subparser.set_defaults(func=command.execute)
+        command.create_parser(subparser)
+    
+    args = parser.parse_args()
+    args.func(args)
+    
+class InstallCommand(object):
+    def create_parser(self, subparser):
+        subparser.add_argument('package')
+        subparser.add_argument('install_dir', metavar="install-dir")
+        subparser.add_argument("--no-cache", action="store_true")
+        subparser.add_argument("--add-builder-repo", action="append", default=[])
+    
+    def execute(self, args):
+        builder_uris = args.add_builder_repo
+        builder = whack.builder.Builders(not args.no_cache, builder_uris)
+        builder.build_and_install(args.package, args.install_dir)
+        
+_commands = {
+    "install": InstallCommand(),
+}
 
 if __name__ == "__main__":
     main()
