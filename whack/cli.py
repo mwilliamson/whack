@@ -22,13 +22,23 @@ class InstallCommand(object):
         subparser.add_argument('install_dir', metavar="install-dir")
         subparser.add_argument("--no-cache", action="store_true")
         subparser.add_argument("--add-builder-repo", action="append", default=[])
+        subparser.add_argument("--add-parameter", "-p", action="append", default=[])
     
     def execute(self, args):
+        params = {}
+        for parameter_arg in args.add_parameter:
+            if "=" in parameter_arg:
+                key, value = parameter_arg.split("=", 1)
+                params[key] = value
+            else:
+                params[parameter_arg] = ""
+        
         self._operations.install(
             package=args.package,
             install_dir=args.install_dir,
             builder_uris=args.add_builder_repo,
-            should_cache=not args.no_cache
+            should_cache=not args.no_cache,
+            params=params
         )
         
 _commands = {

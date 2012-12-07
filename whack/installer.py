@@ -27,9 +27,7 @@ class PackageInstaller(object):
             shutil.copytree(self._package_dir, build_dir, ignore=ignore)
             self._fetch_downloads(build_dir)
             
-            build_env = os.environ.copy()
-            for name, value in params.iteritems():
-                build_env[name] = str(value)
+            build_env = params_to_build_env(params)
             subprocess.check_call(
                 [os.path.join(self._package_dir, "build")],
                 cwd=build_dir,
@@ -73,6 +71,12 @@ class PackageInstaller(object):
             return [line.strip() for line in lines if line]
         else:
             return []
+
+def params_to_build_env(params):
+    build_env = os.environ.copy()
+    for name, value in params.iteritems():
+        build_env[name.upper()] = str(value)
+    return build_env
 
 class DirectoryCacher(object):
     def __init__(self, cacher_dir):

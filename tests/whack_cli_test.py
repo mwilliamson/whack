@@ -17,7 +17,7 @@ def application_is_installed_by_running_build_then_install_scripts():
             testing.HelloWorld.INSTALL
         )
         
-        subprocess.check_call(["whack", "install", "hello=1", install_dir, "--add-builder-repo", repo_dir])
+        subprocess.check_call(["whack", "install", "hello", install_dir, "--add-builder-repo", repo_dir])
         
         output = subprocess.check_output([os.path.join(install_dir, "hello")])
         assert_equal(testing.HelloWorld.EXPECTED_OUTPUT, output)
@@ -41,6 +41,33 @@ def all_values_passed_to_add_builder_repo_are_combined_into_builder_uris_arg():
     ]
     expected_builder_uris = ["http://example.com/repo1", "http://example.com/repo2"]
     _test_install_arg_parse(argv, builder_uris=expected_builder_uris)
+    
+@istest
+def params_are_passed_to_install_command_as_dict():
+    argv = [
+        "whack", "install", "hello=1", "apps/hello",
+        "-p", "version=1.2.4", "-p", "pcre_version=8.32"
+    ]
+    expected_params = {"version": "1.2.4", "pcre_version": "8.32"}
+    _test_install_arg_parse(argv, params=expected_params)
+    
+@istest
+def param_values_can_contain_equals_sign():
+    argv = [
+        "whack", "install", "hello=1", "apps/hello",
+        "-p", "version_range===1.2.4"
+    ]
+    expected_params = {"version_range": "==1.2.4"}
+    _test_install_arg_parse(argv, params=expected_params)
+    
+@istest
+def param_without_equal_sign_has_value_of_empty_string():
+    argv = [
+        "whack", "install", "hello=1", "apps/hello",
+        "-p", "verbose"
+    ]
+    expected_params = {"verbose": ""}
+    _test_install_arg_parse(argv, params=expected_params)
 
 def _test_install_arg_parse(argv, **expected_kwargs):
     operations = mock.Mock()

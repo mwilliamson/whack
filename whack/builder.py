@@ -8,11 +8,10 @@ class Builders(object):
         self._should_cache = should_cache
         self._builder_repo_urls = builder_repo_uris
 
-    def build_and_install(self, package, install_dir):
-        package_name, package_version = package.split("=")
+    def build_and_install(self, package_name, install_dir, params):
         scripts_dir = self._fetch_scripts(package_name)
         builder = PackageInstaller(scripts_dir, self._create_cacher())
-        return builder.install(install_dir, params={"VERSION": package_version})
+        return builder.install(install_dir, params=params)
 
     def _fetch_scripts(self, package):
         for uri in self._builder_repo_urls:

@@ -73,7 +73,7 @@ cp hello $INSTALL_DIR/hello
     assert_equal("Hello there\n", output)
     
 @test
-def params_are_passed_as_environment_variables_to_build_script(test_runner):
+def params_are_passed_as_uppercase_environment_variables_to_build_script(test_runner):
     _BUILD = r"""#!/bin/sh
 echo '#!/bin/sh' >> hello
 echo echo hello ${HELLO_VERSION} >> hello
@@ -86,7 +86,7 @@ cp hello $INSTALL_DIR/hello
 """
 
     package_dir = test_runner.create_local_package(build=_BUILD, install=_INSTALL)
-    install_dir = test_runner.install(package_dir, params={"HELLO_VERSION": 42})
+    install_dir = test_runner.install(package_dir, params={"hello_version": 42})
     
     output = subprocess.check_output(os.path.join(install_dir, "hello"))
     assert_equal("hello 42\n", output)

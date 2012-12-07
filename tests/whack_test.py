@@ -39,7 +39,7 @@ def test_single_build(build, install, expected_output):
             testing.create_test_builder(repo_dir, build, install)
             
             builders = Builders(should_cache=should_cache, builder_repo_uris=[repo_dir])
-            builders.build_and_install("hello=1", install_dir)
+            builders.build_and_install("hello", install_dir, {"version": "1"})
             
             output = subprocess.check_output([os.path.join(install_dir, "hello")])
             assert_equal(expected_output, output)
