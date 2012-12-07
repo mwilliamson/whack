@@ -21,11 +21,10 @@ class InstallCommand(object):
         subparser.add_argument('package')
         subparser.add_argument('install_dir', metavar="install-dir")
         subparser.add_argument("--no-cache", action="store_true")
-        subparser.add_argument("--add-builder-repo", action="append")
+        subparser.add_argument("--add-builder-repo", action="append", default=[])
     
     def execute(self, args):
-        builder_uris = ["git+https://github.com/mwilliamson/whack-builders.git"] + \
-            (args.add_builder_repo or [])
+        builder_uris = args.add_builder_repo
         builder = whack.builder.Builders(not args.no_cache, builder_uris)
         builder.build_and_install(args.package, args.install_dir)
         
