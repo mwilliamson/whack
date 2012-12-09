@@ -32,6 +32,26 @@ cp hello $INSTALL_DIR/hello
         install=_TEST_BUILDER_INSTALL,
         expected_output="1\n"
     )
+    
+
+@istest
+def package_from_source_control_can_be_downloaded_and_used():
+    with temporary_dir() as package_dir, temporary_dir() as install_dir:
+        testing.write_package(package_dir, testing.HelloWorld.BUILD, testing.HelloWorld.INSTALL)
+        _convert_to_git_repo(package_dir)
+        
+        builders = Builders(should_cache=False, builder_repo_uris=[])
+        builders.build_and_install("git+file://{0}".format(package_dir), install_dir)
+        
+        output = subprocess.check_output([os.path.join(install_dir, "hello")])
+        assert_equal(testing.HelloWorld.EXPECTED_OUTPUT, output)
+
+def _convert_to_git_repo(cwd):
+    def _git(command):
+        subprocess.check_call(["git"] + command, cwd=cwd)
+    _git(["init"])
+    _git(["add", "."])
+    _git(["commit", "-m", "Initial commit"])
 
 def test_single_build(build, install, expected_output):
     for should_cache in [True, False]:

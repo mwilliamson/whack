@@ -74,7 +74,7 @@ class PackageInstaller(object):
 
 def params_to_build_env(params):
     build_env = os.environ.copy()
-    for name, value in params.iteritems():
+    for name, value in (params or {}).iteritems():
         build_env[name.upper()] = str(value)
     return build_env
 
@@ -118,4 +118,5 @@ class NoCache(object):
         return self
     
     def __exit__(self, *args):
-        shutil.rmtree(self.build_dir)
+        if os.path.exists(self.build_dir):
+            shutil.rmtree(self.build_dir)
