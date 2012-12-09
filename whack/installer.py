@@ -25,9 +25,9 @@ class PackageInstaller(object):
         try:
             ignore = shutil.ignore_patterns(".svn", ".hg", ".hgignore", ".git", ".gitignore")
             shutil.copytree(self._package_dir, build_dir, ignore=ignore)
-            self._fetch_downloads(build_dir)
-            
             build_env = params_to_build_env(params)
+            
+            self._fetch_downloads(build_dir, build_env)
             subprocess.check_call(
                 [os.path.join(self._package_dir, "whack/build")],
                 cwd=build_dir,
@@ -38,9 +38,9 @@ class PackageInstaller(object):
                 shutil.rmtree(build_dir)
             raise
 
-    def _fetch_downloads(self, build_dir):
-        downloads_file_path = os.path.join(build_dir, "downloads")
-        download_urls = self._read_downloads_file(downloads_file_path)
+    def _fetch_downloads(self, build_dir, build_env):
+        downloads_file_path = os.path.join(build_dir, "whack/downloads")
+        download_urls = self._read_downloads_file(downloads_file_path, build_env)
         for url in download_urls:
             downloads.download_to_dir(url, build_dir)
 
@@ -56,13 +56,13 @@ class PackageInstaller(object):
         hasher.update(json.dumps(params, sort_keys=True))
         return hasher.hexdigest()
 
-    def _read_downloads_file(self, path):
+    def _read_downloads_file(self, path, build_env):
         if os.path.exists(path):
             first_line = open(path).readline()
             if first_line.startswith("#!"):
                 downloads_output = subprocess.check_output(
                     [path],
-                    env={"VERSION": self._package_version}
+                    env=build_env
                 )
                 lines = downloads_output.split("\n")
             else:
