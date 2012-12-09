@@ -9,6 +9,7 @@ import uuid
 from nose.tools import istest, assert_equal
 
 from whack.installer import PackageInstaller, DirectoryCacher
+import testing
 
 def test(func):
     @functools.wraps(func)
@@ -23,10 +24,9 @@ class TestRunner(object):
         self._test_dir = tempfile.mkdtemp()
         self._cacher = DirectoryCacher(os.path.join(self._test_dir, "cache"))
     
-    def create_local_package(self, **files):
+    def create_local_package(self, build, install):
         package_dir = self.create_temporary_dir()
-        for name, contents in files.iteritems():
-            _write_script(os.path.join(package_dir, name), contents)
+        testing.write_package(package_dir, build, install)
         return package_dir
     
     def create_temporary_dir(self):

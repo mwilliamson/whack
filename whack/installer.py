@@ -29,7 +29,7 @@ class PackageInstaller(object):
             
             build_env = params_to_build_env(params)
             subprocess.check_call(
-                [os.path.join(self._package_dir, "build")],
+                [os.path.join(self._package_dir, "whack/build")],
                 cwd=build_dir,
                 env=build_env
             )
@@ -46,7 +46,7 @@ class PackageInstaller(object):
 
     def _run_install_script(self, build_dir, install_dir):
         subprocess.check_call(
-            [os.path.join(build_dir, "install"), install_dir],
+            [os.path.join(build_dir, "whack/install"), install_dir],
             cwd=build_dir
         )
 

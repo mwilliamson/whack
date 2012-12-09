@@ -32,10 +32,14 @@ def temporary_dir():
 
 def create_test_builder(repo_dir, build, install):
     builder_dir = os.path.join(repo_dir, "hello")
-    os.makedirs(builder_dir)
-    _write_script(os.path.join(builder_dir, "build"), build)
-    _write_script(os.path.join(builder_dir, "install"), install)
-    
+    write_package(os.path.join(builder_dir), build, install)
+
+def write_package(package_dir, build, install):
+    whack_dir = os.path.join(package_dir, "whack")
+    os.makedirs(whack_dir)
+    _write_script(os.path.join(whack_dir, "build"), build)
+    _write_script(os.path.join(whack_dir, "install"), install)
+
 def _write_script(path, contents):
     _write_file(path, contents)
     _make_executable(path)
