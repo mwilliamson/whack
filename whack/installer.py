@@ -53,7 +53,7 @@ class PackageInstaller(object):
     def _generate_install_id(self, params):
         hasher = Hasher()
         hasher.update_with_dir(self._package_dir)
-        hasher.update(json.dumps(params))
+        hasher.update(json.dumps(params, sort_keys=True))
         return hasher.hexdigest()
 
     def _read_downloads_file(self, path):
