@@ -23,7 +23,7 @@ def _all_files(top):
         for name in files:
             all_files.append(os.path.join(root, name))
     
-    return all_files
+    return sorted(all_files)
 
 def _sha1(str):
     return hashlib.sha1(str).hexdigest()
