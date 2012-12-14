@@ -3,10 +3,11 @@ import tempfile
 import shutil
 import errno
 import tempfile
-import subprocess
 
 from lockfile import FileLock, AlreadyLocked
 import requests
+
+from whack.tarballs import extract_gzipped_tarball
 
 
 class HttpCacher(object):
@@ -21,7 +22,7 @@ class HttpCacher(object):
                 local_tarball.write(response.content)
                 local_tarball.flush()
                 os.mkdir(build_dir)
-                subprocess.check_call(["tar", "xzf", local_tarball.name, "--directory", build_dir, "--strip-components", "1"])
+                extract_gzipped_tarball(local_tarball.name, build_dir, strip_components=1)
                 
                 return CacheHit()
             
