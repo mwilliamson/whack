@@ -4,7 +4,6 @@ import subprocess
 from nose.tools import istest, assert_equal
 
 import whack.operations
-from whack.installer import NoCachingStrategy
 import testing
 from testing import temporary_dir
 

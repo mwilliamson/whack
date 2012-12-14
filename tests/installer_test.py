@@ -8,7 +8,8 @@ import uuid
 
 from nose.tools import istest, assert_equal
 
-from whack.installer import PackageInstaller, DirectoryCacher
+from whack.installer import PackageInstaller
+from whack.caching import DirectoryCacher
 import testing
 
 def test(func):
