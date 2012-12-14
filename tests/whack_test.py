@@ -3,7 +3,8 @@ import subprocess
 
 from nose.tools import istest, assert_equal
 
-from whack.builder import Builders
+import whack.operations
+from whack.installer import NoCachingStrategy
 import testing
 from testing import temporary_dir
 
@@ -40,8 +41,10 @@ def package_from_source_control_can_be_downloaded_and_used():
         testing.write_package(package_dir, testing.HelloWorld.BUILD, testing.HelloWorld.INSTALL)
         _convert_to_git_repo(package_dir)
         
-        builders = Builders(should_cache=False, builder_repo_uris=[])
-        builders.install("git+file://{0}".format(package_dir), install_dir)
+        _install(
+            "git+file://{0}".format(package_dir),
+            install_dir
+        )
         
         output = subprocess.check_output([os.path.join(install_dir, "hello")])
         assert_equal(testing.HelloWorld.EXPECTED_OUTPUT, output)
@@ -58,9 +61,22 @@ def test_single_build(build, install, expected_output):
         with temporary_dir() as repo_dir, temporary_dir() as install_dir:
             testing.create_test_builder(repo_dir, build, install)
             
-            builders = Builders(should_cache=should_cache, builder_repo_uris=[repo_dir])
-            builders.install("hello", install_dir, {"version": "1"})
+            _install(
+                "hello",
+                install_dir,
+                should_cache=should_cache,
+                builder_uris=[repo_dir],
+                params={"version": "1"}
+            )
             
             output = subprocess.check_output([os.path.join(install_dir, "hello")])
             assert_equal(expected_output, output)
 
+def _install(package, install_dir, should_cache=False, params=None, builder_uris=None):
+    whack.operations.install(
+        package,
+        install_dir,
+        should_cache=should_cache,
+        builder_uris=builder_uris,
+        params=params
+    )

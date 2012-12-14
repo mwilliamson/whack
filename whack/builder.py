@@ -5,17 +5,17 @@ import shutil
 
 import blah
 
-from whack.installer import PackageInstaller, DirectoryCacher, NoCachingStrategy
+from whack.installer import PackageInstaller
 from whack import downloads
 
 class Builders(object):
-    def __init__(self, should_cache, builder_repo_uris):
-        self._should_cache = should_cache
+    def __init__(self, cacher, builder_repo_uris):
+        self._cacher = cacher
         self._builder_repo_urls = builder_repo_uris
 
     def install(self, package_name, install_dir, params=None):
         with self._fetch_package(package_name) as package_dir:
-            builder = PackageInstaller(package_dir, self._create_cacher())
+            builder = PackageInstaller(package_dir, self._cacher)
             return builder.install(install_dir, params=params)
     
     def _fetch_package(self, package):
@@ -47,12 +47,6 @@ class Builders(object):
             package_dir = os.path.join(repo_dir, package)
             if os.path.exists(package_dir):
                 yield package_dir
-
-    def _create_cacher(self):
-        if self._should_cache:
-            return DirectoryCacher(os.path.expanduser("~/.cache/whack/builds"))
-        else:
-            return NoCachingStrategy()
             
     def _is_local_uri(self, uri):
         return "://" not in uri
