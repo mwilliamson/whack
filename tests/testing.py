@@ -22,14 +22,6 @@ cp hello $INSTALL_DIR/hello
 
     EXPECTED_OUTPUT = "Hello world!\n"
 
-@contextlib.contextmanager
-def temporary_dir():
-    try:
-        build_dir = tempfile.mkdtemp()
-        yield build_dir
-    finally:
-        shutil.rmtree(build_dir)
-
 def create_test_builder(repo_dir, build, install):
     builder_dir = os.path.join(repo_dir, "hello")
     write_package(os.path.join(builder_dir), build, install)

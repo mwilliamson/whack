@@ -5,43 +5,45 @@ import shutil
 class DirectoryCacher(object):
     def __init__(self, cacher_dir):
         self._cacher_dir = cacher_dir
+    
+    def fetch(self, install_id, build_dir):
+        if self._in_cache(install_id):
+            shutil.copytree(self._cache_dir(install_id), build_dir)
+            return CacheHit()
+        else:
+            return CacheMiss()
+            
+    def put(self, install_id, build_dir):
+        # TODO: locking
+        if not self._in_cache(install_id):
+            shutil.copytree(build_dir, self._cache_dir(install_id))
+            open(self._cache_indicator(install_id), "w").write("")
+    
+    def _in_cache(self, install_id):
+        return os.path.exists(self._cache_indicator(install_id))
+    
+    def _cache_dir(self, install_id):
+        return os.path.join(self._cacher_dir, install_id)
         
-    def cache_for_install(self, install_id):
-        return DirectoryCache(os.path.join(self._cacher_dir, install_id))
-        
+    def _cache_indicator(self, install_id):
+        return os.path.join(self._cacher_dir, "{0}.built".format(install_id))
 
-class DirectoryCache(object):
-    def __init__(self, cache_dir):
-        self._cache_dir = cache_dir
-        self.build_dir = self._cache_dir
-
-    def already_built(self):
-        return os.path.exists(self._cache_dir)
-        
-    def __enter__(self):
-        # TODO: lock
-        return self
-        
-    def __exit__(self, *args):
-        pass
 
 # TODO: eurgh, what a horrible name
 class NoCachingStrategy(object):
+    def fetch(self, install_id, build_dir):
+        return CacheMiss()
+    
+    def put(self, install_id, build_dir):
+        pass
+    
     def cache_for_install(self, install_id):
         return NoCache(os.path.join(tempfile.mkdtemp(), "build"))
-        
 
-class NoCache(object):
-    def  __init__(self, build_dir):
-        self.build_dir = build_dir
-    
-    def already_built(self):
-        return False
-    
-    def __enter__(self):
-        return self
-    
-    def __exit__(self, *args):
-        if os.path.exists(self.build_dir):
-            shutil.rmtree(self.build_dir)
 
+class CacheHit(object):
+    cache_hit = True
+
+    
+class CacheMiss(object):
+    cache_hit = False

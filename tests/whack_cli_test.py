@@ -5,12 +5,12 @@ from nose.tools import istest, assert_equal
 import mock
 
 import testing
-from testing import temporary_dir
+from whack.tempdir import create_temporary_dir
 from whack.cli import main
 
 @istest
 def application_is_installed_by_running_build_then_install_scripts():
-    with temporary_dir() as repo_dir, temporary_dir() as install_dir:
+    with create_temporary_dir() as repo_dir, create_temporary_dir() as install_dir:
         testing.create_test_builder(
             repo_dir,
             testing.HelloWorld.BUILD,

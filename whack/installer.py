@@ -5,6 +5,7 @@ import json
 
 from whack import downloads
 from whack.hashes import Hasher
+from whack.tempdir import create_temporary_dir
 
 __all__ = ["PackageInstaller"]
 
@@ -15,29 +16,27 @@ class PackageInstaller(object):
     
     def install(self, install_dir, params={}):
         install_id = self._generate_install_id(params)
-        with self._cacher.cache_for_install(install_id) as cache:
-            build_dir = cache.build_dir
-            if not cache.already_built():
+        
+        with create_temporary_dir() as temp_dir:
+            build_dir = os.path.join(temp_dir, "build")
+            result = self._cacher.fetch(install_id, build_dir)
+            if not result.cache_hit:
                 self._build(build_dir, params)
-            
+                self._cacher.put(install_id, build_dir)
+                
             self._run_install_script(build_dir, install_dir)
 
     def _build(self, build_dir, params):
-        try:
-            ignore = shutil.ignore_patterns(".svn", ".hg", ".hgignore", ".git", ".gitignore")
-            shutil.copytree(self._package_dir, build_dir, ignore=ignore)
-            build_env = params_to_build_env(params)
-            
-            self._fetch_downloads(build_dir, build_env)
-            subprocess.check_call(
-                [os.path.join(self._package_dir, "whack/build")],
-                cwd=build_dir,
-                env=build_env
-            )
-        except:
-            if os.path.exists(build_dir):
-                shutil.rmtree(build_dir)
-            raise
+        ignore = shutil.ignore_patterns(".svn", ".hg", ".hgignore", ".git", ".gitignore")
+        shutil.copytree(self._package_dir, build_dir, ignore=ignore)
+        build_env = params_to_build_env(params)
+        
+        self._fetch_downloads(build_dir, build_env)
+        subprocess.check_call(
+            [os.path.join(self._package_dir, "whack/build")],
+            cwd=build_dir,
+            env=build_env
+        )
 
     def _fetch_downloads(self, build_dir, build_env):
         downloads_file_path = os.path.join(build_dir, "whack/downloads")

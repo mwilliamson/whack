@@ -5,7 +5,7 @@ from nose.tools import istest, assert_equal
 
 import whack.operations
 import testing
-from testing import temporary_dir
+from whack.tempdir import create_temporary_dir
 
 @istest
 def application_is_installed_by_running_build_then_install_scripts():
@@ -36,7 +36,7 @@ cp hello $INSTALL_DIR/hello
 
 @istest
 def package_from_source_control_can_be_downloaded_and_used():
-    with temporary_dir() as package_dir, temporary_dir() as install_dir:
+    with create_temporary_dir() as package_dir, create_temporary_dir() as install_dir:
         testing.write_package(package_dir, testing.HelloWorld.BUILD, testing.HelloWorld.INSTALL)
         _convert_to_git_repo(package_dir)
         
@@ -57,7 +57,7 @@ def _convert_to_git_repo(cwd):
 
 def test_single_build(build, install, expected_output):
     for should_cache in [True, False]:
-        with temporary_dir() as repo_dir, temporary_dir() as install_dir:
+        with create_temporary_dir() as repo_dir, create_temporary_dir() as install_dir:
             testing.create_test_builder(repo_dir, build, install)
             
             _install(
