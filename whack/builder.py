@@ -13,7 +13,7 @@ class Builders(object):
         self._should_cache = should_cache
         self._builder_repo_urls = builder_repo_uris
 
-    def build_and_install(self, package_name, install_dir, params=None):
+    def install(self, package_name, install_dir, params=None):
         with self._fetch_package(package_name) as package_dir:
             builder = PackageInstaller(package_dir, self._create_cacher())
             return builder.install(install_dir, params=params)

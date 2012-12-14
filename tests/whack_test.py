@@ -41,7 +41,7 @@ def package_from_source_control_can_be_downloaded_and_used():
         _convert_to_git_repo(package_dir)
         
         builders = Builders(should_cache=False, builder_repo_uris=[])
-        builders.build_and_install("git+file://{0}".format(package_dir), install_dir)
+        builders.install("git+file://{0}".format(package_dir), install_dir)
         
         output = subprocess.check_output([os.path.join(install_dir, "hello")])
         assert_equal(testing.HelloWorld.EXPECTED_OUTPUT, output)
@@ -59,7 +59,7 @@ def test_single_build(build, install, expected_output):
             testing.create_test_builder(repo_dir, build, install)
             
             builders = Builders(should_cache=should_cache, builder_repo_uris=[repo_dir])
-            builders.build_and_install("hello", install_dir, {"version": "1"})
+            builders.install("hello", install_dir, {"version": "1"})
             
             output = subprocess.check_output([os.path.join(install_dir, "hello")])
             assert_equal(expected_output, output)
