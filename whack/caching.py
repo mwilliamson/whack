@@ -2,8 +2,34 @@ import os
 import tempfile
 import shutil
 import errno
+import tempfile
+import subprocess
 
 from lockfile import FileLock, AlreadyLocked
+import requests
+
+
+class HttpCacher(object):
+    def __init__(self, base_url):
+        self._base_url = base_url
+        
+    def fetch(self, install_id, build_dir):
+        url = "{0}/{1}.tar.gz".format(self._base_url.rstrip("/"), install_id)
+        with tempfile.NamedTemporaryFile() as local_tarball:
+            response = requests.get(url)
+            if response.status_code == 200:
+                local_tarball.write(response.content)
+                local_tarball.flush()
+                os.mkdir(build_dir)
+                subprocess.check_call(["tar", "xzf", local_tarball.name, "--directory", build_dir, "--strip-components", "1"])
+                
+                return CacheHit()
+            
+        return CacheMiss()
+    
+    def put(self, install_id, build_dir):
+        pass
+
 
 class DirectoryCacher(object):
     def __init__(self, cacher_dir):
