@@ -16,7 +16,7 @@ class HttpCacher(object):
     def fetch(self, install_id, build_dir):
         url = "{0}/{1}.tar.gz".format(self._base_url.rstrip("/"), install_id)
         with tempfile.NamedTemporaryFile() as local_tarball:
-            response = requests.get(url)
+            response = requests.get(url, timeout=30)
             if response.status_code == 200:
                 local_tarball.write(response.content)
                 local_tarball.flush()

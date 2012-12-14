@@ -1,12 +1,7 @@
 import os
 import functools
-import socket
-import threading
-import SocketServer
-import BaseHTTPServer
-import contextlib
-import shutil
 
+import staticserver
 from nose.tools import istest, assert_equals, assert_false
 
 from whack.caching import HttpCacher
@@ -22,7 +17,6 @@ def test(func):
             cacher_dir = os.path.join(temp_dir, "www-root")
             os.mkdir(cacher_dir)
             with _start_http_server(cacher_dir) as server:
-                ip, port = server.server_address
                 build_dir = os.path.join(temp_dir, "build")
                 base_url = "http://localhost:{0}/".format(port)
                 test_runner = TestRunner(build_dir, base_url, cacher_dir)
@@ -49,52 +43,16 @@ def fetch_returns_cache_hit_if_http_server_returns_200(test_runner):
 @test
 def fetch_downloads_and_extracts_tarball_from_http_server(test_runner):
     test_runner.cache_put(_install_id, {"README": "Out of memory and time"})
-    result = test_runner.cacher.fetch(_install_id, test_runner.build_dir)
+    test_runner.cacher.fetch(_install_id, test_runner.build_dir)
     fetched_file_path = os.path.join(test_runner.build_dir, "README")
     fetched_file_contents = open(fetched_file_path).read()
     assert_equals("Out of memory and time", fetched_file_contents)
 
-
-@contextlib.contextmanager
 def _start_http_server(base_dir):
-    class WhackCacheRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
-        def do_GET(self):
-            f = self.send_head()
-            if f:
-                shutil.copyfileobj(f, self.wfile)
-                f.close()
+    return staticserver.start(port=port, root=base_dir, key=staticserver_key)
 
-        def do_HEAD(self):
-            f = self.send_head()
-            if f:
-                f.close()
-
-        def send_head(self):
-            # Wildly assuming no query string nor hash
-            path = os.path.join(base_dir, self.path.lstrip("/"))
-            if os.path.exists(path):
-                try:
-                    f = open(path, 'rb')
-                except IOError:
-                    self.send_error(404, "File not found")
-                    return None
-                self.send_response(200)
-                self.send_header("Content-type", "application/x-gzip")
-                fs = os.fstat(f.fileno())
-                self.send_header("Content-Length", str(fs[6]))
-                self.end_headers()
-                return f
-            else:
-                self.send_error(404, "File not found")
-            
-    server = SocketServer.TCPServer(("localhost", 0), WhackCacheRequestHandler)
-    server_thread = threading.Thread(target=server.serve_forever)
-    server_thread.start()
-    try:
-        yield server
-    finally:
-        server.shutdown()
-
+staticserver_key = "4f015d188778f73315b3f628cee26ed6080c2e5f"
+port = 50080
 
 class TestRunner(object):
     def __init__(self, build_dir, base_url, cacher_dir):
@@ -113,3 +71,4 @@ class TestRunner(object):
                 open(os.path.join(tarball_dir, filename), "w").write(contents)
             
             create_gzipped_tarball_from_dir(tarball_dir, tarball_path)
+
