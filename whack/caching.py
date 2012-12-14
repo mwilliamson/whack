@@ -2,7 +2,6 @@ import os
 import tempfile
 import shutil
 import errno
-import tempfile
 
 from lockfile import FileLock, AlreadyLocked
 import requests
