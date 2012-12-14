@@ -5,7 +5,6 @@ import threading
 import SocketServer
 import BaseHTTPServer
 import contextlib
-import subprocess
 import shutil
 
 from nose.tools import istest, assert_equals, assert_false
