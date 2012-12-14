@@ -36,9 +36,6 @@ class NoCachingStrategy(object):
     
     def put(self, install_id, build_dir):
         pass
-    
-    def cache_for_install(self, install_id):
-        return NoCache(os.path.join(tempfile.mkdtemp(), "build"))
 
 
 class CacheHit(object):
