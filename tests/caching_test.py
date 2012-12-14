@@ -12,6 +12,7 @@ from nose.tools import istest, assert_equals, assert_false
 
 from whack.caching import HttpCacher
 from whack.tempdir import create_temporary_dir
+from whack.tarballs import create_gzipped_tarball_from_dir
 
 _install_id = "c05c2cbd1aa1e3865adba215210a7a82b52ccf90"
 
@@ -111,5 +112,5 @@ class TestRunner(object):
             
             for filename, contents in files.iteritems():
                 open(os.path.join(tarball_dir, filename), "w").write(contents)
-                
-            subprocess.check_call(["tar", "czf", tarball_path, install_id], cwd=temp_dir)
+            
+            create_gzipped_tarball_from_dir(tarball_dir, tarball_path)
