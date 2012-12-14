@@ -41,6 +41,12 @@ def fetch_does_not_create_build_dir_if_http_server_returns_404(test_runner):
     assert_false(os.path.exists(test_runner.build_dir))     
 
 @test
+def fetch_returns_cache_hit_if_http_server_returns_200(test_runner):
+    test_runner.cache_put(_install_id, {"README": "Out of memory and time"})
+    result = test_runner.cacher.fetch(_install_id, test_runner.build_dir)
+    assert_equals(True, result.cache_hit)
+    
+@test
 def fetch_downloads_and_extracts_tarball_from_http_server(test_runner):
     test_runner.cache_put(_install_id, {"README": "Out of memory and time"})
     result = test_runner.cacher.fetch(_install_id, test_runner.build_dir)
