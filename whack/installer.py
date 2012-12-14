@@ -52,9 +52,14 @@ class PackageInstaller(object):
 
     def _generate_install_id(self, params):
         hasher = Hasher()
+        hasher.update(self._uname("--kernel-name"))
+        hasher.update(self._uname("--machine"))
         hasher.update_with_dir(self._package_dir)
         hasher.update(json.dumps(params, sort_keys=True))
         return hasher.hexdigest()
+
+    def _uname(self, arg):
+        return subprocess.check_output(["uname", arg])
 
     def _read_downloads_file(self, path, build_env):
         if os.path.exists(path):
