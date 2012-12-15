@@ -47,6 +47,17 @@ def fetch_downloads_and_extracts_tarball_from_http_server(test_runner):
     fetched_file_path = os.path.join(test_runner.build_dir, "README")
     fetched_file_contents = open(fetched_file_path).read()
     assert_equals("Out of memory and time", fetched_file_contents)
+    
+@test
+def put_uploads_gzipped_tarball_to_http_server(test_runner):
+    with create_temporary_dir() as temp_dir:
+        open(os.path.join(temp_dir, "README"), "w").write("Out of memory and time")
+        test_runner.cacher.put(_install_id, temp_dir)
+        
+    test_runner.cacher.fetch(_install_id, test_runner.build_dir)
+    fetched_file_path = os.path.join(test_runner.build_dir, "README")
+    fetched_file_contents = open(fetched_file_path).read()
+    assert_equals("Out of memory and time", fetched_file_contents)
 
 def _start_http_server(base_dir):
     return staticserver.start(port=port, root=base_dir, key=staticserver_key)
@@ -57,7 +68,7 @@ port = 50080
 class TestRunner(object):
     def __init__(self, build_dir, base_url, cacher_dir):
         self.build_dir = build_dir
-        self.cacher = HttpCacher(base_url)
+        self.cacher = HttpCacher(base_url, staticserver_key)
         self._cacher_dir = cacher_dir
         
     def cache_put(self, install_id, files):
