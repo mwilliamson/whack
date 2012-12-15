@@ -1,4 +1,5 @@
 import argparse
+import os
 
 def main(argv, operations):
     parser = argparse.ArgumentParser()
@@ -34,12 +35,16 @@ class InstallCommand(object):
             else:
                 params[parameter_arg] = ""
         
+        http_cache = args.http_cache
+        if http_cache is None:
+            http_cache = os.environ.get("WHACK_HTTP_CACHE_URL")
+        
         self._operations.install(
             package=args.package,
             install_dir=args.install_dir,
             builder_uris=args.add_builder_repo,
             should_cache=not args.no_cache,
-            http_cache=args.http_cache,
+            http_cache=http_cache,
             params=params
         )
         

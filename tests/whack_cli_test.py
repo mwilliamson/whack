@@ -1,5 +1,6 @@
 import os
 import subprocess
+import contextlib
 
 from nose.tools import istest, assert_equal
 import mock
@@ -78,12 +79,33 @@ def http_cache_url_is_none_if_not_explicitly_set():
 def http_cache_url_is_passed_along():
     argv = ["whack", "install", "hello", "apps/hello", "--http-cache=http://localhost:1234/"]
     _test_install_arg_parse(argv, http_cache="http://localhost:1234/")
+    
+@istest
+def http_cache_url_uses_value_from_environment_if_not_explicitly_set():
+    argv = ["whack", "install", "hello", "apps/hello"]
+    env = {"WHACK_HTTP_CACHE_URL": "http://localhost:1234/"}
+    _test_install_arg_parse(argv, env, http_cache="http://localhost:1234/")
 
-def _test_install_arg_parse(argv, **expected_kwargs):
+def _test_install_arg_parse(argv, env={}, **expected_kwargs):
     operations = mock.Mock()
-    main(argv, operations)
+    with _updated_env(env):
+        main(argv, operations)
     
     assert_equal(1, len(operations.install.mock_calls))
     args, kwargs = operations.install.call_args
     for key, value in expected_kwargs.iteritems():
         assert_equal(value, kwargs[key])
+
+@contextlib.contextmanager
+def _updated_env(env):
+    original_env = os.environ.copy()
+    for key, value in env.iteritems():
+        os.environ[key] = value
+        
+    yield
+    
+    for key in env:
+        if key in original_env:
+            os.environ[key] = original_env[value]
+        else:
+            del os.environ[key]
