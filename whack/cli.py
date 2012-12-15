@@ -2,6 +2,9 @@ import argparse
 import os
 
 import whack.config
+import whack.args
+
+env_default = whack.args.env_default(prefix="WHACK")
 
 
 def main(argv, operations):
@@ -25,7 +28,7 @@ class InstallCommand(object):
         subparser.add_argument('package')
         subparser.add_argument('install_dir', metavar="install-dir")
         subparser.add_argument("--no-cache", action="store_true")
-        subparser.add_argument("--http-cache-url", action=EnvDefault)
+        subparser.add_argument("--http-cache-url", action=env_default)
         subparser.add_argument("--add-builder-repo", action="append", default=[])
         subparser.add_argument("--add-parameter", "-p", action="append", default=[])
     
@@ -53,20 +56,6 @@ class InstallCommand(object):
             caching=caching,
             params=params
         )
-
-class EnvDefault(argparse.Action):
-    def __init__(self, required=False, **kwargs):
-        name = "WHACK_" + kwargs["option_strings"][0][2:].upper().replace("-", "_")
-        default = os.environ.get(name)
-        
-        if default is not None:
-            required=False
-            
-        super(type(self), self).__init__(default=default, required=required, **kwargs)
-        
-    def __call__(self, parser, namespace, values, option_string=None):
-        print '%r %r %r' % (namespace, values, option_string)
-        setattr(namespace, self.dest, values)
 
 _commands = {
     "install": InstallCommand,
