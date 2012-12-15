@@ -63,12 +63,16 @@ class TestRunner(object):
     def cache_put(self, install_id, files):
         with create_temporary_dir() as temp_dir:
             tarball_dir = os.path.join(temp_dir, install_id)
-            os.mkdir(tarball_dir)
             tarball_name = "{0}.tar.gz".format(install_id)
             tarball_path = os.path.join(self._cacher_dir, tarball_name)
             
-            for filename, contents in files.iteritems():
-                open(os.path.join(tarball_dir, filename), "w").write(contents)
+            _write_files(tarball_dir, files)
             
             create_gzipped_tarball_from_dir(tarball_dir, tarball_path)
 
+def _write_files(root, files):
+    for filename, contents in files.iteritems():
+        path = os.path.join(root, filename)
+        if not os.path.exists(os.path.dirname(path)):
+            os.makedirs(os.path.dirname(path))
+        open(path, "w").write(contents)
