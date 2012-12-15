@@ -1,6 +1,9 @@
 import argparse
 import os
 
+import whack.config
+
+
 def main(argv, operations):
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers()
@@ -39,12 +42,16 @@ class InstallCommand(object):
         if http_cache is None:
             http_cache = os.environ.get("WHACK_HTTP_CACHE_URL")
         
+        caching = whack.config.caching_config(
+            enabled=not args.no_cache,
+            http_cache_url=http_cache
+        )
+        
         self._operations.install(
             package=args.package,
             install_dir=args.install_dir,
             builder_uris=args.add_builder_repo,
-            should_cache=not args.no_cache,
-            http_cache=http_cache,
+            caching=caching,
             params=params
         )
         

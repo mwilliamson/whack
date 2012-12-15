@@ -4,6 +4,7 @@ import subprocess
 from nose.tools import istest, assert_equal
 
 import whack.operations
+import whack.config
 import testing
 from whack.tempdir import create_temporary_dir
 
@@ -57,9 +58,10 @@ def _convert_to_git_repo(cwd):
 
 def test_install(build, install, expected_output):
     for should_cache in [True, False]:
-        test_install_with_caching(build, install, expected_output, {"should_cache": should_cache})
+        caching = whack.config.caching_config(enabled=should_cache)
+        test_install_with_caching(build, install, expected_output, caching=caching)
 
-def test_install_with_caching(build, install, expected_output, cache_params):
+def test_install_with_caching(build, install, expected_output, caching):
     with create_temporary_dir() as repo_dir, create_temporary_dir() as install_dir:
         testing.create_test_builder(repo_dir, build, install)
         
@@ -68,19 +70,20 @@ def test_install_with_caching(build, install, expected_output, cache_params):
             install_dir,
             builder_uris=[repo_dir],
             params={"version": "1"},
-            **cache_params
+            caching=caching
         )
         
         output = subprocess.check_output([os.path.join(install_dir, "hello")])
         assert_equal(expected_output, output)
     
 
-def _install(package, install_dir, should_cache=False, http_cache=None, params=None, builder_uris=None):
+def _install(package, install_dir, caching=None, params=None, builder_uris=None):
+    if caching is None:
+        caching = whack.config.caching_config(enabled=False)
     whack.operations.install(
         package,
         install_dir,
-        should_cache=should_cache,
-        http_cache=http_cache,
+        caching=caching,
         builder_uris=builder_uris,
         params=params
     )

@@ -8,6 +8,7 @@ import mock
 import testing
 from whack.tempdir import create_temporary_dir
 from whack.cli import main
+import whack.config
 
 @istest
 def application_is_installed_by_running_build_then_install_scripts():
@@ -73,18 +74,21 @@ def param_without_equal_sign_has_value_of_empty_string():
 @istest
 def http_cache_url_is_none_if_not_explicitly_set():
     argv = ["whack", "install", "hello", "apps/hello"]
-    _test_install_arg_parse(argv, http_cache=None)
+    caching_config = whack.config.caching_config(enabled=True, http_cache_url=None)
+    _test_install_arg_parse(argv, caching=caching_config)
     
 @istest
 def http_cache_url_is_passed_along():
     argv = ["whack", "install", "hello", "apps/hello", "--http-cache=http://localhost:1234/"]
-    _test_install_arg_parse(argv, http_cache="http://localhost:1234/")
+    caching_config = whack.config.caching_config(enabled=True, http_cache_url="http://localhost:1234/")
+    _test_install_arg_parse(argv, caching=caching_config)
     
 @istest
 def http_cache_url_uses_value_from_environment_if_not_explicitly_set():
     argv = ["whack", "install", "hello", "apps/hello"]
     env = {"WHACK_HTTP_CACHE_URL": "http://localhost:1234/"}
-    _test_install_arg_parse(argv, env, http_cache="http://localhost:1234/")
+    caching_config = whack.config.caching_config(enabled=True, http_cache_url="http://localhost:1234/")
+    _test_install_arg_parse(argv, env, caching=caching_config)
 
 def _test_install_arg_parse(argv, env={}, **expected_kwargs):
     operations = mock.Mock()
