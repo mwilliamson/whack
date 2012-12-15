@@ -8,12 +8,12 @@ def read(fname):
 
 setup(
     name='whack',
-    version='0.2.1',
+    version='0.2.2',
     description='Utility for installing binaries from source with a single command',
     long_description=read("README"),
     author='Michael Williamson',
     url='http://github.com/mwilliamson/whack',
     scripts=["scripts/whack"],
     packages=['whack'],
-    install_requires=['blah', 'lockfile', 'requests'],
+    install_requires=['blah', 'requests'],
 )

@@ -3,10 +3,10 @@ import tempfile
 import shutil
 import errno
 
-from lockfile import FileLock, AlreadyLocked
 import requests
 
 from whack.tarballs import extract_gzipped_tarball, create_gzipped_tarball_from_dir
+import whack.filelock
 
 
 class HttpCacher(object):
@@ -52,13 +52,10 @@ class DirectoryCacher(object):
     def put(self, install_id, build_dir):
         if not self._in_cache(install_id):
             try:
-                self._acquire_cache_lock(install_id)
-                try:
+                with self._cache_lock(install_id):
                     shutil.copytree(build_dir, self._cache_dir(install_id))
                     open(self._cache_indicator(install_id), "w").write("")
-                finally:
-                    self._release_cache_lock(install_id)
-            except AlreadyLocked:
+            except whack.filelock.FileLockException:
                 # Somebody else is writing to the cache, so do nothing
                 pass
     
@@ -71,16 +68,16 @@ class DirectoryCacher(object):
     def _cache_indicator(self, install_id):
         return os.path.join(self._cacher_dir, "{0}.built".format(install_id))
 
-    def _acquire_cache_lock(self, install_id):
+    def _cache_lock(self, install_id):
         _mkdir_p(self._cacher_dir)
+        lock_path = os.path.join(self._cacher_dir, "{0}.lock".format(install_id))
         # raise immediately if the lock already exists
-        self._lock(install_id).acquire(timeout=0)
+        return whack.filelock.FileLock(lock_path, timeout=0)
         
     def _release_cache_lock(self, install_id):
         self._lock(install_id).release()
         
     def _lock(self, install_id):
-        lock_path = os.path.join(self._cacher_dir, "{0}.lock".format(install_id))
         return FileLock(lock_path)
 
 # TODO: eurgh, what a horrible name
