@@ -89,6 +89,13 @@ def http_cache_url_uses_value_from_environment_if_not_explicitly_set():
     env = {"WHACK_HTTP_CACHE_URL": "http://localhost:1234/"}
     caching_config = whack.config.caching_config(enabled=True, http_cache_url="http://localhost:1234/")
     _test_install_arg_parse(argv, env, caching=caching_config)
+    
+@istest
+def http_cache_url_ignores_value_from_environment_if_explicitly_set():
+    argv = ["whack", "install", "hello", "apps/hello", "--http-cache=http://localhost:1234/"]
+    env = {"WHACK_HTTP_CACHE_URL": "http://localhost:5678/"}
+    caching_config = whack.config.caching_config(enabled=True, http_cache_url="http://localhost:1234/")
+    _test_install_arg_parse(argv, env, caching=caching_config)
 
 def _test_install_arg_parse(argv, env={}, **expected_kwargs):
     operations = mock.Mock()
