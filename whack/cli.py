@@ -21,6 +21,7 @@ class InstallCommand(object):
         subparser.add_argument('package')
         subparser.add_argument('install_dir', metavar="install-dir")
         subparser.add_argument("--no-cache", action="store_true")
+        subparser.add_argument("--http-cache")
         subparser.add_argument("--add-builder-repo", action="append", default=[])
         subparser.add_argument("--add-parameter", "-p", action="append", default=[])
     
@@ -38,6 +39,7 @@ class InstallCommand(object):
             install_dir=args.install_dir,
             builder_uris=args.add_builder_repo,
             should_cache=not args.no_cache,
+            http_cache=args.http_cache,
             params=params
         )
         

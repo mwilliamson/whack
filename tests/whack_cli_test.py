@@ -68,6 +68,16 @@ def param_without_equal_sign_has_value_of_empty_string():
     ]
     expected_params = {"verbose": ""}
     _test_install_arg_parse(argv, params=expected_params)
+    
+@istest
+def http_cache_url_is_none_if_not_explicitly_set():
+    argv = ["whack", "install", "hello", "apps/hello"]
+    _test_install_arg_parse(argv, http_cache=None)
+    
+@istest
+def http_cache_url_is_passed_along():
+    argv = ["whack", "install", "hello", "apps/hello", "--http-cache=http://localhost:1234/"]
+    _test_install_arg_parse(argv, http_cache="http://localhost:1234/")
 
 def _test_install_arg_parse(argv, **expected_kwargs):
     operations = mock.Mock()
