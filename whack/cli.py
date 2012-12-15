@@ -25,9 +25,12 @@ class InstallCommand(object):
         subparser.add_argument('package')
         subparser.add_argument('install_dir', metavar="install-dir")
         subparser.add_argument("--no-cache", action="store_true")
-        subparser.add_argument("--http-cache", default=os.environ.get("WHACK_HTTP_CACHE_URL"))
+        subparser.add_argument("--http-cache-url", action=EnvDefault)
         subparser.add_argument("--add-builder-repo", action="append", default=[])
         subparser.add_argument("--add-parameter", "-p", action="append", default=[])
+    
+    def _add_argument_with_environment_default(self, subparser, name, env_var):
+        subparser.add_argument(name, default=os.environ.get(env_var))
     
     def execute(self, args):
         params = {}
@@ -40,7 +43,7 @@ class InstallCommand(object):
         
         caching = whack.config.caching_config(
             enabled=not args.no_cache,
-            http_cache_url=args.http_cache
+            http_cache_url=args.http_cache_url
         )
         
         self._operations.install(
@@ -50,7 +53,21 @@ class InstallCommand(object):
             caching=caching,
             params=params
         )
+
+class EnvDefault(argparse.Action):
+    def __init__(self, required=False, **kwargs):
+        name = "WHACK_" + kwargs["option_strings"][0][2:].upper().replace("-", "_")
+        default = os.environ.get(name)
         
+        if default is not None:
+            required=False
+            
+        super(type(self), self).__init__(default=default, required=required, **kwargs)
+        
+    def __call__(self, parser, namespace, values, option_string=None):
+        print '%r %r %r' % (namespace, values, option_string)
+        setattr(namespace, self.dest, values)
+
 _commands = {
     "install": InstallCommand,
 }
