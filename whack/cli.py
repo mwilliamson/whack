@@ -29,6 +29,7 @@ class InstallCommand(object):
         subparser.add_argument('install_dir', metavar="install-dir")
         subparser.add_argument("--no-cache", action="store_true")
         subparser.add_argument("--http-cache-url", action=env_default)
+        subparser.add_argument("--http-cache-key", action=env_default)
         subparser.add_argument("--add-builder-repo", action="append", default=[])
         subparser.add_argument("--add-parameter", "-p", action="append", default=[])
     
@@ -46,7 +47,8 @@ class InstallCommand(object):
         
         caching = whack.config.caching_config(
             enabled=not args.no_cache,
-            http_cache_url=args.http_cache_url
+            http_cache_url=args.http_cache_url,
+            http_cache_key=args.http_cache_key
         )
         
         self._operations.install(

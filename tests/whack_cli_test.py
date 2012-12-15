@@ -77,6 +77,20 @@ def http_cache_url_is_passed_along():
     caching_config = whack.config.caching_config(enabled=True, http_cache_url="http://localhost:1234/")
     _test_install_arg_parse(argv, caching=caching_config)
     
+@istest
+def http_cache_key_is_passed_along():
+    argv = [
+        "whack", "install", "hello", "apps/hello",
+        "--http-cache-url=http://localhost:1234/",
+        "--http-cache-key=let-me-in"
+    ]
+    caching_config = whack.config.caching_config(
+        enabled=True,
+        http_cache_url="http://localhost:1234/",
+        http_cache_key="let-me-in"
+    )
+    _test_install_arg_parse(argv, caching=caching_config)
+    
 def _test_install_arg_parse(argv, env={}, **expected_kwargs):
     operations = mock.Mock()
     with _updated_env(env):
