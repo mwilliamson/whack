@@ -9,7 +9,7 @@ from whack.tempdir import create_temporary_dir
 
 @istest
 def application_is_installed_by_running_build_then_install_scripts():
-    test_single_build(
+    test_install(
         build=testing.HelloWorld.BUILD,
         install=testing.HelloWorld.INSTALL,
         expected_output=testing.HelloWorld.EXPECTED_OUTPUT
@@ -27,7 +27,7 @@ chmod +x hello
 INSTALL_DIR=$1
 cp hello $INSTALL_DIR/hello
 """
-    test_single_build(
+    test_install(
         build=_TEST_BUILDER_BUILD,
         install=_TEST_BUILDER_INSTALL,
         expected_output="1\n"
@@ -55,28 +55,32 @@ def _convert_to_git_repo(cwd):
     _git(["add", "."])
     _git(["commit", "-m", "Initial commit"])
 
-def test_single_build(build, install, expected_output):
+def test_install(build, install, expected_output):
     for should_cache in [True, False]:
-        with create_temporary_dir() as repo_dir, create_temporary_dir() as install_dir:
-            testing.create_test_builder(repo_dir, build, install)
-            
-            _install(
-                "hello",
-                install_dir,
-                should_cache=should_cache,
-                builder_uris=[repo_dir],
-                params={"version": "1"}
-            )
-            
-            output = subprocess.check_output([os.path.join(install_dir, "hello")])
-            assert_equal(expected_output, output)
+        test_install_with_caching(build, install, expected_output, {"should_cache": should_cache})
 
-def _install(package, install_dir, should_cache=False, params=None, builder_uris=None):
+def test_install_with_caching(build, install, expected_output, cache_params):
+    with create_temporary_dir() as repo_dir, create_temporary_dir() as install_dir:
+        testing.create_test_builder(repo_dir, build, install)
+        
+        _install(
+            "hello",
+            install_dir,
+            builder_uris=[repo_dir],
+            params={"version": "1"},
+            **cache_params
+        )
+        
+        output = subprocess.check_output([os.path.join(install_dir, "hello")])
+        assert_equal(expected_output, output)
+    
+
+def _install(package, install_dir, should_cache=False, http_cache=None, params=None, builder_uris=None):
     whack.operations.install(
         package,
         install_dir,
         should_cache=should_cache,
-        http_cache=None,
+        http_cache=http_cache,
         builder_uris=builder_uris,
         params=params
     )
