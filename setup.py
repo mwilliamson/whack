@@ -15,5 +15,5 @@ setup(
     url='http://github.com/mwilliamson/whack',
     scripts=["scripts/whack"],
     packages=['whack'],
-    install_requires=['blah', 'requests'],
+    install_requires=['blah', 'requests', "catchy==0.1.0"],
 )

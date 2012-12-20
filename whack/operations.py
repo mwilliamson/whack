@@ -1,6 +1,6 @@
 import os
 
-from whack.caching import HttpCacher, DirectoryCacher, NoCachingStrategy
+from catchy import HttpCacher, DirectoryCacher, NoCachingStrategy
 import whack.builder
 
 def install(package, install_dir, caching, builder_uris, params):
