@@ -21,6 +21,8 @@ class Builders(object):
     def _fetch_package(self, package):
         if blah.is_source_control_uri(package):
             package_dir = self._fetch_package_from_source_control(package)
+        elif self._is_local_path(package):
+            package_dir = _no_op_context_manager(package)
         else:
             package_dir = self._fetch_package_from_repo(package)
         
@@ -50,6 +52,9 @@ class Builders(object):
             
     def _is_local_uri(self, uri):
         return "://" not in uri
+        
+    def _is_local_path(self, path):
+        return path.startswith("/") or path.startswith(".")
 
 @contextlib.contextmanager
 def _create_temporary_dir():
@@ -58,3 +63,7 @@ def _create_temporary_dir():
         yield build_dir
     finally:
         shutil.rmtree(build_dir)
+
+@contextlib.contextmanager
+def _no_op_context_manager(value):
+    yield value
