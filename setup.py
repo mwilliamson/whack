@@ -8,7 +8,7 @@ def read(fname):
 
 setup(
     name='whack',
-    version='0.2.4',
+    version='0.2.5',
     description='Utility for installing binaries from source with a single command',
     long_description=read("README"),
     author='Michael Williamson',

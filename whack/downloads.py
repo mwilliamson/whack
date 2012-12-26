@@ -5,6 +5,7 @@ import subprocess
 import urlparse
 import collections
 import re
+import urllib
 
 import blah
 
@@ -53,7 +54,7 @@ def _download_to_cache(url):
     subprocess.check_call(["mkdir", "-p", cache_dir])
     with FileLock(cache_file):
         if not os.path.exists(cache_file):
-            subprocess.check_call(["curl", url, "--create-dirs", "-o", cache_file])
+            urllib.urlretrieve(url, cache_file)
     return cache_file
 
 def fetch_source_control_uri(uri):
