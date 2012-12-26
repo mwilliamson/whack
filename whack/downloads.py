@@ -3,10 +3,43 @@ import hashlib
 import shutil
 import subprocess
 import urlparse
+import collections
+import re
 
 import blah
 
 from whack.filelock import FileLock
+
+
+class Download(object):
+    def __init__(self, url, filename=None):
+        self.url = url
+        self.filename = filename or _filename_from_url(url)
+        
+    def __eq__(self, other):
+        return (self.url, self.filename) == (other.url, other.filename)
+        
+    def __neq__(self, other):
+        return not (self == other)
+        
+    def __repr__(self):
+        return "Download({0!r}, {1!r})".format(self.url, self.filename)
+        
+
+def read_downloads_string(downloads_string):
+    return [
+        _read_download_line(line.strip())
+        for line in downloads_string.split("\n")
+        if line.strip()
+    ]
+
+def _read_download_line(line):
+    result = re.match("^(\S+)\s+(.+)$", line)
+    if result:
+        return Download(result.group(1), result.group(2))
+    else:
+        return Download(line)
+    
 
 def download(url, destination):
     cache_file = download_to_cache(url)

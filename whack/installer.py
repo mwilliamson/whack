@@ -40,9 +40,9 @@ class PackageInstaller(object):
 
     def _fetch_downloads(self, build_dir, build_env):
         downloads_file_path = os.path.join(build_dir, "whack/downloads")
-        download_urls = self._read_downloads_file(downloads_file_path, build_env)
-        for url in download_urls:
-            downloads.download_to_dir(url, build_dir)
+        downloads_file = self._read_downloads_file(downloads_file_path, build_env)
+        for download_line in downloads_file:
+            downloads.download(download_line.url, os.path.join(build_dir, download_line.filename))
 
     def _run_install_script(self, build_dir, install_dir):
         subprocess.check_call(
@@ -65,15 +65,14 @@ class PackageInstaller(object):
         if os.path.exists(path):
             first_line = open(path).readline()
             if first_line.startswith("#!"):
-                downloads_output = subprocess.check_output(
+                downloads_string = subprocess.check_output(
                     [path],
                     env=build_env
                 )
-                lines = downloads_output.split("\n")
             else:
-                lines = open(path)
+                downloads_string = open(path).read()
                 
-            return [line.strip() for line in lines if line]
+            return downloads.read_downloads_string(downloads_string)
         else:
             return []
 
