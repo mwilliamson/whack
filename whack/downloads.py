@@ -42,11 +42,11 @@ def _read_download_line(line):
     
 
 def download(url, destination):
-    cache_file = download_to_cache(url)
+    cache_file = _download_to_cache(url)
     subprocess.check_call(["mkdir", "-p", os.path.dirname(destination)])
     shutil.copyfile(cache_file, destination)
 
-def download_to_cache(url):
+def _download_to_cache(url):
     cache_dir = _whack_cache_dir("downloads/")
     url_hash = hashlib.sha1(url).hexdigest()
     cache_file = os.path.join(cache_dir, url_hash)
