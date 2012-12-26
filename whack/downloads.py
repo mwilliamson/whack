@@ -45,9 +45,6 @@ def download(url, destination):
     cache_file = download_to_cache(url)
     subprocess.check_call(["mkdir", "-p", os.path.dirname(destination)])
     shutil.copyfile(cache_file, destination)
-    
-def download_to_dir(url, destination_dir):
-    download(url, os.path.join(destination_dir, _filename_from_url(url)))
 
 def download_to_cache(url):
     cache_dir = _whack_cache_dir("downloads/")
