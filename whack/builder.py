@@ -35,7 +35,7 @@ class Builders(object):
     def _fetch_package_from_source_control(self, package):
         with _create_temporary_dir() as temporary_dir:
             archive_dir = os.path.join(temporary_dir, "archive")
-            blah.fetch(package, archive_dir, archive=True)
+            blah.archive(package, archive_dir)
             yield archive_dir
     
     @contextlib.contextmanager
