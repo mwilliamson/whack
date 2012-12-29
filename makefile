@@ -1,13 +1,13 @@
-.PHONY: test upload clean bootstrap
+.PHONY: test upload clean bootstrap setup
 
 test:
-	nosetests -m'^$$' `find tests -name '*.py'`
+	sh -c '. _virtualenv/bin/activate; nosetests -m'\''^$$'\'' `find tests -name '\''*.py'\''`'
 	
-upload: README
+upload: setup
 	python setup.py sdist upload
 	make clean
 	
-register:
+register: setup
 	python setup.py register
 
 README:
@@ -18,10 +18,14 @@ clean:
 	rm -f MANIFEST
 	rm -rf dist
 	
-bootstrap: _virtualenv README
+bootstrap: _virtualenv setup
 	_virtualenv/bin/pip install -e .
+ifneq ($(wildcard test-requirements.txt),) 
 	_virtualenv/bin/pip install -r test-requirements.txt
+endif
 	make clean
-	
+
+setup: README
+
 _virtualenv: 
 	virtualenv _virtualenv
