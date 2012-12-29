@@ -33,9 +33,6 @@ class InstallCommand(object):
         subparser.add_argument("--add-builder-repo", action="append", default=[])
         subparser.add_argument("--add-parameter", "-p", action="append", default=[])
     
-    def _add_argument_with_environment_default(self, subparser, name, env_var):
-        subparser.add_argument(name, default=os.environ.get(env_var))
-    
     def execute(self, args):
         params = {}
         for parameter_arg in args.add_parameter:
