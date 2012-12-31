@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+set -e
+
+APPS_SRC_DIR=$1
+APPS_DEST_DIR=/usr/local/whack
+
+if [ $# -lt 2 ]; then
+    echo "Usage: $0 <apps-dir> <app> <args>"
+    exit 1
+fi
+
+if [ -z "$WHACK_UNSHARED" ]; then
+    export WHACK_UNSHARED=1
+    exec unshare -m -- "$0" "$@"
+else
+    mkdir -p ${APPS_DEST_DIR}
+    mount --rbind ${APPS_SRC_DIR} ${APPS_DEST_DIR}
+    export PATH=${APPS_DEST_DIR}/bin:$PATH
+    exec "${@:2}"
+fi
+
