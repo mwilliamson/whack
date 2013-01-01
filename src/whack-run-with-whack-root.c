@@ -47,6 +47,12 @@ int main(int argc, char **argv) {
         printf("ERROR: Could not mount %s\n", apps_src_dir);
         return 1;
     }
+    
+    if (chown(apps_dest_dir, getuid(), getgid()) != 0) {
+        printf("ERROR: Could not chown %s\n", apps_dest_dir);
+        return 1;
+    }
+    
     char* app = argv[2];
     char** app_args = (char**)malloc(sizeof(char*) * (argc - 1));
     for (int i = 2; i < argc; i++) {
