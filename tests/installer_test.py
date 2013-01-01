@@ -25,9 +25,9 @@ class TestRunner(object):
         self._test_dir = tempfile.mkdtemp()
         self._cacher = DirectoryCacher(os.path.join(self._test_dir, "cache"))
     
-    def create_local_package(self, build, install):
+    def create_local_package(self, build, install=None, relocatable=True):
         package_dir = self.create_temporary_dir()
-        testing.write_package(package_dir, build, install)
+        testing.write_package(package_dir, build, install, relocatable=relocatable)
         return package_dir
     
     def create_temporary_dir(self):
@@ -118,6 +118,25 @@ def result_of_build_command_is_not_reused_when_params_are_not_the_same(test_runn
     
     assert_equal("building\nbuilding\n", package.read_build_log())
     assert_equal("installing\ninstalling\n", package.read_install_log())
+
+@test
+def non_relocatable_application_is_installed_by_running_build_with_install_dir_as_param(test_runner):
+    _BUILD = r"""#!/bin/sh
+set -e
+INSTALL_DIR=$1
+mkdir -p $INSTALL_DIR/bin
+cat > $INSTALL_DIR/bin/hello << EOF
+#!/bin/sh
+echo Hello there
+EOF
+
+chmod +x $INSTALL_DIR/bin/hello
+"""
+
+    package_dir = test_runner.create_local_package(build=_BUILD, relocatable=False)
+    
+    output = subprocess.check_output(os.path.join(install_dir, "bin/hello"))
+    assert_equal("Hello there\n", output)
 
 def _create_logging_package(test_runner):
     build_log = test_runner.create_temporary_path()

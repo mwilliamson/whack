@@ -9,6 +9,8 @@ from whack.tempdir import create_temporary_dir
 
 __all__ = ["PackageInstaller"]
 
+_WHACK_ROOT = "/usr/local/whack"
+
 class PackageInstaller(object):
     def __init__(self, package_dir, cacher):
         self._package_dir = package_dir
@@ -23,17 +25,27 @@ class PackageInstaller(object):
             if not result.cache_hit:
                 self._build(build_dir, params)
                 self._cacher.put(install_id, build_dir)
-                
-            self._run_install_script(build_dir, install_dir)
+            
+            if self._is_relocatable():
+                self._run_install_script(build_dir, install_dir)
+            else:
+                # TODO: should be pure Python, but there isn't a stdlib function
+                # that allows the destination to already exist
+                subprocess.check_call(["cp", "-rT", build_dir, install_dir])
 
     def _build(self, build_dir, params):
         ignore = shutil.ignore_patterns(".svn", ".hg", ".hgignore", ".git", ".gitignore")
         shutil.copytree(self._package_dir, build_dir, ignore=ignore)
         build_env = params_to_build_env(params)
-        
         self._fetch_downloads(build_dir, build_env)
+        build_script = os.path.join(self._package_dir, "whack/build")
+        if self._is_relocatable():
+            build_command = [build_script]
+        else:
+            build_command = ["whack-run-with-whack-root", build_dir, build_script, _WHACK_ROOT]
+            
         subprocess.check_call(
-            [os.path.join(self._package_dir, "whack/build")],
+            build_command,
             cwd=build_dir,
             env=build_env
         )
@@ -75,6 +87,15 @@ class PackageInstaller(object):
             return downloads.read_downloads_string(downloads_string)
         else:
             return []
+            
+    def _is_relocatable(self):
+        whack_json_path = os.path.join(self._package_dir, "whack/whack.json")
+        if os.path.exists(whack_json_path):
+            with open(whack_json_path, "r") as whack_json_file:
+                whack_json = json.load(whack_json_file)
+                return whack_json.get("relocatable", True)
+        else:
+            return True
 
 def params_to_build_env(params):
     build_env = os.environ.copy()

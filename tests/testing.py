@@ -4,6 +4,7 @@ import contextlib
 import tempfile
 import subprocess
 import shutil
+import json
 
 class HelloWorld(object):
     BUILD = r"""#!/bin/sh
@@ -26,11 +27,16 @@ def create_test_builder(repo_dir, build, install):
     builder_dir = os.path.join(repo_dir, "hello")
     write_package(os.path.join(builder_dir), build, install)
 
-def write_package(package_dir, build, install):
+def write_package(package_dir, build, install, relocatable=True):
     whack_dir = os.path.join(package_dir, "whack")
     os.makedirs(whack_dir)
-    _write_script(os.path.join(whack_dir, "build"), build)
-    _write_script(os.path.join(whack_dir, "install"), install)
+    if build is not None:
+        _write_script(os.path.join(whack_dir, "build"), build)
+    if install is not None:
+        _write_script(os.path.join(whack_dir, "install"), install)
+    if not relocatable:
+        whack_json = json.dumps({"relocatable": False})
+        open(os.path.join(whack_dir, "whack.json"), "w").write(whack_json)
 
 def _write_script(path, contents):
     _write_file(path, contents)
