@@ -54,6 +54,15 @@ int main(int argc, char **argv) {
     }
     app_args[argc - 2] = 0;
     
+    if (setgid(getgid()) != 0) {
+        printf("ERROR: Could not drop group privileges");
+        return 1;
+    }
+    if (setuid(getuid()) != 0) {
+        printf("ERROR: Could not drop user privileges");
+        return 1;
+    }
+    
     if (execv(app, app_args) != 0) {
         printf("ERROR: failed to exec %s\n", app);
         return 1;
