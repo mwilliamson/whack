@@ -8,8 +8,8 @@
 
 char* apps_dest_dir = "/usr/local/whack";
         
-void unshare_mount_namespace() {
-    unshare(CLONE_NEWNS);
+int unshare_mount_namespace() {
+    return unshare(CLONE_NEWNS);
 }
 
 int directory_exists(char* path) {
@@ -34,7 +34,10 @@ int main(int argc, char **argv) {
         printf("Usage: %s <apps-dir> <app> <args>\n", argv[0]);
         return 1;
     }
-    unshare_mount_namespace();
+    if (unshare_mount_namespace() != 0) {
+        printf("ERROR: Could not unshare mount namespace\n");
+        return 1;
+    }
     if (ensure_apps_dest_dir_exists() != 0) {
         printf("ERROR: Could not create %s\n", apps_dest_dir);
         return 1;
