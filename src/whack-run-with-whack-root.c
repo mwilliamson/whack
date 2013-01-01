@@ -4,9 +4,11 @@
 #include <sys/stat.h>
 #include <sys/mount.h>
 #include <unistd.h>
+#include <string.h>
 
 
 char* apps_dest_dir = "/usr/local/whack";
+char* apps_bin_dir = "/usr/local/whack/bin";
         
 int unshare_mount_namespace() {
     return unshare(CLONE_NEWNS);
@@ -53,13 +55,6 @@ int main(int argc, char **argv) {
         return 1;
     }
     
-    char* app = argv[2];
-    char** app_args = (char**)malloc(sizeof(char*) * (argc - 1));
-    for (int i = 2; i < argc; i++) {
-        app_args[i - 2] = argv[i];
-    }
-    app_args[argc - 2] = 0;
-    
     if (setgid(getgid()) != 0) {
         printf("ERROR: Could not drop group privileges");
         return 1;
@@ -69,7 +64,18 @@ int main(int argc, char **argv) {
         return 1;
     }
     
-    if (execv(app, app_args) != 0) {
+    char* app = argv[2];
+    char** app_args = (char**)malloc(sizeof(char*) * (argc - 1));
+    for (int i = 2; i < argc; i++) {
+        app_args[i - 2] = argv[i];
+    }
+    app_args[argc - 2] = 0;
+    char* original_path = getenv("PATH");
+    char* new_path = (char*)malloc(sizeof(char) * strlen(original_path) + strlen(apps_bin_dir) + strlen(":") + 1);
+    sprintf(new_path, "%s:%s", apps_bin_dir, original_path);
+    setenv("PATH", new_path, 1);
+    
+    if (execvp(app, app_args) != 0) {
         printf("ERROR: failed to exec %s\n", app);
         return 1;
     }

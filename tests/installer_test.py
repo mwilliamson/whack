@@ -134,10 +134,32 @@ chmod +x $INSTALL_DIR/bin/hello
 """
 
     package_dir = test_runner.create_local_package(build=_BUILD, relocatable=False)
+    install_dir = test_runner.install(package_dir, params={})
     
     output = subprocess.check_output(os.path.join(install_dir, "bin/hello"))
     assert_equal("Hello there\n", output)
+    
+@test
+def non_relocatable_application_under_bin_can_be_run(test_runner):
+    _BUILD = r"""#!/bin/sh
+set -e
+INSTALL_DIR=$1
+mkdir -p $INSTALL_DIR/bin
+echo 'Hello there' > $INSTALL_DIR/message
+cat > $INSTALL_DIR/bin/hello << EOF
+#!/bin/sh
+cat $INSTALL_DIR/message
+EOF
 
+chmod +x $INSTALL_DIR/bin/hello
+"""
+
+    package_dir = test_runner.create_local_package(build=_BUILD, relocatable=False)
+    install_dir = test_runner.install(package_dir, params={})
+    
+    output = subprocess.check_output([os.path.join(install_dir, "run"), "hello"])
+    assert_equal("Hello there\n", output)
+    
 def _create_logging_package(test_runner):
     build_log = test_runner.create_temporary_path()
     install_log = test_runner.create_temporary_path()

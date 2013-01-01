@@ -32,6 +32,9 @@ class PackageInstaller(object):
                 # TODO: should be pure Python, but there isn't a stdlib function
                 # that allows the destination to already exist
                 subprocess.check_call(["cp", "-rT", build_dir, install_dir])
+                with open(os.path.join(install_dir, "run"), "w") as run_file:
+                    run_file.write('#!/usr/bin/env sh\nexec whack-run-with-whack-root \'{0}\' "$@"'.format(install_dir))
+                subprocess.check_call(["chmod", "+x", os.path.join(install_dir, "run")])
 
     def _build(self, build_dir, params):
         ignore = shutil.ignore_patterns(".svn", ".hg", ".hgignore", ".git", ".gitignore")
