@@ -140,7 +140,7 @@ chmod +x $INSTALL_DIR/bin/hello
     assert_equal("Hello there\n", output)
     
 @test
-def non_relocatable_application_under_bin_can_be_run(test_runner):
+def non_relocatable_application_can_be_run_using_run_script(test_runner):
     _BUILD = r"""#!/bin/sh
 set -e
 INSTALL_DIR=$1
@@ -158,6 +158,27 @@ chmod +x $INSTALL_DIR/bin/hello
     install_dir = test_runner.install(package_dir, params={})
     
     output = subprocess.check_output([os.path.join(install_dir, "run"), "hello"])
+    assert_equal("Hello there\n", output)
+    
+@test
+def non_relocatable_application_under_bin_can_be_run_directly_if_binaries_are_placed_in_dot_bin(test_runner):
+    _BUILD = r"""#!/bin/sh
+set -e
+INSTALL_DIR=$1
+mkdir -p $INSTALL_DIR/.bin
+echo 'Hello there' > $INSTALL_DIR/message
+cat > $INSTALL_DIR/.bin/hello << EOF
+#!/bin/sh
+cat $INSTALL_DIR/message
+EOF
+
+chmod +x $INSTALL_DIR/.bin/hello
+"""
+
+    package_dir = test_runner.create_local_package(build=_BUILD, relocatable=False)
+    install_dir = test_runner.install(package_dir, params={})
+    
+    output = subprocess.check_output([os.path.join(install_dir, "bin/hello")])
     assert_equal("Hello there\n", output)
     
 def _create_logging_package(test_runner):
