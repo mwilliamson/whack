@@ -2,6 +2,7 @@ import os
 import subprocess
 import shutil
 import json
+import uuid
 
 from whack import downloads
 from whack.hashes import Hasher
@@ -52,7 +53,18 @@ class NonRelocatableInstallStep(object):
             for bin_filename in os.listdir(dot_bin_dir):
                 bin_file_path = os.path.join(bin_dir, bin_filename)
                 with open(bin_file_path, "w") as bin_file:
-                    bin_file.write('#!/usr/bin/env sh\n\nexec "$(dirname $0)/../run" "$(dirname $0)/../.bin/{0}" "$@"'.format(bin_filename))
+                    bin_file.write(
+                        '#!/usr/bin/env sh\n\n' +
+                        'TARGET="$(dirname $0)/../.bin/{0}"\n'.format(bin_filename) +
+                        'ACTIVE_ROOT_ID_FILE=\'{0}\'\n'.format(_WHACK_ROOT) +
+                        'MY_ROOT_ID=`cat $(dirname $0)/../.whack-root-id`\n' +
+                        'ACTIVE_ROOT_ID=`cat "$ACTIVE_ROOT_ID_FILE" 2>/dev/null`\n' +
+                        'if [ -f "$ACTIVE_ROOT_ID_FILE" ] && [ "$MY_ROOT_ID" = "$ACTIVE_ROOT_ID" ]; then\n' +
+                        'exec "$TARGET" "$@"\n' +
+                        'else\n' +
+                        'exec "$(dirname $0)/../run" "$TARGET" "$@"\n' +
+                        'fi\n'
+                    )
                 os.chmod(bin_file_path, 0755)
                 
     def install_from_cache(self, build_dir, working_dir, install_dir):
@@ -60,6 +72,8 @@ class NonRelocatableInstallStep(object):
         # TODO: should be pure Python, but there isn't a stdlib function
         # that allows the destination to already exist
         subprocess.check_call(["cp", "-rT", cached_install_dir, install_dir])
+        with open(os.path.join(install_dir, ".whack-root-id"), "w") as root_id_file:
+            root_id_file.write(str(uuid.uuid4()))
         
     def _cached_install_dir(self, build_dir):
         return os.path.join(build_dir, "install")
