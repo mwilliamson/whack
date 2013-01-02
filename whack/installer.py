@@ -41,6 +41,9 @@ class FixedRootTemplate(object):
             run_file.write('#!/usr/bin/env sh\nexec whack-run-with-whack-root "$(dirname $0)" "$@"')
         subprocess.check_call(["chmod", "+x", os.path.join(install_dir, "run")])
         
+        self._create_bin_dir(install_dir)
+    
+    def _create_bin_dir(self, install_dir):
         def install_path(path):
             return os.path.join(install_dir, path)
         
@@ -64,7 +67,8 @@ class FixedRootTemplate(object):
                         'fi\n'
                     )
                 os.chmod(bin_file_path, 0755)
-                
+        
+    
     def install_from_cache(self, build_dir, working_dir, install_dir):
         cached_install_dir = self._cached_install_dir(build_dir)
         # TODO: should be pure Python, but there isn't a stdlib function
