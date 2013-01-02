@@ -51,17 +51,12 @@ class FixedRootTemplate(object):
         
         dot_bin_dir = install_path(".{0}".format(bin_dir_name))
         bin_dir = install_path(bin_dir_name)
-        if os.path.exists(dot_bin_dir) and not os.path.exists(bin_dir):
-            os.mkdir(bin_dir)
-            for bin_filename in self._list_executable_files(dot_bin_dir):
+        if os.path.exists(dot_bin_dir):
+            if not os.path.exists(bin_dir):
+                os.mkdir(bin_dir)
+            for bin_filename in self._list_missing_executable_files(dot_bin_dir, bin_dir):
                 bin_file_path = os.path.join(bin_dir, bin_filename)
                 with open(bin_file_path, "w") as bin_file:
-                    # TODO: should create /bin directory as late as possible
-                    # otherwise, installs that continue from other installs
-                    # have to delete /bin to allow it to be regenerated
-                    # Should create when entering the whack root (but implementing
-                    # it in C? Eurgh! Could possibly just split out the unshare/mount
-                    # parts to separate binary)
                     bin_file.write(
                         '#!/usr/bin/env sh\n\n' +
                         'TARGET="$(dirname $0)/../.{0}/{1}"\n'.format(bin_dir_name, bin_filename) +
@@ -75,7 +70,12 @@ class FixedRootTemplate(object):
                         'fi\n'
                     )
                 os.chmod(bin_file_path, 0755)
-        
+    
+    def _list_missing_executable_files(self, dot_bin_dir, bin_dir):
+        def is_missing(filename):
+            return not os.path.exists(os.path.join(bin_dir, filename))
+        return filter(is_missing, self._list_executable_files(dot_bin_dir))
+    
     def _list_executable_files(self, dir_path):
         def is_executable_file(filename):
             path = os.path.join(dir_path, filename)
