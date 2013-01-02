@@ -13,9 +13,6 @@ _WHACK_ROOT = "/usr/local/whack"
 
 
 class RelocatableInstallStep(object):
-    def __init__(self, cacher):
-        self._cacher = cacher
-        
     def install_to_cache(self, run, build_dir, working_dir):
         build_script = os.path.join(working_dir, "whack/build")
         run([build_script])
@@ -28,9 +25,6 @@ class RelocatableInstallStep(object):
      
         
 class NonRelocatableInstallStep(object):
-    def __init__(self, cacher):
-        self._cacher = cacher
-        
     def install_to_cache(self, run, build_dir, working_dir):
         build_script = os.path.join(working_dir, "whack/build")
         install_dir = os.path.join(build_dir, "install")
@@ -104,9 +98,9 @@ class PackageInstaller(object):
 
     def _steps(self):
         if self._is_relocatable():
-            return RelocatableInstallStep(self._cacher)
+            return RelocatableInstallStep()
         else:
-            return NonRelocatableInstallStep(self._cacher)
+            return NonRelocatableInstallStep()
 
     def _fetch_downloads(self, build_dir, build_env):
         downloads_file_path = os.path.join(build_dir, "whack/downloads")
