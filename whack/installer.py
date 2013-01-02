@@ -65,7 +65,6 @@ class PackageInstaller(object):
                     bin_file_path = os.path.join(bin_dir, bin_filename)
                     with open(bin_file_path, "w") as bin_file:
                         bin_file.write('#!/usr/bin/env sh\n\n"$(dirname $0)/../run" "$(dirname $0)/../.bin/{0}" "$@"'.format(bin_filename))
-                    print open(bin_file_path).read()
                     os.chmod(bin_file_path, 0755)
                 
 
