@@ -52,7 +52,7 @@ class NonRelocatableInstallStep(object):
             for bin_filename in os.listdir(dot_bin_dir):
                 bin_file_path = os.path.join(bin_dir, bin_filename)
                 with open(bin_file_path, "w") as bin_file:
-                    bin_file.write('#!/usr/bin/env sh\n\n"$(dirname $0)/../run" "$(dirname $0)/../.bin/{0}" "$@"'.format(bin_filename))
+                    bin_file.write('#!/usr/bin/env sh\n\nexec "$(dirname $0)/../run" "$(dirname $0)/../.bin/{0}" "$@"'.format(bin_filename))
                 os.chmod(bin_file_path, 0755)
                 
     def install_from_cache(self, build_dir, working_dir, install_dir):
