@@ -27,7 +27,7 @@ class RelocatableInstallStep(object):
 class NonRelocatableInstallStep(object):
     def install_to_cache(self, run, build_dir, working_dir):
         build_script = os.path.join(working_dir, "whack/build")
-        install_dir = os.path.join(build_dir, "install")
+        install_dir = self._cached_install_dir(build_dir)
         os.mkdir(install_dir)
         build_command = [
             "whack-run-with-whack-root",
@@ -52,14 +52,16 @@ class NonRelocatableInstallStep(object):
                 os.chmod(bin_file_path, 0755)
                 
     def install_from_cache(self, build_dir, working_dir, install_dir):
-        # TODO: remove duplication
-        cached_install_dir = os.path.join(build_dir, "install")
+        cached_install_dir = self._cached_install_dir(build_dir)
         # TODO: should be pure Python, but there isn't a stdlib function
         # that allows the destination to already exist
         subprocess.check_call(["cp", "-rT", cached_install_dir, install_dir])
         with open(os.path.join(install_dir, "run"), "w") as run_file:
             run_file.write('#!/usr/bin/env sh\nexec whack-run-with-whack-root \'{0}\' "$@"'.format(install_dir))
         subprocess.check_call(["chmod", "+x", os.path.join(install_dir, "run")])
+        
+    def _cached_install_dir(self, build_dir):
+        return os.path.join(build_dir, "install")
 
 
 class PackageInstaller(object):
