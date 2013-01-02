@@ -13,7 +13,7 @@ __all__ = ["PackageInstaller"]
 _WHACK_ROOT = "/usr/local/whack"
 
 
-class RelocatableInstallStep(object):
+class RelocatableTemplate(object):
     def install_to_cache(self, run, build_dir, working_dir):
         build_script = os.path.join(working_dir, "whack/build")
         run([build_script])
@@ -25,7 +25,7 @@ class RelocatableInstallStep(object):
         )
      
         
-class NonRelocatableInstallStep(object):
+class FixedRootTemplate(object):
     def install_to_cache(self, run, build_dir, working_dir):
         build_script = os.path.join(working_dir, "whack/build")
         install_dir = self._cached_install_dir(build_dir)
@@ -96,7 +96,7 @@ class PackageInstaller(object):
                 self._build(build_dir, working_dir, params)
                 self._cacher.put(install_id, working_dir)
             
-            self._steps().install_from_cache(build_dir, working_dir, install_dir)
+            self._template().install_from_cache(build_dir, working_dir, install_dir)
 
     def _build(self, build_dir, working_dir, params):
         ignore = shutil.ignore_patterns(".svn", ".hg", ".hgignore", ".git", ".gitignore")
@@ -111,13 +111,13 @@ class PackageInstaller(object):
                 env=build_env
             )
             
-        self._steps().install_to_cache(run, build_dir, working_dir)
+        self._template().install_to_cache(run, build_dir, working_dir)
 
-    def _steps(self):
+    def _template(self):
         if self._is_relocatable():
-            return RelocatableInstallStep()
+            return RelocatableTemplate()
         else:
-            return NonRelocatableInstallStep()
+            return FixedRootTemplate()
 
     def _fetch_downloads(self, build_dir, build_env):
         downloads_file_path = os.path.join(build_dir, "whack/downloads")
