@@ -111,13 +111,8 @@ class PackageInstaller(object):
             return []
             
     def _is_relocatable(self):
-        whack_json_path = os.path.join(self._package_dir, "whack/whack.json")
-        if os.path.exists(whack_json_path):
-            with open(whack_json_path, "r") as whack_json_file:
-                whack_json = json.load(whack_json_file)
-                return whack_json.get("relocatable", True)
-        else:
-            return True
+        return _read_package_description(self._package_dir).is_relocatable
+        
 
 def params_to_build_env(params):
     build_env = os.environ.copy()
@@ -125,3 +120,25 @@ def params_to_build_env(params):
         build_env[name.upper()] = str(value)
     return build_env
 
+
+def _read_package_description(package_dir):
+    whack_json_path = os.path.join(package_dir, "whack/whack.json")
+    if os.path.exists(whack_json_path):
+        with open(whack_json_path, "r") as whack_json_file:
+            whack_json = json.load(whack_json_file)
+        return DictBackedPackageDescription(whack_json)
+    else:
+        return DefaultPackageDescription()
+
+
+class DefaultPackageDescription(object):
+    is_relocatable = True
+
+
+class DictBackedPackageDescription(object):
+    def __init__(self, values):
+        self._values = values
+    
+    @property
+    def is_relocatable(self):
+        return self._values.get("relocatable", True)
