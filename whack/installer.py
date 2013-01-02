@@ -41,14 +41,15 @@ class FixedRootTemplate(object):
             run_file.write('#!/usr/bin/env sh\nexec whack-run-with-whack-root "$(dirname $0)" "$@"')
         subprocess.check_call(["chmod", "+x", os.path.join(install_dir, "run")])
         
-        self._create_bin_dir(install_dir)
+        self._create_bin_dir(install_dir, "bin")
+        self._create_bin_dir(install_dir, "sbin")
     
-    def _create_bin_dir(self, install_dir):
+    def _create_bin_dir(self, install_dir, bin_dir_name):
         def install_path(path):
             return os.path.join(install_dir, path)
         
-        dot_bin_dir = install_path(".bin")
-        bin_dir = install_path("bin")
+        dot_bin_dir = install_path(".{0}".format(bin_dir_name))
+        bin_dir = install_path(bin_dir_name)
         if os.path.exists(dot_bin_dir) and not os.path.exists(bin_dir):
             os.mkdir(bin_dir)
             for bin_filename in os.listdir(dot_bin_dir):
@@ -56,7 +57,7 @@ class FixedRootTemplate(object):
                 with open(bin_file_path, "w") as bin_file:
                     bin_file.write(
                         '#!/usr/bin/env sh\n\n' +
-                        'TARGET="$(dirname $0)/../.bin/{0}"\n'.format(bin_filename) +
+                        'TARGET="$(dirname $0)/../.{0}/{1}"\n'.format(bin_dir_name, bin_filename) +
                         'ACTIVE_ROOT_ID_FILE=\'{0}\'\n'.format(_WHACK_ROOT) +
                         'MY_ROOT_ID=`cat $(dirname $0)/../.whack-root-id`\n' +
                         'ACTIVE_ROOT_ID=`cat "$ACTIVE_ROOT_ID_FILE" 2>/dev/null`\n' +

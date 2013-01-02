@@ -196,6 +196,30 @@ chmod +x $INSTALL_DIR/.bin/hello
     output = subprocess.check_output([os.path.join(install_dir, "bin/hello")])
     assert_equal("Hello there\n", output)
     
+@test
+def non_relocatable_application_under_sbin_can_be_run_directly_if_binaries_are_placed_in_dot_sbin(test_runner):
+    _INSTALL = r"""#!/bin/sh
+set -e
+INSTALL_DIR=$1
+mkdir -p $INSTALL_DIR/.sbin
+echo 'Hello there' > $INSTALL_DIR/message
+cat > $INSTALL_DIR/.sbin/hello << EOF
+#!/bin/sh
+cat $INSTALL_DIR/message
+EOF
+
+chmod +x $INSTALL_DIR/.sbin/hello
+"""
+
+    package_dir = test_runner.create_local_package(
+        "fixed-root",
+        scripts={"install": _INSTALL}
+    )
+    install_dir = test_runner.install(package_dir, params={})
+    
+    output = subprocess.check_output([os.path.join(install_dir, "sbin/hello")])
+    assert_equal("Hello there\n", output)
+    
 def _create_logging_package(test_runner):
     build_log = test_runner.create_temporary_path()
     install_log = test_runner.create_temporary_path()
