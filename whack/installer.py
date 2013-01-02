@@ -19,6 +19,12 @@ class RelocatableInstallStep(object):
     def install_to_cache(self, run, build_dir, working_dir):
         build_script = os.path.join(working_dir, "whack/build")
         run([build_script])
+        
+    def install_from_cache(self, build_dir, working_dir, install_dir):
+        subprocess.check_call(
+            [os.path.join(working_dir, "whack/install"), install_dir],
+            cwd=working_dir
+        )
      
         
 class NonRelocatableInstallStep(object):
@@ -50,6 +56,16 @@ class NonRelocatableInstallStep(object):
                 with open(bin_file_path, "w") as bin_file:
                     bin_file.write('#!/usr/bin/env sh\n\n"$(dirname $0)/../run" "$(dirname $0)/../.bin/{0}" "$@"'.format(bin_filename))
                 os.chmod(bin_file_path, 0755)
+                
+    def install_from_cache(self, build_dir, working_dir, install_dir):
+        # TODO: remove duplication
+        cached_install_dir = os.path.join(build_dir, "install")
+        # TODO: should be pure Python, but there isn't a stdlib function
+        # that allows the destination to already exist
+        subprocess.check_call(["cp", "-rT", cached_install_dir, install_dir])
+        with open(os.path.join(install_dir, "run"), "w") as run_file:
+            run_file.write('#!/usr/bin/env sh\nexec whack-run-with-whack-root \'{0}\' "$@"'.format(install_dir))
+        subprocess.check_call(["chmod", "+x", os.path.join(install_dir, "run")])
 
 
 class PackageInstaller(object):
@@ -69,17 +85,7 @@ class PackageInstaller(object):
                 self._build(build_dir, working_dir, params)
                 self._cacher.put(install_id, working_dir)
             
-            if self._is_relocatable():
-                self._run_install_script(working_dir, install_dir)
-            else:
-                # TODO: remove duplication
-                cached_install_dir = os.path.join(build_dir, "install")
-                # TODO: should be pure Python, but there isn't a stdlib function
-                # that allows the destination to already exist
-                subprocess.check_call(["cp", "-rT", cached_install_dir, install_dir])
-                with open(os.path.join(install_dir, "run"), "w") as run_file:
-                    run_file.write('#!/usr/bin/env sh\nexec whack-run-with-whack-root \'{0}\' "$@"'.format(install_dir))
-                subprocess.check_call(["chmod", "+x", os.path.join(install_dir, "run")])
+            self._steps().install_from_cache(build_dir, working_dir, install_dir)
 
     def _build(self, build_dir, working_dir, params):
         ignore = shutil.ignore_patterns(".svn", ".hg", ".hgignore", ".git", ".gitignore")
@@ -94,26 +100,19 @@ class PackageInstaller(object):
                 env=build_env
             )
             
-        
+        self._steps().install_to_cache(run, build_dir, working_dir)
+
+    def _steps(self):
         if self._is_relocatable():
-            step = RelocatableInstallStep(self._cacher)
+            return RelocatableInstallStep(self._cacher)
         else:
-            step = NonRelocatableInstallStep(self._cacher)
-            
-        step.install_to_cache(run, build_dir, working_dir)
-                
+            return NonRelocatableInstallStep(self._cacher)
 
     def _fetch_downloads(self, build_dir, build_env):
         downloads_file_path = os.path.join(build_dir, "whack/downloads")
         downloads_file = self._read_downloads_file(downloads_file_path, build_env)
         for download_line in downloads_file:
             downloads.download(download_line.url, os.path.join(build_dir, download_line.filename))
-
-    def _run_install_script(self, build_dir, install_dir):
-        subprocess.check_call(
-            [os.path.join(build_dir, "whack/install"), install_dir],
-            cwd=build_dir
-        )
 
     def _read_downloads_file(self, path, build_env):
         if os.path.exists(path):
