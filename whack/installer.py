@@ -3,6 +3,7 @@ import subprocess
 import shutil
 import json
 import uuid
+import stat
 
 from whack import downloads
 from whack.hashes import Hasher
@@ -52,7 +53,7 @@ class FixedRootTemplate(object):
         bin_dir = install_path(bin_dir_name)
         if os.path.exists(dot_bin_dir) and not os.path.exists(bin_dir):
             os.mkdir(bin_dir)
-            for bin_filename in os.listdir(dot_bin_dir):
+            for bin_filename in self._list_executable_files(dot_bin_dir):
                 bin_file_path = os.path.join(bin_dir, bin_filename)
                 with open(bin_file_path, "w") as bin_file:
                     bin_file.write(
@@ -69,6 +70,11 @@ class FixedRootTemplate(object):
                     )
                 os.chmod(bin_file_path, 0755)
         
+    def _list_executable_files(self, dir_path):
+        def is_executable(filename):
+            path = os.path.join(dir_path, filename)
+            return stat.S_IXUSR & os.stat(path)[stat.ST_MODE]
+        return filter(is_executable, os.listdir(dir_path))
     
     def install_from_cache(self, build_dir, working_dir, install_dir):
         cached_install_dir = self._cached_install_dir(build_dir)
