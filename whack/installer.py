@@ -108,10 +108,10 @@ class PackageInstaller(object):
             build_dir = os.path.join(temp_dir, "build")
             working_dir = os.path.join(build_dir, "workspace")
             
-            result = self._cacher.fetch(install_id, working_dir)
+            result = self._cacher.fetch(install_id, build_dir)
             if not result.cache_hit:
                 self._build(build_dir, working_dir, params)
-                self._cacher.put(install_id, working_dir)
+                self._cacher.put(install_id, build_dir)
             
             self._template().install_from_cache(build_dir, working_dir, install_dir)
 
