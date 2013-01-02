@@ -17,7 +17,7 @@ class PackageInstaller(object):
         self._cacher = cacher
     
     def install(self, install_dir, params={}):
-        install_id = self._generate_install_id(params)
+        install_id = _generate_install_id(self._package_dir, params)
         
         with create_temporary_dir() as temp_dir:
             build_dir = os.path.join(temp_dir, "build")
@@ -84,17 +84,6 @@ class PackageInstaller(object):
             cwd=build_dir
         )
 
-    def _generate_install_id(self, params):
-        hasher = Hasher()
-        hasher.update(self._uname("--kernel-name"))
-        hasher.update(self._uname("--machine"))
-        hasher.update_with_dir(self._package_dir)
-        hasher.update(json.dumps(params, sort_keys=True))
-        return hasher.hexdigest()
-
-    def _uname(self, arg):
-        return subprocess.check_output(["uname", arg])
-
     def _read_downloads_file(self, path, build_env):
         if os.path.exists(path):
             first_line = open(path).readline()
@@ -121,6 +110,18 @@ def params_to_build_env(params):
     return build_env
 
 
+def _generate_install_id(package_dir, params):
+    hasher = Hasher()
+    hasher.update(_uname("--kernel-name"))
+    hasher.update(_uname("--machine"))
+    hasher.update_with_dir(package_dir)
+    hasher.update(json.dumps(params, sort_keys=True))
+    return hasher.hexdigest()
+
+def _uname(arg):
+    return subprocess.check_output(["uname", arg])
+
+
 def _read_package_description(package_dir):
     whack_json_path = os.path.join(package_dir, "whack/whack.json")
     if os.path.exists(whack_json_path):
@@ -129,8 +130,8 @@ def _read_package_description(package_dir):
         return DictBackedPackageDescription(whack_json)
     else:
         return DefaultPackageDescription()
-
-
+        
+        
 class DefaultPackageDescription(object):
     is_relocatable = True
 
