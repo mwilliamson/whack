@@ -127,7 +127,7 @@ def result_of_build_command_is_not_reused_when_params_are_not_the_same(test_runn
 
 @test
 def non_relocatable_application_is_installed_by_running_build_with_install_dir_as_param(test_runner):
-    _BUILD = r"""#!/bin/sh
+    _INSTALL = r"""#!/bin/sh
 set -e
 INSTALL_DIR=$1
 mkdir -p $INSTALL_DIR/bin
@@ -141,7 +141,7 @@ chmod +x $INSTALL_DIR/bin/hello
 
     package_dir = test_runner.create_local_package(
         "fixed-root",
-        scripts={"build": _BUILD}
+        scripts={"install": _INSTALL}
     )
     install_dir = test_runner.install(package_dir, params={})
     
@@ -150,7 +150,7 @@ chmod +x $INSTALL_DIR/bin/hello
     
 @test
 def non_relocatable_application_can_be_run_using_run_script(test_runner):
-    _BUILD = r"""#!/bin/sh
+    _INSTALL = r"""#!/bin/sh
 set -e
 INSTALL_DIR=$1
 mkdir -p $INSTALL_DIR/bin
@@ -165,7 +165,7 @@ chmod +x $INSTALL_DIR/bin/hello
 
     package_dir = test_runner.create_local_package(
         "fixed-root",
-        scripts={"build": _BUILD}
+        scripts={"install": _INSTALL}
     )
     install_dir = test_runner.install(package_dir, params={})
     
@@ -174,7 +174,7 @@ chmod +x $INSTALL_DIR/bin/hello
     
 @test
 def non_relocatable_application_under_bin_can_be_run_directly_if_binaries_are_placed_in_dot_bin(test_runner):
-    _BUILD = r"""#!/bin/sh
+    _INSTALL = r"""#!/bin/sh
 set -e
 INSTALL_DIR=$1
 mkdir -p $INSTALL_DIR/.bin
@@ -189,7 +189,7 @@ chmod +x $INSTALL_DIR/.bin/hello
 
     package_dir = test_runner.create_local_package(
         "fixed-root",
-        scripts={"build": _BUILD}
+        scripts={"install": _INSTALL}
     )
     install_dir = test_runner.install(package_dir, params={})
     

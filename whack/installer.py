@@ -27,17 +27,15 @@ class RelocatableTemplate(object):
         
 class FixedRootTemplate(object):
     def install_to_cache(self, run, build_dir, working_dir):
-        build_script = os.path.join(working_dir, "whack/build")
+        install_script = os.path.join(working_dir, "whack/install")
         install_dir = self._cached_install_dir(build_dir)
         os.mkdir(install_dir)
-        build_command = [
+        run([
             "whack-run-with-whack-root",
             install_dir,
-            build_script,
+            install_script,
             _WHACK_ROOT
-        ]
-        
-        run(build_command)
+        ])
                 
         with open(os.path.join(install_dir, "run"), "w") as run_file:
             run_file.write('#!/usr/bin/env sh\nexec whack-run-with-whack-root "$(dirname $0)" "$@"')
