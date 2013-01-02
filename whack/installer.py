@@ -37,6 +37,10 @@ class NonRelocatableInstallStep(object):
         ]
         
         run(build_command)
+                
+        with open(os.path.join(install_dir, "run"), "w") as run_file:
+            run_file.write('#!/usr/bin/env sh\nexec whack-run-with-whack-root "$(dirname $0)" "$@"')
+        subprocess.check_call(["chmod", "+x", os.path.join(install_dir, "run")])
         
         def install_path(path):
             return os.path.join(install_dir, path)
@@ -56,9 +60,6 @@ class NonRelocatableInstallStep(object):
         # TODO: should be pure Python, but there isn't a stdlib function
         # that allows the destination to already exist
         subprocess.check_call(["cp", "-rT", cached_install_dir, install_dir])
-        with open(os.path.join(install_dir, "run"), "w") as run_file:
-            run_file.write('#!/usr/bin/env sh\nexec whack-run-with-whack-root \'{0}\' "$@"'.format(install_dir))
-        subprocess.check_call(["chmod", "+x", os.path.join(install_dir, "run")])
         
     def _cached_install_dir(self, build_dir):
         return os.path.join(build_dir, "install")
