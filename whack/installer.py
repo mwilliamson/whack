@@ -11,6 +11,47 @@ __all__ = ["PackageInstaller"]
 
 _WHACK_ROOT = "/usr/local/whack"
 
+
+class RelocatableInstallStep(object):
+    def __init__(self, cacher):
+        self._cacher = cacher
+        
+    def install_to_cache(self, run, build_dir, working_dir):
+        build_script = os.path.join(working_dir, "whack/build")
+        run([build_script])
+     
+        
+class NonRelocatableInstallStep(object):
+    def __init__(self, cacher):
+        self._cacher = cacher
+        
+    def install_to_cache(self, run, build_dir, working_dir):
+        build_script = os.path.join(working_dir, "whack/build")
+        install_dir = os.path.join(build_dir, "install")
+        os.mkdir(install_dir)
+        build_command = [
+            "whack-run-with-whack-root",
+            install_dir,
+            build_script,
+            _WHACK_ROOT
+        ]
+        
+        run(build_command)
+        
+        def install_path(path):
+            return os.path.join(install_dir, path)
+        
+        dot_bin_dir = install_path(".bin")
+        bin_dir = install_path("bin")
+        if os.path.exists(dot_bin_dir) and not os.path.exists(bin_dir):
+            os.mkdir(bin_dir)
+            for bin_filename in os.listdir(dot_bin_dir):
+                bin_file_path = os.path.join(bin_dir, bin_filename)
+                with open(bin_file_path, "w") as bin_file:
+                    bin_file.write('#!/usr/bin/env sh\n\n"$(dirname $0)/../run" "$(dirname $0)/../.bin/{0}" "$@"'.format(bin_filename))
+                os.chmod(bin_file_path, 0755)
+
+
 class PackageInstaller(object):
     def __init__(self, package_dir, cacher):
         self._package_dir = package_dir
@@ -22,16 +63,17 @@ class PackageInstaller(object):
         with create_temporary_dir() as temp_dir:
             build_dir = os.path.join(temp_dir, "build")
             working_dir = os.path.join(build_dir, "workspace")
-            cached_install_dir = os.path.join(build_dir, "install")
             
             result = self._cacher.fetch(install_id, working_dir)
             if not result.cache_hit:
-                self._build(working_dir, cached_install_dir, params)
+                self._build(build_dir, working_dir, params)
                 self._cacher.put(install_id, working_dir)
             
             if self._is_relocatable():
                 self._run_install_script(working_dir, install_dir)
             else:
+                # TODO: remove duplication
+                cached_install_dir = os.path.join(build_dir, "install")
                 # TODO: should be pure Python, but there isn't a stdlib function
                 # that allows the destination to already exist
                 subprocess.check_call(["cp", "-rT", cached_install_dir, install_dir])
@@ -39,37 +81,26 @@ class PackageInstaller(object):
                     run_file.write('#!/usr/bin/env sh\nexec whack-run-with-whack-root \'{0}\' "$@"'.format(install_dir))
                 subprocess.check_call(["chmod", "+x", os.path.join(install_dir, "run")])
 
-    def _build(self, working_dir, install_dir, params):
+    def _build(self, build_dir, working_dir, params):
         ignore = shutil.ignore_patterns(".svn", ".hg", ".hgignore", ".git", ".gitignore")
         shutil.copytree(self._package_dir, working_dir, ignore=ignore)
         build_env = params_to_build_env(params)
         self._fetch_downloads(working_dir, build_env)
-        build_script = os.path.join(self._package_dir, "whack/build")
-        if self._is_relocatable():
-            build_command = [build_script]
-        else:
-            os.mkdir(install_dir)
-            build_command = ["whack-run-with-whack-root", install_dir, build_script, _WHACK_ROOT]
+        
+        def run(command):
+            subprocess.check_call(
+                command,
+                cwd=working_dir,
+                env=build_env
+            )
             
-        subprocess.check_call(
-            build_command,
-            cwd=working_dir,
-            env=build_env
-        )
         
-        def install_path(path):
-            return os.path.join(install_dir, path)
-        
-        if not self._is_relocatable():
-            dot_bin_dir = install_path(".bin")
-            bin_dir = install_path("bin")
-            if os.path.exists(dot_bin_dir) and not os.path.exists(bin_dir):
-                os.mkdir(bin_dir)
-                for bin_filename in os.listdir(dot_bin_dir):
-                    bin_file_path = os.path.join(bin_dir, bin_filename)
-                    with open(bin_file_path, "w") as bin_file:
-                        bin_file.write('#!/usr/bin/env sh\n\n"$(dirname $0)/../run" "$(dirname $0)/../.bin/{0}" "$@"'.format(bin_filename))
-                    os.chmod(bin_file_path, 0755)
+        if self._is_relocatable():
+            step = RelocatableInstallStep(self._cacher)
+        else:
+            step = NonRelocatableInstallStep(self._cacher)
+            
+        step.install_to_cache(run, build_dir, working_dir)
                 
 
     def _fetch_downloads(self, build_dir, build_env):
