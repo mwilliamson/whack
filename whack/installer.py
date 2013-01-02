@@ -79,6 +79,8 @@ class FixedRootTemplate(object):
     def _list_executable_files(self, dir_path):
         def is_executable_file(filename):
             path = os.path.join(dir_path, filename)
+            # TODO: breaks on symlinks to /usr/local/whack. Perhaps just assume all files
+            # are executable?
             is_executable = stat.S_IXUSR & os.stat(path)[stat.ST_MODE]
             return not os.path.isdir(path) and is_executable
         return filter(is_executable_file, os.listdir(dir_path))
