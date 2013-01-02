@@ -79,6 +79,13 @@ class FixedRootTemplate(object):
         return os.path.join(build_dir, "install")
 
 
+_templates = {
+    "fixed-root": FixedRootTemplate(),
+    "relocatable": RelocatableTemplate()
+}
+
+_default_template_name = "relocatable"
+
 class PackageInstaller(object):
     def __init__(self, package_dir, cacher):
         self._package_dir = package_dir
@@ -114,10 +121,7 @@ class PackageInstaller(object):
         self._template().install_to_cache(run, build_dir, working_dir)
 
     def _template(self):
-        if self._is_relocatable():
-            return RelocatableTemplate()
-        else:
-            return FixedRootTemplate()
+        return _templates[self._template_name()]
 
     def _fetch_downloads(self, build_dir, build_env):
         downloads_file_path = os.path.join(build_dir, "whack/downloads")
@@ -140,8 +144,8 @@ class PackageInstaller(object):
         else:
             return []
             
-    def _is_relocatable(self):
-        return _read_package_description(self._package_dir).is_relocatable
+    def _template_name(self):
+        return _read_package_description(self._package_dir).template_name
         
 
 def params_to_build_env(params):
@@ -174,7 +178,7 @@ def _read_package_description(package_dir):
         
         
 class DefaultPackageDescription(object):
-    is_relocatable = True
+    template_name = _default_template_name
 
 
 class DictBackedPackageDescription(object):
@@ -182,5 +186,5 @@ class DictBackedPackageDescription(object):
         self._values = values
     
     @property
-    def is_relocatable(self):
-        return self._values.get("relocatable", True)
+    def template_name(self):
+        return self._values.get("template", _default_template_name)

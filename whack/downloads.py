@@ -8,6 +8,7 @@ import re
 import urllib
 
 import blah
+import catchy
 
 from whack.filelock import FileLock
 

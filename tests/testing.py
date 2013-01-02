@@ -25,18 +25,15 @@ cp hello $INSTALL_DIR/hello
 
 def create_test_builder(repo_dir, build, install):
     builder_dir = os.path.join(repo_dir, "hello")
-    write_package(os.path.join(builder_dir), build, install)
+    write_package(builder_dir, "relocatable", {"build": build, "install": install})
 
-def write_package(package_dir, build, install, relocatable=True):
+def write_package(package_dir, template_name, scripts):
     whack_dir = os.path.join(package_dir, "whack")
     os.makedirs(whack_dir)
-    if build is not None:
-        _write_script(os.path.join(whack_dir, "build"), build)
-    if install is not None:
-        _write_script(os.path.join(whack_dir, "install"), install)
-    if not relocatable:
-        whack_json = json.dumps({"relocatable": False})
-        open(os.path.join(whack_dir, "whack.json"), "w").write(whack_json)
+    for name, contents in scripts.iteritems():
+        _write_script(os.path.join(whack_dir, name), contents)
+    whack_json = json.dumps({"template": template_name})
+    open(os.path.join(whack_dir, "whack.json"), "w").write(whack_json)
 
 def _write_script(path, contents):
     _write_file(path, contents)

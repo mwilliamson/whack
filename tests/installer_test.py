@@ -25,9 +25,9 @@ class TestRunner(object):
         self._test_dir = tempfile.mkdtemp()
         self._cacher = DirectoryCacher(os.path.join(self._test_dir, "cache"))
     
-    def create_local_package(self, build, install=None, relocatable=True):
+    def create_local_package(self, template_name, scripts):
         package_dir = self.create_temporary_dir()
-        testing.write_package(package_dir, build, install, relocatable=relocatable)
+        testing.write_package(package_dir, template_name, scripts)
         return package_dir
     
     def create_temporary_dir(self):
@@ -67,7 +67,10 @@ INSTALL_DIR=$1
 cp hello $INSTALL_DIR/hello
 """
 
-    package_dir = test_runner.create_local_package(build=_BUILD, install=_INSTALL)
+    package_dir = test_runner.create_local_package(
+        "relocatable",
+        scripts={"build": _BUILD, "install": _INSTALL}
+    )
     install_dir = test_runner.install(package_dir, params={})
     
     output = subprocess.check_output(os.path.join(install_dir, "hello"))
@@ -86,7 +89,10 @@ INSTALL_DIR=$1
 cp hello $INSTALL_DIR/hello
 """
 
-    package_dir = test_runner.create_local_package(build=_BUILD, install=_INSTALL)
+    package_dir = test_runner.create_local_package(
+        "relocatable",
+        scripts={"build": _BUILD, "install": _INSTALL}
+    )
     install_dir = test_runner.install(package_dir, params={"hello_version": 42})
     
     output = subprocess.check_output(os.path.join(install_dir, "hello"))
@@ -133,7 +139,10 @@ EOF
 chmod +x $INSTALL_DIR/bin/hello
 """
 
-    package_dir = test_runner.create_local_package(build=_BUILD, relocatable=False)
+    package_dir = test_runner.create_local_package(
+        "fixed-root",
+        scripts={"build": _BUILD}
+    )
     install_dir = test_runner.install(package_dir, params={})
     
     output = subprocess.check_output(os.path.join(install_dir, "bin/hello"))
@@ -154,7 +163,10 @@ EOF
 chmod +x $INSTALL_DIR/bin/hello
 """
 
-    package_dir = test_runner.create_local_package(build=_BUILD, relocatable=False)
+    package_dir = test_runner.create_local_package(
+        "fixed-root",
+        scripts={"build": _BUILD}
+    )
     install_dir = test_runner.install(package_dir, params={})
     
     output = subprocess.check_output([os.path.join(install_dir, "run"), "hello"])
@@ -175,7 +187,10 @@ EOF
 chmod +x $INSTALL_DIR/.bin/hello
 """
 
-    package_dir = test_runner.create_local_package(build=_BUILD, relocatable=False)
+    package_dir = test_runner.create_local_package(
+        "fixed-root",
+        scripts={"build": _BUILD}
+    )
     install_dir = test_runner.install(package_dir, params={})
     
     output = subprocess.check_output([os.path.join(install_dir, "bin/hello")])
@@ -193,7 +208,10 @@ echo building >> {0}
 echo installing >> {0}
 """.format(install_log)
 
-    package_dir = test_runner.create_local_package(build=_BUILD, install=_INSTALL)
+    package_dir = test_runner.create_local_package(
+        "relocatable",
+        scripts={"build": _BUILD, "install": _INSTALL}
+    )
     return LoggingPackage(package_dir, build_log, install_log)
     
 class LoggingPackage(object):
