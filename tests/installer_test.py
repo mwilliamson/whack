@@ -237,6 +237,22 @@ echo 'Hello there' > $INSTALL_DIR/.bin/message
     
     assert_false(os.path.exists(os.path.join(install_dir, "bin/message")))
     
+@test
+def directories_under_dot_bin_are_not_created_in_bin(test_runner):
+    _INSTALL = r"""#!/bin/sh
+set -e
+INSTALL_DIR=$1
+mkdir -p $INSTALL_DIR/.bin/sub
+"""
+
+    package_dir = test_runner.create_local_package(
+        "fixed-root",
+        scripts={"install": _INSTALL}
+    )
+    install_dir = test_runner.install(package_dir, params={})
+    
+    assert_false(os.path.exists(os.path.join(install_dir, "bin/sub")))
+    
 def _create_logging_package(test_runner):
     build_log = test_runner.create_temporary_path()
     install_log = test_runner.create_temporary_path()

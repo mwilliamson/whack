@@ -71,10 +71,11 @@ class FixedRootTemplate(object):
                 os.chmod(bin_file_path, 0755)
         
     def _list_executable_files(self, dir_path):
-        def is_executable(filename):
+        def is_executable_file(filename):
             path = os.path.join(dir_path, filename)
-            return stat.S_IXUSR & os.stat(path)[stat.ST_MODE]
-        return filter(is_executable, os.listdir(dir_path))
+            is_executable = stat.S_IXUSR & os.stat(path)[stat.ST_MODE]
+            return not os.path.isdir(path) and is_executable
+        return filter(is_executable_file, os.listdir(dir_path))
     
     def install_from_cache(self, build_dir, working_dir, install_dir):
         cached_install_dir = self._cached_install_dir(build_dir)
