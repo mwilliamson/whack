@@ -56,6 +56,12 @@ class FixedRootTemplate(object):
             for bin_filename in self._list_executable_files(dot_bin_dir):
                 bin_file_path = os.path.join(bin_dir, bin_filename)
                 with open(bin_file_path, "w") as bin_file:
+                    # TODO: should create /bin directory as late as possible
+                    # otherwise, installs that continue from other installs
+                    # have to delete /bin to allow it to be regenerated
+                    # Should create when entering the whack root (but implementing
+                    # it in C? Eurgh! Could possibly just split out the unshare/mount
+                    # parts to separate binary)
                     bin_file.write(
                         '#!/usr/bin/env sh\n\n' +
                         'TARGET="$(dirname $0)/../.{0}/{1}"\n'.format(bin_dir_name, bin_filename) +
