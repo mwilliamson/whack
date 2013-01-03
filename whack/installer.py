@@ -54,7 +54,7 @@ class FixedRootTemplate(object):
         if os.path.exists(dot_bin_dir):
             if not os.path.exists(bin_dir):
                 os.mkdir(bin_dir)
-            for bin_filename in self._list_missing_executable_files(dot_bin_dir, bin_dir):
+            for bin_filename in self._list_missing_executable_files(install_dir, dot_bin_dir, bin_dir):
                 bin_file_path = os.path.join(bin_dir, bin_filename)
                 with open(bin_file_path, "w") as bin_file:
                     bin_file.write(
@@ -71,18 +71,34 @@ class FixedRootTemplate(object):
                     )
                 os.chmod(bin_file_path, 0755)
     
-    def _list_missing_executable_files(self, dot_bin_dir, bin_dir):
+    def _list_missing_executable_files(self, root_dir, dot_bin_dir, bin_dir):
         def is_missing(filename):
             return not os.path.exists(os.path.join(bin_dir, filename))
-        return filter(is_missing, self._list_executable_files(dot_bin_dir))
+        return filter(is_missing, self._list_executable_files(root_dir, dot_bin_dir))
     
-    def _list_executable_files(self, dir_path):
+    def _list_executable_files(self, root_dir, dir_path):
         def is_executable_file(filename):
             path = os.path.join(dir_path, filename)
             # TODO: breaks on symlinks to /usr/local/whack. Perhaps just assume all files
-            # are executable?
-            is_executable = stat.S_IXUSR & os.stat(path)[stat.ST_MODE]
-            return not os.path.isdir(path) and is_executable
+            # are executable? Or manually dereference the symlink
+            while os.path.islink(path):
+                link_target = os.readlink(path)
+                if os.path.exists(link_target):
+                    # Valid symlink
+                    path = link_target
+                elif link_target.startswith("{0}/".format(_WHACK_ROOT)):
+                    # Valid symlink, but what root isn't mounted
+                    path = os.path.join(root_dir, link_target[len(_WHACK_ROOT) + 1:])
+                else:
+                    # Broken symlink
+                    return False
+            
+            if os.path.exists(path):
+                is_executable = stat.S_IXUSR & os.stat(path)[stat.ST_MODE]
+                return not os.path.isdir(path) and is_executable
+            else:
+                return False
+                
         return filter(is_executable_file, os.listdir(dir_path))
     
     def install_from_cache(self, build_dir, working_dir, install_dir):

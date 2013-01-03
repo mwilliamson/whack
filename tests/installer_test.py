@@ -285,6 +285,33 @@ mkdir -p $INSTALL_DIR/.bin/sub
     
     assert_false(os.path.exists(os.path.join(install_dir, "bin/sub")))
     
+@test
+def working_symlinks_in_dot_bin_to_files_under_whack_root_are_created_in_bin(test_runner):
+    _INSTALL = r"""#!/bin/sh
+set -e
+INSTALL_DIR=$1
+mkdir -p $INSTALL_DIR/.bin
+cat > $INSTALL_DIR/.bin/hello << EOF
+#!/bin/sh
+echo Hello there
+EOF
+
+chmod +x $INSTALL_DIR/.bin/hello
+ln -s $INSTALL_DIR/.bin/hello $INSTALL_DIR/.bin/hello-sym
+ln -s $INSTALL_DIR/.bin/hell $INSTALL_DIR/.bin/hello-borked
+"""
+
+    package_dir = test_runner.create_local_package(
+        "fixed-root",
+        scripts={"install": _INSTALL}
+    )
+    install_dir = test_runner.install(package_dir, params={})
+    
+    output = subprocess.check_output([os.path.join(install_dir, "bin/hello-sym")])
+    assert_equal("Hello there\n", output)
+    assert_false(os.path.exists(os.path.join(install_dir, "bin/hello-borked")))
+    
+    
 def _create_logging_package(test_runner):
     build_log = test_runner.create_temporary_path()
     install_log = test_runner.create_temporary_path()
