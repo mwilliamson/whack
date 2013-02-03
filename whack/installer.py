@@ -127,7 +127,9 @@ class PackageBuilder(object):
         self._cacher = cacher
     
     @contextlib.contextmanager
-    def provide_package(self, install_id, template, params):
+    def provide_package(self, template, params):
+        install_id = _generate_install_id(self._package_src_dir, params)
+        
         with create_temporary_dir() as temp_dir:
             build_dir = os.path.join(temp_dir, "build")
             package_dir = os.path.join(temp_dir, "package")
@@ -181,10 +183,8 @@ class PackageInstaller(object):
         self._builder = PackageBuilder(package_src_dir, cacher)
     
     def install(self, install_dir, params={}):
-        install_id = _generate_install_id(self._package_src_dir, params)
-        
         template = self._template()
-        with self._builder.provide_package(install_id, template, params) as package_dir:
+        with self._builder.provide_package(template, params) as package_dir:
             self._template().install(package_dir, install_dir)
 
     def _template(self):
