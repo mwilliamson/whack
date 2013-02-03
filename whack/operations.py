@@ -3,6 +3,8 @@ import os
 from catchy import HttpCacher, DirectoryCacher, NoCachingStrategy
 
 from .installer import Installer
+from .providers import CachingPackageProvider
+
 
 def install(package, install_dir, caching, builder_uris, params):
     if not caching.enabled:
@@ -12,7 +14,8 @@ def install(package, install_dir, caching, builder_uris, params):
         cacher = HttpCacher(caching.http_cache_url, caching.http_cache_key)
     else:
         cacher = DirectoryCacher(os.path.expanduser("~/.cache/whack/builds"))
-            
-    installer = Installer(cacher, builder_uris)
+    
+    package_provider = CachingPackageProvider(cacher)
+    installer = Installer(package_provider, builder_uris)
     installer.install(package, install_dir, params)
 
