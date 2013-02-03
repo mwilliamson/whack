@@ -5,6 +5,8 @@ import json
 import uuid
 import stat
 
+import spur
+
 from whack import downloads
 from whack.hashes import Hasher
 from whack.tempdir import create_temporary_dir
@@ -14,36 +16,39 @@ __all__ = ["PackageInstaller"]
 _WHACK_ROOT = "/usr/local/whack"
 
 
+local_shell = spur.LocalShell()
+
+
 class RelocatableTemplate(object):
-    def install_to_cache(self, run, build_dir, working_dir):
-        build_script = os.path.join(working_dir, "whack/build")
+    def install_to_cache(self, run, build_dir, target_dir):
+        build_script = os.path.join(build_dir, "whack/build")
         run([build_script])
+        local_shell.run(["cp", "-rT", build_dir, target_dir])
         
-    def install_from_cache(self, build_dir, working_dir, install_dir):
-        subprocess.check_call(
-            [os.path.join(working_dir, "whack/install"), install_dir],
-            cwd=working_dir
+    def install_from_cache(self, build_target_dir, install_dir):
+        local_shell.run(
+            [os.path.join(build_target_dir, "whack/install"), install_dir],
+            cwd=build_target_dir
         )
      
         
 class FixedRootTemplate(object):
-    def install_to_cache(self, run, build_dir, working_dir):
-        install_script = os.path.join(working_dir, "whack/install")
-        install_dir = self._cached_install_dir(build_dir)
-        os.mkdir(install_dir)
+    def install_to_cache(self, run, build_dir, target_dir):
+        install_script = os.path.join(build_dir, "whack/install")
+        os.mkdir(target_dir)
         run([
             "whack-run-with-whack-root",
-            install_dir,
+            target_dir,
             install_script,
             _WHACK_ROOT
         ])
                 
-        with open(os.path.join(install_dir, "run"), "w") as run_file:
+        with open(os.path.join(target_dir, "run"), "w") as run_file:
             run_file.write('#!/usr/bin/env sh\nexec whack-run-with-whack-root "$(dirname $0)" "$@"')
-        subprocess.check_call(["chmod", "+x", os.path.join(install_dir, "run")])
+        subprocess.check_call(["chmod", "+x", os.path.join(target_dir, "run")])
         
-        self._create_bin_dir(install_dir, "bin")
-        self._create_bin_dir(install_dir, "sbin")
+        self._create_bin_dir(target_dir, "bin")
+        self._create_bin_dir(target_dir, "sbin")
     
     def _create_bin_dir(self, install_dir, bin_dir_name):
         def install_path(path):
@@ -99,16 +104,12 @@ class FixedRootTemplate(object):
                 
         return filter(is_executable_file, os.listdir(dir_path))
     
-    def install_from_cache(self, build_dir, working_dir, install_dir):
-        cached_install_dir = self._cached_install_dir(build_dir)
+    def install_from_cache(self, build_target_dir, install_dir):
         # TODO: should be pure Python, but there isn't a stdlib function
         # that allows the destination to already exist
-        subprocess.check_call(["cp", "-rT", cached_install_dir, install_dir])
+        subprocess.check_call(["cp", "-rT", build_target_dir, install_dir])
         with open(os.path.join(install_dir, ".whack-root-id"), "w") as root_id_file:
             root_id_file.write(str(uuid.uuid4()))
-        
-    def _cached_install_dir(self, build_dir):
-        return os.path.join(build_dir, "install")
 
 
 _templates = {
@@ -123,20 +124,19 @@ class PackageBuilder(object):
     def __init__(self, package_dir):
         self._package_dir = package_dir
     
-    def build(self, build_dir, working_dir, params, template):
+    def build(self, build_dir, target_dir, params, template):
         ignore = shutil.ignore_patterns(".svn", ".hg", ".hgignore", ".git", ".gitignore")
-        shutil.copytree(self._package_dir, working_dir, ignore=ignore)
+        shutil.copytree(self._package_dir, build_dir, ignore=ignore)
         build_env = params_to_build_env(params)
-        self._fetch_downloads(working_dir, build_env)
+        self._fetch_downloads(build_dir, build_env)
         
         def run(command):
             subprocess.check_call(
                 command,
-                cwd=working_dir,
+                cwd=build_dir,
                 env=build_env
             )
-            
-        template.install_to_cache(run, build_dir, working_dir)
+        template.install_to_cache(run, build_dir, target_dir)
 
     def _fetch_downloads(self, build_dir, build_env):
         downloads_file_path = os.path.join(build_dir, "whack/downloads")
@@ -171,15 +171,15 @@ class PackageInstaller(object):
         
         with create_temporary_dir() as temp_dir:
             build_dir = os.path.join(temp_dir, "build")
-            working_dir = os.path.join(build_dir, "workspace")
+            target_dir = os.path.join(temp_dir, "package")
             
-            result = self._cacher.fetch(install_id, build_dir)
+            result = self._cacher.fetch(install_id, target_dir)
             template = self._template()
             if not result.cache_hit:
-                self._builder.build(build_dir, working_dir, params, template)
-                self._cacher.put(install_id, build_dir)
+                self._builder.build(build_dir, target_dir, params, template)
+                self._cacher.put(install_id, target_dir)
             
-            self._template().install_from_cache(build_dir, working_dir, install_dir)
+            self._template().install_from_cache(target_dir, install_dir)
 
     def _template(self):
         return _templates[self._template_name()]

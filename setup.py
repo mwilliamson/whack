@@ -15,5 +15,10 @@ setup(
     url='http://github.com/mwilliamson/whack',
     scripts=["scripts/whack"],
     packages=['whack'],
-    install_requires=['blah>=0.1.10,<0.2', 'requests>=1,<2', "catchy>=0.1.2,<0.2"],
+    install_requires=[
+        'blah>=0.1.10,<0.2',
+        'requests>=1,<2',
+        "catchy>=0.1.2,<0.2",
+        "spur>=0.3,<0.4",
+    ],
 )
