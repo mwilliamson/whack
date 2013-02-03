@@ -3,7 +3,7 @@ from .providers import CachingPackageProvider
 from .sources import PackageSourceFetcher
 
 
-class Builders(object):
+class Installer(object):
     def __init__(self, cacher, package_source_repo_uris):
         self._cacher = cacher
         self._package_source_fetcher = PackageSourceFetcher(package_source_repo_uris)

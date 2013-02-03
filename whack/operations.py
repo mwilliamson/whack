@@ -12,6 +12,6 @@ def install(package, install_dir, caching, builder_uris, params):
     else:
         cacher = DirectoryCacher(os.path.expanduser("~/.cache/whack/builds"))
             
-    builder = whack.builder.Builders(cacher, builder_uris)
-    builder.install(package, install_dir, params)
+    installer = whack.builder.Installer(cacher, builder_uris)
+    installer.install(package, install_dir, params)
 
