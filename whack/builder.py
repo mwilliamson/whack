@@ -11,16 +11,24 @@ from .tempdir import create_temporary_dir
 
 
 class Builders(object):
-    def __init__(self, cacher, builder_repo_uris):
+    def __init__(self, cacher, package_source_repo_uris):
         self._cacher = cacher
-        self._builder_repo_urls = builder_repo_uris
+        self._package_source_fetcher = PackageSourceFetcher(package_source_repo_uris)
 
     def install(self, package_name, install_dir, params=None):
         with self._fetch_package(package_name) as package_src_dir:
             builder = PackageInstaller(package_src_dir, self._cacher)
             return builder.install(install_dir, params=params)
+            
+    def _fetch_package(self, package_name):
+        return self._package_source_fetcher.fetch(package_name)
+
+
+class PackageSourceFetcher(object):
+    def __init__(self, package_source_repo_uris):
+        self._package_source_repo_uris = package_source_repo_uris
     
-    def _fetch_package(self, package):
+    def fetch(self, package):
         if blah.is_source_control_uri(package):
             package_src_dir = self._fetch_package_from_source_control(package)
         elif self._is_local_path(package):
@@ -42,7 +50,7 @@ class Builders(object):
     
     @contextlib.contextmanager
     def _fetch_package_from_repo(self, package):
-        for uri in self._builder_repo_urls:
+        for uri in self._package_source_repo_uris:
             if self._is_local_uri(uri):
                 repo_dir = uri
             else:
@@ -57,6 +65,7 @@ class Builders(object):
         
     def _is_local_path(self, path):
         return path.startswith("/") or path.startswith(".")
+        
 
 
 @contextlib.contextmanager
