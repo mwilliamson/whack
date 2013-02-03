@@ -20,12 +20,12 @@ local_shell = spur.LocalShell()
 
 
 class RelocatableTemplate(object):
-    def install_to_cache(self, run, build_dir, target_dir):
+    def build(self, run, build_dir, target_dir):
         build_script = os.path.join(build_dir, "whack/build")
         run([build_script])
         local_shell.run(["cp", "-rT", build_dir, target_dir])
         
-    def install_from_cache(self, build_target_dir, install_dir):
+    def install(self, build_target_dir, install_dir):
         local_shell.run(
             [os.path.join(build_target_dir, "whack/install"), install_dir],
             cwd=build_target_dir
@@ -33,7 +33,7 @@ class RelocatableTemplate(object):
      
         
 class FixedRootTemplate(object):
-    def install_to_cache(self, run, build_dir, target_dir):
+    def build(self, run, build_dir, target_dir):
         install_script = os.path.join(build_dir, "whack/install")
         os.mkdir(target_dir)
         run([
@@ -104,7 +104,7 @@ class FixedRootTemplate(object):
                 
         return filter(is_executable_file, os.listdir(dir_path))
     
-    def install_from_cache(self, build_target_dir, install_dir):
+    def install(self, build_target_dir, install_dir):
         # TODO: should be pure Python, but there isn't a stdlib function
         # that allows the destination to already exist
         subprocess.check_call(["cp", "-rT", build_target_dir, install_dir])
@@ -136,7 +136,7 @@ class PackageBuilder(object):
                 cwd=build_dir,
                 env=build_env
             )
-        template.install_to_cache(run, build_dir, target_dir)
+        template.build(run, build_dir, target_dir)
 
     def _fetch_downloads(self, build_dir, build_env):
         downloads_file_path = os.path.join(build_dir, "whack/downloads")
@@ -179,7 +179,7 @@ class PackageInstaller(object):
                 self._builder.build(build_dir, target_dir, params, template)
                 self._cacher.put(install_id, target_dir)
             
-            self._template().install_from_cache(target_dir, install_dir)
+            self._template().install(target_dir, install_dir)
 
     def _template(self):
         return _templates[self._template_name()]
