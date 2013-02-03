@@ -120,9 +120,6 @@ _templates = {
     "relocatable": RelocatableTemplate()
 }
 
-_default_template_name = "relocatable"
-
-
 class BuildingPackageProvider(object):
     @contextlib.contextmanager
     def provide_package(self, package_src, params):
@@ -146,7 +143,8 @@ class BuildingPackageProvider(object):
                 cwd=build_dir,
                 env=build_env
             )
-        package_src.template().build(run, build_dir, package_dir)
+        template = _templates[package_src.template_name()]
+        template.build(run, build_dir, package_dir)
 
     def _fetch_downloads(self, build_dir, build_env):
         downloads_file_path = os.path.join(build_dir, "whack/downloads")
@@ -176,8 +174,8 @@ class CachingPackageProvider(object):
         self._underlying_provider = BuildingPackageProvider()
     
     @contextlib.contextmanager
-    def provide_package(self, package_src, params):
-        install_id = _generate_install_id(package_src.path, params)
+    def provide_package(self, package_source, params):
+        install_id = _generate_install_id(package_source.path, params)
         
         with create_temporary_dir() as temp_dir:
             cached_package_dir = os.path.join(temp_dir, "package")
@@ -187,31 +185,24 @@ class CachingPackageProvider(object):
             if result.cache_hit:
                 yield cached_package_dir
             else:
-                with self._underlying_provider.provide_package(package_src, params) as package_dir:
+                with self._underlying_provider.provide_package(package_source, params) as package_dir:
                     self._cacher.put(install_id, package_dir)
                     yield package_dir
     
 
 class PackageInstaller(object):
-    def __init__(self, package_src_dir, cacher):
-        self._package_src = PackageSource(package_src_dir)
+    def __init__(self, package_source, cacher):
+        self._package_source = package_source
         self._package_provider = CachingPackageProvider(cacher)
     
     def install(self, install_dir, params={}):
-        with self._package_provider.provide_package(self._package_src, params) as package_dir:
-            self._package_src.template().install(package_dir, install_dir)
-
-
-class PackageSource(object):
-    def __init__(self, path):
-        self.path = path
-
-    def template(self):
-        return _templates[self._template_name()]
+        with self._provide_package(params) as package_dir:
+            template = _templates[self._package_source.template_name()]
+            template.install(package_dir, install_dir)
             
-    def _template_name(self):
-        return _read_package_description(self.path).template_name
-        
+    def _provide_package(self, params):
+        return self._package_provider.provide_package(self._package_source, params)
+
 
 def params_to_build_env(params):
     build_env = os.environ.copy()
@@ -230,26 +221,3 @@ def _generate_install_id(package_src_dir, params):
 
 def _uname(arg):
     return subprocess.check_output(["uname", arg])
-
-
-def _read_package_description(package_src_dir):
-    whack_json_path = os.path.join(package_src_dir, "whack/whack.json")
-    if os.path.exists(whack_json_path):
-        with open(whack_json_path, "r") as whack_json_file:
-            whack_json = json.load(whack_json_file)
-        return DictBackedPackageDescription(whack_json)
-    else:
-        return DefaultPackageDescription()
-        
-        
-class DefaultPackageDescription(object):
-    template_name = _default_template_name
-
-
-class DictBackedPackageDescription(object):
-    def __init__(self, values):
-        self._values = values
-    
-    @property
-    def template_name(self):
-        return self._values.get("template", _default_template_name)
