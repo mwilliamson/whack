@@ -1,15 +1,8 @@
-from .deployer import PackageDeployer
-from .sources import PackageSourceFetcher
-
-
 class Installer(object):
-    def __init__(self, package_provider, package_source_repo_uris=None):
-        if package_source_repo_uris is None:
-            package_source_repo_uris = []
-            
+    def __init__(self, package_source_fetcher, package_provider, deployer):
+        self._package_source_fetcher = package_source_fetcher
         self._package_provider = package_provider
-        self._package_source_fetcher = PackageSourceFetcher(package_source_repo_uris)
-        self._deployer = PackageDeployer()
+        self._deployer = deployer
 
     def install(self, package_name, install_dir, params=None):
         with self._fetch_package_source(package_name) as package_source:
