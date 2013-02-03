@@ -122,24 +122,19 @@ _default_template_name = "relocatable"
 
 
 class BuildingPackageProvider(object):
-    def __init__(self, package_src_dir):
-        self._package_src_dir = package_src_dir
-    
     @contextlib.contextmanager
-    def provide_package(self, template, params):
-        install_id = _generate_install_id(self._package_src_dir, params)
-        
+    def provide_package(self, package_src, params):
         with create_temporary_dir() as temp_dir:
             build_dir = os.path.join(temp_dir, "build")
             package_dir = os.path.join(temp_dir, "package")
             
-            self._build(build_dir, package_dir, params, template)
+            self._build(package_src, build_dir, package_dir, params)
                 
             yield package_dir
     
-    def _build(self, build_dir, target_dir, params, template):
+    def _build(self, package_src, build_dir, package_dir, params):
         ignore = shutil.ignore_patterns(".svn", ".hg", ".hgignore", ".git", ".gitignore")
-        shutil.copytree(self._package_src_dir, build_dir, ignore=ignore)
+        shutil.copytree(package_src.path, build_dir, ignore=ignore)
         build_env = params_to_build_env(params)
         self._fetch_downloads(build_dir, build_env)
         
@@ -149,7 +144,7 @@ class BuildingPackageProvider(object):
                 cwd=build_dir,
                 env=build_env
             )
-        template.build(run, build_dir, target_dir)
+        package_src.template().build(run, build_dir, package_dir)
 
     def _fetch_downloads(self, build_dir, build_env):
         downloads_file_path = os.path.join(build_dir, "whack/downloads")
@@ -174,14 +169,13 @@ class BuildingPackageProvider(object):
 
 
 class CachingPackageProvider(object):
-    def __init__(self, package_src_dir, cacher):
-        self._package_src_dir = package_src_dir
+    def __init__(self, cacher):
         self._cacher = cacher
-        self._underlying_provider = BuildingPackageProvider(package_src_dir)
+        self._underlying_provider = BuildingPackageProvider()
     
     @contextlib.contextmanager
-    def provide_package(self, template, params):
-        install_id = _generate_install_id(self._package_src_dir, params)
+    def provide_package(self, package_src, params):
+        install_id = _generate_install_id(package_src.path, params)
         
         with create_temporary_dir() as temp_dir:
             cached_package_dir = os.path.join(temp_dir, "package")
@@ -191,26 +185,30 @@ class CachingPackageProvider(object):
             if result.cache_hit:
                 yield cached_package_dir
             else:
-                with self._underlying_provider.provide_package(template, params) as package_dir:
+                with self._underlying_provider.provide_package(package_src, params) as package_dir:
                     self._cacher.put(install_id, package_dir)
                     yield package_dir
     
 
 class PackageInstaller(object):
     def __init__(self, package_src_dir, cacher):
-        self._package_src_dir = package_src_dir
-        self._package_provider = CachingPackageProvider(package_src_dir, cacher)
+        self._package_src = PackageSource(package_src_dir)
+        self._package_provider = CachingPackageProvider(cacher)
     
     def install(self, install_dir, params={}):
-        template = self._template()
-        with self._package_provider.provide_package(template, params) as package_dir:
-            self._template().install(package_dir, install_dir)
+        with self._package_provider.provide_package(self._package_src, params) as package_dir:
+            self._package_src.template().install(package_dir, install_dir)
 
-    def _template(self):
+
+class PackageSource(object):
+    def __init__(self, path):
+        self.path = path
+
+    def template(self):
         return _templates[self._template_name()]
             
     def _template_name(self):
-        return _read_package_description(self._package_src_dir).template_name
+        return _read_package_description(self.path).template_name
         
 
 def params_to_build_env(params):
