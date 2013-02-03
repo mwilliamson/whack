@@ -5,6 +5,7 @@ import subprocess
 import shutil
 import functools
 import uuid
+import contextlib
 
 from nose.tools import istest, assert_equal, assert_false
 
@@ -23,6 +24,16 @@ def test(func):
             func(test_runner)
     
     return istest(run_test)
+
+
+class InMemoryPackageSourceFetcher(object):
+    def __init__(self, package_sources):
+        self._package_sources = package_sources
+
+    @contextlib.contextmanager
+    def fetch(self, package_name):
+        yield PackageSource(self._package_sources[package_name])
+
 
 class TestRunner(object):
     def __init__(self):
@@ -43,14 +54,17 @@ class TestRunner(object):
         return os.path.join(self._test_dir, str(uuid.uuid4()))
 
     def install(self, package_dir, params):
-        package_source_fetcher = PackageSourceFetcher([])
+        package_name = "test-package"
+        
+        package_source_fetcher = InMemoryPackageSourceFetcher({
+            package_name: package_dir
+        })
         package_provider = CachingPackageProvider(self._cacher)
         deployer = PackageDeployer()
         installer = Installer(package_source_fetcher, package_provider, deployer)
         
-        package_source = PackageSource(package_dir)
         install_dir = self.create_temporary_dir()
-        installer.install_from_package_source(package_source, install_dir, params=params)
+        installer.install(package_name, install_dir, params=params)
         return install_dir
         
     def __enter__(self):

@@ -6,9 +6,9 @@ class Installer(object):
 
     def install(self, package_name, install_dir, params=None):
         with self._fetch_package_source(package_name) as package_source:
-            return self.install_from_package_source(package_source, install_dir, params)
+            return self._install_from_package_source(package_source, install_dir, params)
             
-    def install_from_package_source(self, package_source, install_dir, params=None):
+    def _install_from_package_source(self, package_source, install_dir, params=None):
         if params is None:
             params = {}
             
