@@ -8,8 +8,6 @@ import urllib
 
 import blah
 
-from whack.filelock import FileLock
-
 
 class Download(object):
     def __init__(self, url, filename=None):
