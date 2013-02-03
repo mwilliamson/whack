@@ -2,11 +2,7 @@ import os
 import subprocess
 import shutil
 import json
-import uuid
-import stat
 import contextlib
-
-import spur
 
 from . import downloads
 from . import templates

@@ -1,16 +1,9 @@
 import os
 import subprocess
-import shutil
-import json
 import uuid
 import stat
-import contextlib
 
 import spur
-
-from whack import downloads
-from whack.hashes import Hasher
-from whack.tempdir import create_temporary_dir
 
 
 local_shell = spur.LocalShell()
