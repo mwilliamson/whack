@@ -190,11 +190,11 @@ class CachingPackageProvider(object):
                     yield package_dir
     
 
-class PackageInstaller(object):
+class PackageDeployer(object):
     def __init__(self, package_provider):
         self._package_provider = package_provider
     
-    def install(self, package_source, install_dir, params={}):
+    def deploy(self, package_source, install_dir, params={}):
         with self._provide_package(package_source, params) as package_dir:
             template = _templates[package_source.template_name()]
             template.install(package_dir, install_dir)

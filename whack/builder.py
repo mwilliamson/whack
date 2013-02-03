@@ -1,4 +1,4 @@
-from .installer import PackageInstaller, CachingPackageProvider
+from .installer import PackageDeployer, CachingPackageProvider
 from .sources import PackageSourceFetcher
 
 
@@ -9,8 +9,8 @@ class Builders(object):
 
     def install(self, package_name, install_dir, params=None):
         with self._fetch_package(package_name) as package_source:
-            installer = PackageInstaller(CachingPackageProvider(self._cacher))
-            return installer.install(package_source, install_dir, params=params)
+            deployer = PackageDeployer(CachingPackageProvider(self._cacher))
+            return deployer.deploy(package_source, install_dir, params=params)
             
     def _fetch_package(self, package_name):
         return self._package_source_fetcher.fetch(package_name)
