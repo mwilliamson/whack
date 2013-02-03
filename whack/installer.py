@@ -191,17 +191,16 @@ class CachingPackageProvider(object):
     
 
 class PackageInstaller(object):
-    def __init__(self, package_source, cacher):
-        self._package_source = package_source
+    def __init__(self, cacher):
         self._package_provider = CachingPackageProvider(cacher)
     
-    def install(self, install_dir, params={}):
-        with self._provide_package(params) as package_dir:
-            template = _templates[self._package_source.template_name()]
+    def install(self, package_source, install_dir, params={}):
+        with self._provide_package(package_source, params) as package_dir:
+            template = _templates[package_source.template_name()]
             template.install(package_dir, install_dir)
             
-    def _provide_package(self, params):
-        return self._package_provider.provide_package(self._package_source, params)
+    def _provide_package(self, package_source, params):
+        return self._package_provider.provide_package(package_source, params)
 
 
 def params_to_build_env(params):

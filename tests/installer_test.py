@@ -45,8 +45,8 @@ class TestRunner(object):
         install_dir = self.create_temporary_dir()
         
         package_source = PackageSource(package_dir)
-        installer = PackageInstaller(package_source, cacher=self._cacher)
-        installer.install(install_dir, params=params)
+        installer = PackageInstaller(cacher=self._cacher)
+        installer.install(package_source, install_dir, params=params)
         return install_dir
         
     def __enter__(self):
