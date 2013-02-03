@@ -8,11 +8,10 @@ import uuid
 
 from nose.tools import istest, assert_equal, assert_false
 
-from whack.installer import PackageInstaller
+from whack.installer import PackageInstaller, CachingPackageProvider
 from whack.sources import PackageSource
 from catchy import DirectoryCacher
 import testing
-
 
 
 def test(func):
@@ -45,7 +44,7 @@ class TestRunner(object):
         install_dir = self.create_temporary_dir()
         
         package_source = PackageSource(package_dir)
-        installer = PackageInstaller(cacher=self._cacher)
+        installer = PackageInstaller(CachingPackageProvider(self._cacher))
         installer.install(package_source, install_dir, params=params)
         return install_dir
         
