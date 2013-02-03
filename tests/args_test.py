@@ -55,12 +55,10 @@ def hyphens_are_replaced_by_underscores_in_environment_variable_name():
         args = parser.parse_args([])
     assert_equal("Hello!", args.the_title)
 
-def assert_assigned_value(action, attr_name, attr_value):
-    namespace = Namespace()
-    action(parser=None, namespace=namespace, values=values)
 
 class Namespace(object):
     pass
+
 
 @contextlib.contextmanager
 def _updated_env(env):
