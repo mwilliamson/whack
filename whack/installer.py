@@ -118,26 +118,12 @@ _templates = {
 
 _default_template_name = "relocatable"
 
-class PackageInstaller(object):
-    def __init__(self, package_dir, cacher):
-        self._package_dir = package_dir
-        self._cacher = cacher
-    
-    def install(self, install_dir, params={}):
-        install_id = _generate_install_id(self._package_dir, params)
-        
-        with create_temporary_dir() as temp_dir:
-            build_dir = os.path.join(temp_dir, "build")
-            working_dir = os.path.join(build_dir, "workspace")
-            
-            result = self._cacher.fetch(install_id, build_dir)
-            if not result.cache_hit:
-                self._build(build_dir, working_dir, params)
-                self._cacher.put(install_id, build_dir)
-            
-            self._template().install_from_cache(build_dir, working_dir, install_dir)
 
-    def _build(self, build_dir, working_dir, params):
+class PackageBuilder(object):
+    def __init__(self, package_dir):
+        self._package_dir = package_dir
+    
+    def build(self, build_dir, working_dir, params, template):
         ignore = shutil.ignore_patterns(".svn", ".hg", ".hgignore", ".git", ".gitignore")
         shutil.copytree(self._package_dir, working_dir, ignore=ignore)
         build_env = params_to_build_env(params)
@@ -150,10 +136,7 @@ class PackageInstaller(object):
                 env=build_env
             )
             
-        self._template().install_to_cache(run, build_dir, working_dir)
-
-    def _template(self):
-        return _templates[self._template_name()]
+        template.install_to_cache(run, build_dir, working_dir)
 
     def _fetch_downloads(self, build_dir, build_env):
         downloads_file_path = os.path.join(build_dir, "whack/downloads")
@@ -175,6 +158,31 @@ class PackageInstaller(object):
             return downloads.read_downloads_string(downloads_string)
         else:
             return []
+    
+
+class PackageInstaller(object):
+    def __init__(self, package_dir, cacher):
+        self._package_dir = package_dir
+        self._cacher = cacher
+        self._builder = PackageBuilder(package_dir)
+    
+    def install(self, install_dir, params={}):
+        install_id = _generate_install_id(self._package_dir, params)
+        
+        with create_temporary_dir() as temp_dir:
+            build_dir = os.path.join(temp_dir, "build")
+            working_dir = os.path.join(build_dir, "workspace")
+            
+            result = self._cacher.fetch(install_id, build_dir)
+            template = self._template()
+            if not result.cache_hit:
+                self._builder.build(build_dir, working_dir, params, template)
+                self._cacher.put(install_id, build_dir)
+            
+            self._template().install_from_cache(build_dir, working_dir, install_dir)
+
+    def _template(self):
+        return _templates[self._template_name()]
             
     def _template_name(self):
         return _read_package_description(self._package_dir).template_name
