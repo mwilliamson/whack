@@ -1,4 +1,4 @@
-from .installer import PackageDeployer
+from .deployer import PackageDeployer
 from .providers import CachingPackageProvider
 from .sources import PackageSourceFetcher
 
