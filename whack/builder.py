@@ -5,8 +5,10 @@ import shutil
 
 import blah
 
-from whack.installer import PackageInstaller
-from whack import downloads
+from .installer import PackageInstaller
+from . import downloads
+from .tempdir import create_temporary_dir
+
 
 class Builders(object):
     def __init__(self, cacher, builder_repo_uris):
@@ -33,7 +35,7 @@ class Builders(object):
     
     @contextlib.contextmanager
     def _fetch_package_from_source_control(self, package):
-        with _create_temporary_dir() as temporary_dir:
+        with create_temporary_dir() as temporary_dir:
             archive_dir = os.path.join(temporary_dir, "archive")
             blah.archive(package, archive_dir)
             yield archive_dir
@@ -56,13 +58,6 @@ class Builders(object):
     def _is_local_path(self, path):
         return path.startswith("/") or path.startswith(".")
 
-@contextlib.contextmanager
-def _create_temporary_dir():
-    try:
-        build_dir = tempfile.mkdtemp()
-        yield build_dir
-    finally:
-        shutil.rmtree(build_dir)
 
 @contextlib.contextmanager
 def _no_op_context_manager(value):
