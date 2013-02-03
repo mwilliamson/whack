@@ -4,6 +4,7 @@ import shutil
 import json
 import uuid
 import stat
+import contextlib
 
 import spur
 
@@ -121,10 +122,24 @@ _default_template_name = "relocatable"
 
 
 class PackageBuilder(object):
-    def __init__(self, package_src_dir):
+    def __init__(self, package_src_dir, cacher):
         self._package_src_dir = package_src_dir
+        self._cacher = cacher
     
-    def build(self, build_dir, target_dir, params, template):
+    @contextlib.contextmanager
+    def provide_package(self, install_id, template, params):
+        with create_temporary_dir() as temp_dir:
+            build_dir = os.path.join(temp_dir, "build")
+            package_dir = os.path.join(temp_dir, "package")
+            
+            result = self._cacher.fetch(install_id, package_dir)
+            if not result.cache_hit:
+                self._build(build_dir, package_dir, params, template)
+                self._cacher.put(install_id, package_dir)
+                
+            yield package_dir
+    
+    def _build(self, build_dir, target_dir, params, template):
         ignore = shutil.ignore_patterns(".svn", ".hg", ".hgignore", ".git", ".gitignore")
         shutil.copytree(self._package_src_dir, build_dir, ignore=ignore)
         build_env = params_to_build_env(params)
@@ -163,23 +178,14 @@ class PackageBuilder(object):
 class PackageInstaller(object):
     def __init__(self, package_src_dir, cacher):
         self._package_src_dir = package_src_dir
-        self._cacher = cacher
-        self._builder = PackageBuilder(package_src_dir)
+        self._builder = PackageBuilder(package_src_dir, cacher)
     
     def install(self, install_dir, params={}):
         install_id = _generate_install_id(self._package_src_dir, params)
         
-        with create_temporary_dir() as temp_dir:
-            build_dir = os.path.join(temp_dir, "build")
-            target_dir = os.path.join(temp_dir, "package")
-            
-            result = self._cacher.fetch(install_id, target_dir)
-            template = self._template()
-            if not result.cache_hit:
-                self._builder.build(build_dir, target_dir, params, template)
-                self._cacher.put(install_id, target_dir)
-            
-            self._template().install(target_dir, install_dir)
+        template = self._template()
+        with self._builder.provide_package(install_id, template, params) as package_dir:
+            self._template().install(package_dir, install_dir)
 
     def _template(self):
         return _templates[self._template_name()]
