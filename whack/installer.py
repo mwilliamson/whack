@@ -121,10 +121,9 @@ _templates = {
 _default_template_name = "relocatable"
 
 
-class PackageBuilder(object):
-    def __init__(self, package_src_dir, cacher):
+class BuildingPackageProvider(object):
+    def __init__(self, package_src_dir):
         self._package_src_dir = package_src_dir
-        self._cacher = cacher
     
     @contextlib.contextmanager
     def provide_package(self, template, params):
@@ -134,10 +133,7 @@ class PackageBuilder(object):
             build_dir = os.path.join(temp_dir, "build")
             package_dir = os.path.join(temp_dir, "package")
             
-            result = self._cacher.fetch(install_id, package_dir)
-            if not result.cache_hit:
-                self._build(build_dir, package_dir, params, template)
-                self._cacher.put(install_id, package_dir)
+            self._build(build_dir, package_dir, params, template)
                 
             yield package_dir
     
@@ -175,16 +171,39 @@ class PackageBuilder(object):
             return downloads.read_downloads_string(downloads_string)
         else:
             return []
+
+
+class CachingPackageProvider(object):
+    def __init__(self, package_src_dir, cacher):
+        self._package_src_dir = package_src_dir
+        self._cacher = cacher
+        self._underlying_provider = BuildingPackageProvider(package_src_dir)
+    
+    @contextlib.contextmanager
+    def provide_package(self, template, params):
+        install_id = _generate_install_id(self._package_src_dir, params)
+        
+        with create_temporary_dir() as temp_dir:
+            cached_package_dir = os.path.join(temp_dir, "package")
+            
+            result = self._cacher.fetch(install_id, cached_package_dir)
+            
+            if result.cache_hit:
+                yield cached_package_dir
+            else:
+                with self._underlying_provider.provide_package(template, params) as package_dir:
+                    self._cacher.put(install_id, package_dir)
+                    yield package_dir
     
 
 class PackageInstaller(object):
     def __init__(self, package_src_dir, cacher):
         self._package_src_dir = package_src_dir
-        self._builder = PackageBuilder(package_src_dir, cacher)
+        self._package_provider = CachingPackageProvider(package_src_dir, cacher)
     
     def install(self, install_dir, params={}):
         template = self._template()
-        with self._builder.provide_package(template, params) as package_dir:
+        with self._package_provider.provide_package(template, params) as package_dir:
             self._template().install(package_dir, install_dir)
 
     def _template(self):
