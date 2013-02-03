@@ -121,12 +121,12 @@ _default_template_name = "relocatable"
 
 
 class PackageBuilder(object):
-    def __init__(self, package_dir):
-        self._package_dir = package_dir
+    def __init__(self, package_src_dir):
+        self._package_src_dir = package_src_dir
     
     def build(self, build_dir, target_dir, params, template):
         ignore = shutil.ignore_patterns(".svn", ".hg", ".hgignore", ".git", ".gitignore")
-        shutil.copytree(self._package_dir, build_dir, ignore=ignore)
+        shutil.copytree(self._package_src_dir, build_dir, ignore=ignore)
         build_env = params_to_build_env(params)
         self._fetch_downloads(build_dir, build_env)
         
@@ -161,13 +161,13 @@ class PackageBuilder(object):
     
 
 class PackageInstaller(object):
-    def __init__(self, package_dir, cacher):
-        self._package_dir = package_dir
+    def __init__(self, package_src_dir, cacher):
+        self._package_src_dir = package_src_dir
         self._cacher = cacher
-        self._builder = PackageBuilder(package_dir)
+        self._builder = PackageBuilder(package_src_dir)
     
     def install(self, install_dir, params={}):
-        install_id = _generate_install_id(self._package_dir, params)
+        install_id = _generate_install_id(self._package_src_dir, params)
         
         with create_temporary_dir() as temp_dir:
             build_dir = os.path.join(temp_dir, "build")
@@ -185,7 +185,7 @@ class PackageInstaller(object):
         return _templates[self._template_name()]
             
     def _template_name(self):
-        return _read_package_description(self._package_dir).template_name
+        return _read_package_description(self._package_src_dir).template_name
         
 
 def params_to_build_env(params):
@@ -195,11 +195,11 @@ def params_to_build_env(params):
     return build_env
 
 
-def _generate_install_id(package_dir, params):
+def _generate_install_id(package_src_dir, params):
     hasher = Hasher()
     hasher.update(_uname("--kernel-name"))
     hasher.update(_uname("--machine"))
-    hasher.update_with_dir(package_dir)
+    hasher.update_with_dir(package_src_dir)
     hasher.update(json.dumps(params, sort_keys=True))
     return hasher.hexdigest()
 
@@ -207,8 +207,8 @@ def _uname(arg):
     return subprocess.check_output(["uname", arg])
 
 
-def _read_package_description(package_dir):
-    whack_json_path = os.path.join(package_dir, "whack/whack.json")
+def _read_package_description(package_src_dir):
+    whack_json_path = os.path.join(package_src_dir, "whack/whack.json")
     if os.path.exists(whack_json_path):
         with open(whack_json_path, "r") as whack_json_file:
             whack_json = json.load(whack_json_file)
