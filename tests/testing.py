@@ -1,9 +1,6 @@
 import os
 import os.path
-import contextlib
-import tempfile
 import subprocess
-import shutil
 import json
 
 class HelloWorld(object):
