@@ -8,7 +8,8 @@ import uuid
 
 from nose.tools import istest, assert_equal, assert_false
 
-from whack.installer import PackageDeployer, CachingPackageProvider
+from whack.installer import PackageDeployer
+from whack.providers import CachingPackageProvider
 from whack.sources import PackageSource
 from catchy import DirectoryCacher
 import testing
