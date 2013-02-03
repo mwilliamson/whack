@@ -19,7 +19,9 @@ _WHACK_ROOT = "/usr/local/whack"
 
 local_shell = spur.LocalShell()
 
-
+# TODO: can we combine the two templates by indicating which binaries are
+# relocatable within the package source, rather than apply relocatibility to
+# the package as a whole?
 class RelocatableTemplate(object):
     def build(self, run, build_dir, target_dir):
         build_script = os.path.join(build_dir, "whack/build")
