@@ -1,5 +1,4 @@
 import argparse
-import os
 
 import whack.config
 import whack.args

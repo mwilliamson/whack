@@ -3,12 +3,10 @@ import hashlib
 import shutil
 import subprocess
 import urlparse
-import collections
 import re
 import urllib
 
 import blah
-import catchy
 
 from whack.filelock import FileLock
 
