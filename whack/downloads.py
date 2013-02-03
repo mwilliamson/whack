@@ -7,6 +7,7 @@ import re
 import urllib
 
 import blah
+import locket
 
 
 class Download(object):
@@ -49,7 +50,7 @@ def _download_to_cache(url):
     url_hash = hashlib.sha1(url).hexdigest()
     cache_file = os.path.join(cache_dir, url_hash)
     subprocess.check_call(["mkdir", "-p", cache_dir])
-    with FileLock(cache_file):
+    with locket.lock_file("{0}.lock".format(cache_file)):
         if not os.path.exists(cache_file):
             urllib.urlretrieve(url, cache_file)
     return cache_file
