@@ -3,7 +3,6 @@ import subprocess
 import shutil
 import json
 import contextlib
-import stat
 
 from . import downloads
 from .hashes import Hasher
