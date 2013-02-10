@@ -13,7 +13,7 @@ class Installer(object):
             params = {}
             
         with self._provide_package(package_source, params) as package_dir:
-            self._deployer.deploy(package_source, package_dir, install_dir)
+            self._deployer.deploy(package_dir, install_dir)
             
     def _provide_package(self, package_source, params):
         return self._package_provider.provide_package(package_source, params)
