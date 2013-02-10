@@ -3,11 +3,14 @@ import subprocess
 import shutil
 import json
 import contextlib
+import stat
 
 from . import downloads
-from . import templates
 from .hashes import Hasher
 from .tempdir import create_temporary_dir
+
+
+_WHACK_ROOT = "/usr/local/whack"
 
 
 class BuildingPackageProvider(object):
@@ -33,8 +36,22 @@ class BuildingPackageProvider(object):
                 cwd=build_dir,
                 env=build_env
             )
-        template = templates.template(package_src.template_name())
-        template.build(run, build_dir, package_dir)
+            
+        install_script = os.path.join(build_dir, "whack/build")
+        os.mkdir(package_dir)
+        run([
+            "whack-run-with-whack-root",
+            package_dir,
+            install_script,
+            _WHACK_ROOT
+        ])
+                
+        with open(os.path.join(package_dir, "run"), "w") as run_file:
+            run_file.write('#!/usr/bin/env sh\nexec whack-run-with-whack-root "$(dirname $0)" "$@"')
+        subprocess.check_call(["chmod", "+x", os.path.join(package_dir, "run")])
+        
+        self._create_bin_dir(package_dir, "bin")
+        self._create_bin_dir(package_dir, "sbin")
 
     def _fetch_downloads(self, build_dir, build_env):
         downloads_file_path = os.path.join(build_dir, "whack/downloads")
@@ -56,6 +73,61 @@ class BuildingPackageProvider(object):
             return downloads.read_downloads_string(downloads_string)
         else:
             return []
+            
+    
+    def _create_bin_dir(self, install_dir, bin_dir_name):
+        def install_path(path):
+            return os.path.join(install_dir, path)
+        
+        dot_bin_dir = install_path(".{0}".format(bin_dir_name))
+        bin_dir = install_path(bin_dir_name)
+        if os.path.exists(dot_bin_dir):
+            if not os.path.exists(bin_dir):
+                os.mkdir(bin_dir)
+            for bin_filename in self._list_missing_executable_files(install_dir, dot_bin_dir, bin_dir):
+                bin_file_path = os.path.join(bin_dir, bin_filename)
+                with open(bin_file_path, "w") as bin_file:
+                    bin_file.write(
+                        '#!/usr/bin/env sh\n\n' +
+                        'TARGET="$(dirname $0)/../.{0}/{1}"\n'.format(bin_dir_name, bin_filename) +
+                        'ACTIVE_ROOT_ID_FILE=\'{0}\'\n'.format(_WHACK_ROOT) +
+                        'MY_ROOT_ID=`cat $(dirname $0)/../.whack-root-id`\n' +
+                        'ACTIVE_ROOT_ID=`cat "$ACTIVE_ROOT_ID_FILE" 2>/dev/null`\n' +
+                        'if [ -f "$ACTIVE_ROOT_ID_FILE" ] && [ "$MY_ROOT_ID" = "$ACTIVE_ROOT_ID" ]; then\n' +
+                        'exec "$TARGET" "$@"\n' +
+                        'else\n' +
+                        'exec "$(dirname $0)/../run" "$TARGET" "$@"\n' +
+                        'fi\n'
+                    )
+                os.chmod(bin_file_path, 0755)
+    
+    def _list_missing_executable_files(self, root_dir, dot_bin_dir, bin_dir):
+        def is_missing(filename):
+            return not os.path.exists(os.path.join(bin_dir, filename))
+        return filter(is_missing, self._list_executable_files(root_dir, dot_bin_dir))
+    
+    def _list_executable_files(self, root_dir, dir_path):
+        def is_executable_file(filename):
+            path = os.path.join(dir_path, filename)
+            while os.path.islink(path):
+                link_target = os.readlink(path)
+                if os.path.exists(link_target):
+                    # Valid symlink
+                    path = link_target
+                elif link_target.startswith("{0}/".format(_WHACK_ROOT)):
+                    # Valid symlink, but what root isn't mounted
+                    path = os.path.join(root_dir, link_target[len(_WHACK_ROOT) + 1:])
+                else:
+                    # Broken symlink
+                    return False
+            
+            if os.path.exists(path):
+                is_executable = stat.S_IXUSR & os.stat(path)[stat.ST_MODE]
+                return not os.path.isdir(path) and is_executable
+            else:
+                return False
+                
+        return filter(is_executable_file, os.listdir(dir_path))
 
 
 class CachingPackageProvider(object):
