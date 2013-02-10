@@ -1,33 +1,38 @@
 import os
-import contextlib
 import json
+import shutil
+import tempfile
+import uuid
 
 import blah
 
+from .files import copy_dir
 from . import downloads
-from .tempdir import create_temporary_dir
+
+
+class PackageSourceNotFound(Exception):
+    def __init__(self, package_name):
+        message = "Could not find source for package: {0}".format(package_name)
+        Exception.__init__(self, message)
 
 
 class PackageSourceFetcher(object):
-    @contextlib.contextmanager
     def fetch(self, package):
         if blah.is_source_control_uri(package):
-            fetch_dir = lambda: self._fetch_package_from_source_control(package)
+            return self._fetch_package_from_source_control(package)
         elif self._is_local_path(package):
-            fetch_dir = lambda: _no_op_context_manager(package)
-        
-        if fetch_dir is None:
-            raise RuntimeError("Could not find source for package: {0}".format(package))
+            return PackageSource(package)
         else:
-            with fetch_dir() as package_source_dir:
-                yield PackageSource(package_source_dir)
+            raise PackageSourceNotFound(package)
     
-    @contextlib.contextmanager
     def _fetch_package_from_source_control(self, package):
-        with create_temporary_dir() as temporary_dir:
-            archive_dir = os.path.join(temporary_dir, "archive")
-            blah.archive(package, archive_dir)
-            yield archive_dir
+        package_source_dir = _temporary_path()
+        try:
+            blah.archive(package, package_source_dir)
+            return TemporaryPackageSource(package_source_dir)
+        except:
+            shutil.rmtree(package_source_dir)
+            raise
             
     def _is_local_uri(self, uri):
         return "://" not in uri
@@ -36,14 +41,31 @@ class PackageSourceFetcher(object):
         return path.startswith("/") or path.startswith(".")
 
 
-@contextlib.contextmanager
-def _no_op_context_manager(value):
-    yield value
+def _temporary_path():
+    return os.path.join(tempfile.gettempdir(), str(uuid.uuid4()))
 
 
 class PackageSource(object):
     def __init__(self, path):
         self.path = path
+        
+    def __enter__(self):
+        return self
+        
+    def __exit__(self, *args):
+        pass
+
+
+class TemporaryPackageSource(object):
+    def __init__(self, path):
+        self.path = path
+    
+    def __enter__(self):
+        return self
+    
+    def __exit__(self, *args):
+        shutil.rmtree(self.path)
+        
 
 def _read_package_description(package_src_dir):
     whack_json_path = os.path.join(package_src_dir, "whack/whack.json")

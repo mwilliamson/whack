@@ -1,9 +1,9 @@
 import os
 import subprocess
 
-from nose.tools import istest, assert_equal
+from nose.tools import istest, assert_equal, assert_raises
 
-from whack.sources import PackageSourceFetcher
+from whack.sources import PackageSourceFetcher, PackageSourceNotFound
 from whack.tempdir import create_temporary_dir
 from whack.files import read_file, write_file
 
@@ -28,6 +28,12 @@ def can_fetch_package_source_from_local_path():
         source_fetcher = PackageSourceFetcher()
         with source_fetcher.fetch(package_source_dir) as package_source:
             assert_equal("Bob", read_file(os.path.join(package_source.path, "name")))
+
+
+@istest
+def error_is_raised_if_package_source_cannot_be_found():
+    source_fetcher = PackageSourceFetcher()
+    assert_raises(PackageSourceNotFound, lambda: source_fetcher.fetch("nginx"))
 
 
 def _convert_to_git_repo(cwd):
