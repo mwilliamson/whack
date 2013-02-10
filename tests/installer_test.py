@@ -145,32 +145,6 @@ chmod +x $INSTALL_DIR/bin/hello
     
     
 @test
-def working_symlinks_in_dot_bin_to_files_under_whack_root_are_created_in_bin(test_runner):
-    _INSTALL = r"""#!/bin/sh
-set -e
-INSTALL_DIR=$1
-mkdir -p $INSTALL_DIR/.bin
-cat > $INSTALL_DIR/.bin/hello << EOF
-#!/bin/sh
-echo Hello there
-EOF
-
-chmod +x $INSTALL_DIR/.bin/hello
-ln -s $INSTALL_DIR/.bin/hello $INSTALL_DIR/.bin/hello-sym
-ln -s $INSTALL_DIR/.bin/hell $INSTALL_DIR/.bin/hello-borked
-"""
-
-    package_dir = test_runner.create_local_package(
-        scripts={"build": _INSTALL}
-    )
-    install_dir = test_runner.install(package_dir, params={})
-    
-    output = subprocess.check_output([os.path.join(install_dir, "bin/hello-sym")])
-    assert_equal("Hello there\n", output)
-    assert_false(os.path.exists(os.path.join(install_dir, "bin/hello-borked")))
-    
-    
-@test
 def result_of_build_command_is_reused_when_no_params_are_set(test_runner):
     package = _create_logging_package(test_runner)
     test_runner.install(package.package_dir, params={})
