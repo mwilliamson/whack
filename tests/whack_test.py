@@ -31,24 +31,6 @@ chmod +x hello
         build=_TEST_BUILDER_BUILD,
         expected_output="1\n"
     )
-    
-
-@istest
-def package_from_source_control_can_be_downloaded_and_used():
-    with create_temporary_dir() as package_dir, create_temporary_dir() as install_dir:
-        testing.write_package_source(
-            package_dir,
-            {"build": testing.HelloWorld.BUILD}
-        )
-        _convert_to_git_repo(package_dir)
-        
-        _install(
-            "git+file://{0}".format(package_dir),
-            install_dir
-        )
-        
-        output = subprocess.check_output([os.path.join(install_dir, "hello")])
-        assert_equal(testing.HelloWorld.EXPECTED_OUTPUT, output)
 
 
 @istest
