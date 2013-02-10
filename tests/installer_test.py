@@ -170,35 +170,8 @@ chmod +x $INSTALL_DIR/.bin/hello
     
     output = subprocess.check_output([os.path.join(install_dir, "bin/hello")])
     assert_equal("Hello there\n", output)
-    
-    
-@test
-def result_of_build_command_is_reused_when_no_params_are_set(test_runner):
-    package = _create_logging_package(test_runner)
-    test_runner.install(package.package_dir, params={})
-    test_runner.install(package.package_dir, params={})
-    
-    assert_equal("building\n", package.read_build_log())
-    assert_equal("installing\ninstalling\n", package.read_install_log())
-    
-@test
-def result_of_build_command_is_reused_when_params_are_the_same(test_runner):
-    package = _create_logging_package(test_runner)
-    test_runner.install(package.package_dir, params={"VERSION": "2.4"})
-    test_runner.install(package.package_dir, params={"VERSION": "2.4"})
-    
-    assert_equal("building\n", package.read_build_log())
-    assert_equal("installing\ninstalling\n", package.read_install_log())
-    
-@test
-def result_of_build_command_is_not_reused_when_params_are_not_the_same(test_runner):
-    package = _create_logging_package(test_runner)
-    test_runner.install(package.package_dir, params={"VERSION": "2.4"})
-    test_runner.install(package.package_dir, params={"VERSION": "2.5"})
-    
-    assert_equal("building\nbuilding\n", package.read_build_log())
-    assert_equal("installing\ninstalling\n", package.read_install_log())
-    
+
+
 @test
 def files_already_under_bin_are_not_replaced(test_runner):
     _INSTALL = r"""#!/bin/sh
@@ -313,6 +286,36 @@ ln -s $INSTALL_DIR/.bin/hell $INSTALL_DIR/.bin/hello-borked
     output = subprocess.check_output([os.path.join(install_dir, "bin/hello-sym")])
     assert_equal("Hello there\n", output)
     assert_false(os.path.exists(os.path.join(install_dir, "bin/hello-borked")))
+    
+    
+@test
+def result_of_build_command_is_reused_when_no_params_are_set(test_runner):
+    package = _create_logging_package(test_runner)
+    test_runner.install(package.package_dir, params={})
+    test_runner.install(package.package_dir, params={})
+    
+    assert_equal("building\n", package.read_build_log())
+    assert_equal("installing\ninstalling\n", package.read_install_log())
+    
+    
+@test
+def result_of_build_command_is_reused_when_params_are_the_same(test_runner):
+    package = _create_logging_package(test_runner)
+    test_runner.install(package.package_dir, params={"VERSION": "2.4"})
+    test_runner.install(package.package_dir, params={"VERSION": "2.4"})
+    
+    assert_equal("building\n", package.read_build_log())
+    assert_equal("installing\ninstalling\n", package.read_install_log())
+    
+    
+@test
+def result_of_build_command_is_not_reused_when_params_are_not_the_same(test_runner):
+    package = _create_logging_package(test_runner)
+    test_runner.install(package.package_dir, params={"VERSION": "2.4"})
+    test_runner.install(package.package_dir, params={"VERSION": "2.5"})
+    
+    assert_equal("building\nbuilding\n", package.read_build_log())
+    assert_equal("installing\ninstalling\n", package.read_install_log())
     
     
 def _create_logging_package(test_runner):
