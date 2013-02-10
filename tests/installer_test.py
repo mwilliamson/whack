@@ -145,30 +145,6 @@ chmod +x $INSTALL_DIR/bin/hello
     
     
 @test
-def placing_executables_under_dot_sbin_creates_directly_executable_files_under_sbin(test_runner):
-    _INSTALL = r"""#!/bin/sh
-set -e
-INSTALL_DIR=$1
-mkdir -p $INSTALL_DIR/.sbin
-echo 'Hello there' > $INSTALL_DIR/message
-cat > $INSTALL_DIR/.sbin/hello << EOF
-#!/bin/sh
-cat $INSTALL_DIR/message
-EOF
-
-chmod +x $INSTALL_DIR/.sbin/hello
-"""
-
-    package_dir = test_runner.create_local_package(
-        scripts={"build": _INSTALL}
-    )
-    install_dir = test_runner.install(package_dir, params={})
-    
-    output = subprocess.check_output([os.path.join(install_dir, "sbin/hello")])
-    assert_equal("Hello there\n", output)
-    
-    
-@test
 def non_executable_files_under_dot_bin_are_not_created_in_bin(test_runner):
     _INSTALL = r"""#!/bin/sh
 set -e

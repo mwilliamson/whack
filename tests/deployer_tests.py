@@ -37,6 +37,21 @@ def placing_executables_under_dot_bin_creates_directly_executable_files_under_bi
         command = [os.path.join(install_dir, "bin/hello")]
         output = subprocess.check_output(command)
         assert_equal("Hello there", output)
+    
+    
+@istest
+def placing_executables_under_dot_sbin_creates_directly_executable_files_under_sbin():
+    with create_temporary_dir() as package_dir, create_temporary_dir() as install_dir:
+        _write_files(package_dir, [
+            FileDescription("message", "Hello there"),
+            _sh_script_description(".sbin/hello", "cat {0}/message".format(WHACK_ROOT)),
+        ])
+        deployer = PackageDeployer()
+        deployer.deploy(package_dir, install_dir)
+        
+        command = [os.path.join(install_dir, "sbin/hello")]
+        output = subprocess.check_output(command)
+        assert_equal("Hello there", output)
 
 
 @istest
