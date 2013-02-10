@@ -295,7 +295,6 @@ def result_of_build_command_is_reused_when_no_params_are_set(test_runner):
     test_runner.install(package.package_dir, params={})
     
     assert_equal("building\n", package.read_build_log())
-    assert_equal("installing\ninstalling\n", package.read_install_log())
     
     
 @test
@@ -305,7 +304,6 @@ def result_of_build_command_is_reused_when_params_are_the_same(test_runner):
     test_runner.install(package.package_dir, params={"VERSION": "2.4"})
     
     assert_equal("building\n", package.read_build_log())
-    assert_equal("installing\ninstalling\n", package.read_install_log())
     
     
 @test
@@ -315,45 +313,39 @@ def result_of_build_command_is_not_reused_when_params_are_not_the_same(test_runn
     test_runner.install(package.package_dir, params={"VERSION": "2.5"})
     
     assert_equal("building\nbuilding\n", package.read_build_log())
-    assert_equal("installing\ninstalling\n", package.read_install_log())
     
     
 def _create_logging_package(test_runner):
     build_log = test_runner.create_temporary_path()
-    install_log = test_runner.create_temporary_path()
     
     _BUILD = r"""#!/bin/sh
 echo building >> {0}
 """.format(build_log)
 
-    _INSTALL = r"""#!/bin/sh
-echo installing >> {0}
-""".format(install_log)
-
     package_dir = test_runner.create_local_package(
-        "relocatable",
-        scripts={"build": _BUILD, "install": _INSTALL}
+        "fixed-root",
+        scripts={"build": _BUILD}
     )
-    return LoggingPackage(package_dir, build_log, install_log)
+    return LoggingPackage(package_dir, build_log)
+    
     
 class LoggingPackage(object):
-    def __init__(self, package_dir, build_log, install_log):
+    def __init__(self, package_dir, build_log):
         self.package_dir = package_dir
         self._build_log = build_log
-        self._install_log = install_log
         
     def read_build_log(self):
         return open(self._build_log).read()
-        
-    def read_install_log(self):
-        return open(self._install_log).read()
+
 
 def _write_script(path, contents):
     _write_file(path, contents)
     _make_executable(path)
 
+
 def _make_executable(path):
     subprocess.check_call(["chmod", "u+x", path])
+
 
 def _write_file(path, contents):
     open(path, "w").write(contents)
