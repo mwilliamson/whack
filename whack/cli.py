@@ -29,7 +29,6 @@ class InstallCommand(object):
         subparser.add_argument("--no-cache", action="store_true")
         subparser.add_argument("--http-cache-url", action=env_default)
         subparser.add_argument("--http-cache-key", action=env_default)
-        subparser.add_argument("--add-builder-repo", action="append", default=[])
         subparser.add_argument("--add-parameter", "-p", action="append", default=[])
     
     def execute(self, args):
@@ -50,7 +49,6 @@ class InstallCommand(object):
         self._operations.install(
             package=args.package,
             install_dir=args.install_dir,
-            builder_uris=args.add_builder_repo,
             caching=caching,
             params=params
         )

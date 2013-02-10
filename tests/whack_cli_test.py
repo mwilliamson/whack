@@ -13,13 +13,13 @@ import whack.config
 
 @istest
 def application_is_installed_by_running_build_then_install_scripts():
-    with create_temporary_dir() as repo_dir, create_temporary_dir() as install_dir:
-        testing.write_package_source_in_repo(
-            repo_dir,
-            testing.HelloWorld.BUILD,
+    with create_temporary_dir() as package_source_dir, create_temporary_dir() as install_dir:
+        testing.write_package_source(
+            package_source_dir,
+            {"build": testing.HelloWorld.BUILD},
         )
         
-        subprocess.check_call(["whack", "install", "hello", install_dir, "--add-builder-repo", repo_dir])
+        subprocess.check_call(["whack", "install", package_source_dir, install_dir])
         
         output = subprocess.check_output([os.path.join(install_dir, "hello")])
         assert_equal(testing.HelloWorld.EXPECTED_OUTPUT, output)
@@ -35,17 +35,6 @@ def no_builder_repos_are_used_if_add_builder_repo_is_not_set():
     assert_equal(1, len(calls))
     assert_equal([], calls[0].builder_uris)
     
-
-@istest
-def all_values_passed_to_add_builder_repo_are_combined_into_builder_uris_arg():
-    argv = [
-        "whack", "install", "hello=1", "apps/hello",
-        "--add-builder-repo", "http://example.com/repo1",
-        "--add-builder-repo", "http://example.com/repo2"
-    ]
-    expected_builder_uris = ["http://example.com/repo1", "http://example.com/repo2"]
-    _test_install_arg_parse(argv, builder_uris=expected_builder_uris)
-
 
 @istest
 def params_are_passed_to_install_command_as_dict():

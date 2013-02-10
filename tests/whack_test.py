@@ -67,6 +67,5 @@ def _install(package, install_dir, caching=None, params=None, builder_uris=None)
         package,
         install_dir,
         caching=caching,
-        builder_uris=builder_uris,
         params=params
     )

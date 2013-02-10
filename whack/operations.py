@@ -8,7 +8,7 @@ from .providers import CachingPackageProvider
 from .deployer import PackageDeployer
 
 
-def install(package, install_dir, caching, builder_uris, params):
+def install(package, install_dir, caching, params):
     if not caching.enabled:
         cacher = NoCachingStrategy()
     elif caching.http_cache_url is not None:
@@ -17,7 +17,7 @@ def install(package, install_dir, caching, builder_uris, params):
     else:
         cacher = DirectoryCacher(os.path.expanduser("~/.cache/whack/builds"))
     
-    package_source_fetcher = PackageSourceFetcher(builder_uris)
+    package_source_fetcher = PackageSourceFetcher()
     package_provider = CachingPackageProvider(cacher)
     deployer = PackageDeployer()
     installer = Installer(package_source_fetcher, package_provider, deployer)
