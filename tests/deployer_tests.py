@@ -65,6 +65,15 @@ def non_executable_files_under_dot_bin_are_not_created_in_bin():
     ])
     with deployed_package:
         assert not os.path.exists(deployed_package.path("bin/message"))
+    
+    
+@istest
+def directories_under_dot_bin_are_not_created_in_bin():
+    deployed_package = _deploy_package([
+        _directory_description(".bin/sub"),
+    ])
+    with deployed_package:
+        assert not os.path.exists(deployed_package.path("bin/sub"))
 
 
 def _deploy_package(file_descriptions):
@@ -103,8 +112,11 @@ class DeployedPackage(object):
 def _write_files(root_dir, file_descriptions):
     for file_description in file_descriptions:
         path = os.path.join(root_dir, file_description.path)
-        mkdir_p(os.path.dirname(path))
-        write_file(path, file_description.contents)
+        if file_description.is_dir:
+            mkdir_p(path)
+        else:
+            mkdir_p(os.path.dirname(path))
+            write_file(path, file_description.contents)
         os.chmod(path, file_description.permissions)
 
 
@@ -112,8 +124,13 @@ def _sh_script_description(path, contents):
     return FileDescription(path, "#!/bin/sh\n{0}".format(contents), 0755)
 
 
+def _directory_description(path):
+    return FileDescription(path, None, permissions=0755, is_dir=True)
+
+
 class FileDescription(object):
-    def __init__(self, path, contents, permissions=0644):
+    def __init__(self, path, contents, permissions=0644, is_dir=False):
         self.path = path
         self.contents = contents
         self.permissions = permissions
+        self.is_dir = is_dir

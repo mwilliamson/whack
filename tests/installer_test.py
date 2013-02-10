@@ -143,21 +143,6 @@ chmod +x $INSTALL_DIR/bin/hello
     output = subprocess.check_output([os.path.join(install_dir, "run"), "hello"])
     assert_equal("Hello there\n", output)
     
-@test
-def directories_under_dot_bin_are_not_created_in_bin(test_runner):
-    _INSTALL = r"""#!/bin/sh
-set -e
-INSTALL_DIR=$1
-mkdir -p $INSTALL_DIR/.bin/sub
-"""
-
-    package_dir = test_runner.create_local_package(
-        scripts={"build": _INSTALL}
-    )
-    install_dir = test_runner.install(package_dir, params={})
-    
-    assert_false(os.path.exists(os.path.join(install_dir, "bin/sub")))
-    
     
 @test
 def working_symlinks_in_dot_bin_to_files_under_whack_root_are_created_in_bin(test_runner):
