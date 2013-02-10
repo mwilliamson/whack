@@ -22,7 +22,7 @@ class PackageSourceFetcher(object):
             fetch_dir = lambda: self._fetch_package_from_repo(package)
         
         if fetch_dir is None:
-            raise RuntimeError("No builders found for package: {0}".format(package))
+            raise RuntimeError("Could not find source for package: {0}".format(package))
         else:
             with fetch_dir() as package_source_dir:
                 yield PackageSource(package_source_dir)
