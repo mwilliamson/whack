@@ -91,7 +91,7 @@ class BuildingPackageProvider(object):
                     # Valid symlink
                     path = link_target
                 elif link_target.startswith("{0}/".format(_WHACK_ROOT)):
-                    # Valid symlink, but what root isn't mounted
+                    # Valid symlink, but whack root isn't mounted
                     path = os.path.join(root_dir, link_target[len(_WHACK_ROOT) + 1:])
                 else:
                     # Broken symlink
