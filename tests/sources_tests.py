@@ -18,6 +18,16 @@ def can_fetch_package_source_from_source_control():
         repo_uri = "git+file://{0}".format(package_source_dir)
         with source_fetcher.fetch(repo_uri) as package_source:
             assert_equal("Bob", read_file(os.path.join(package_source.path, "name")))
+
+
+@istest
+def can_fetch_package_source_from_local_path():
+    with create_temporary_dir() as package_source_dir:
+        write_file(os.path.join(package_source_dir, "name"), "Bob")
+        
+        source_fetcher = PackageSourceFetcher([])
+        with source_fetcher.fetch(package_source_dir) as package_source:
+            assert_equal("Bob", read_file(os.path.join(package_source.path, "name")))
     
 
 
