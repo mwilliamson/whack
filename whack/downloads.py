@@ -23,7 +23,32 @@ class Download(object):
         
     def __repr__(self):
         return "Download({0!r}, {1!r})".format(self.url, self.filename)
+
         
+def fetch_downloads(downloads_file_path, build_env, target_dir):
+    downloads_file = _read_downloads_file(downloads_file_path, build_env)
+    for download_line in downloads_file:
+        downloads.download(
+            download_line.url,
+            os.path.join(target_dir, download_line.filename)
+        )
+
+
+def _read_downloads_file(path, build_env):
+    if os.path.exists(path):
+        first_line = open(path).readline()
+        if first_line.startswith("#!"):
+            downloads_string = subprocess.check_output(
+                [path],
+                env=build_env
+            )
+        else:
+            downloads_string = open(path).read()
+            
+        return read_downloads_string(downloads_string)
+    else:
+        return []
+
 
 def read_downloads_string(downloads_string):
     return [

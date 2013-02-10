@@ -49,25 +49,7 @@ class BuildingPackageProvider(object):
 
     def _fetch_downloads(self, build_dir, build_env):
         downloads_file_path = os.path.join(build_dir, "whack/downloads")
-        downloads_file = self._read_downloads_file(downloads_file_path, build_env)
-        for download_line in downloads_file:
-            downloads.download(download_line.url, os.path.join(build_dir, download_line.filename))
-
-    def _read_downloads_file(self, path, build_env):
-        if os.path.exists(path):
-            first_line = open(path).readline()
-            if first_line.startswith("#!"):
-                downloads_string = subprocess.check_output(
-                    [path],
-                    env=build_env
-                )
-            else:
-                downloads_string = open(path).read()
-                
-            return downloads.read_downloads_string(downloads_string)
-        else:
-            return []
-            
+        downloads.fetch_downloads(downloads_file_path, build_env, build_dir)
     
     def _create_bin_dir(self, install_dir, bin_dir_name):
         def install_path(path):
