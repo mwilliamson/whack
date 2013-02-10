@@ -73,52 +73,54 @@ class TestRunner(object):
     def __exit__(self, *args):
         shutil.rmtree(self._test_dir)
 
+
 @test
-def application_is_installed_by_running_build_then_install_scripts(test_runner):
+def application_is_installed_by_running_build_with_install_dir_as_param(test_runner):
     _BUILD = r"""#!/bin/sh
-cat > hello << EOF
+set -e
+INSTALL_DIR=$1
+mkdir -p $INSTALL_DIR/bin
+cat > $INSTALL_DIR/bin/hello << EOF
 #!/bin/sh
 echo Hello there
 EOF
 
-chmod +x hello
-"""
-
-    _INSTALL = r"""#!/bin/sh
-INSTALL_DIR=$1
-cp hello $INSTALL_DIR/hello
+chmod +x $INSTALL_DIR/bin/hello
 """
 
     package_dir = test_runner.create_local_package(
-        "relocatable",
-        scripts={"build": _BUILD, "install": _INSTALL}
+        "fixed-root",
+        scripts={"build": _BUILD}
     )
     install_dir = test_runner.install(package_dir, params={})
     
-    output = subprocess.check_output(os.path.join(install_dir, "hello"))
+    output = subprocess.check_output(os.path.join(install_dir, "bin/hello"))
     assert_equal("Hello there\n", output)
     
+
 @test
 def params_are_passed_as_uppercase_environment_variables_to_build_script(test_runner):
     _BUILD = r"""#!/bin/sh
-echo '#!/bin/sh' >> hello
-echo echo hello ${HELLO_VERSION} >> hello
-chmod +x hello
-"""
-
-    _INSTALL = r"""#!/bin/sh
+set -e
 INSTALL_DIR=$1
-cp hello $INSTALL_DIR/hello
+mkdir -p $INSTALL_DIR/bin
+cat > $INSTALL_DIR/bin/hello << EOF
+#!/bin/sh
+echo hello ${HELLO_VERSION}
+EOF
+
+chmod +x $INSTALL_DIR/bin/hello
 """
 
     package_dir = test_runner.create_local_package(
-        "relocatable",
-        scripts={"build": _BUILD, "install": _INSTALL}
+        "fixed-root",
+        scripts={"build": _BUILD}
     )
     install_dir = test_runner.install(package_dir, params={"hello_version": 42})
     
-    output = subprocess.check_output(os.path.join(install_dir, "hello"))
+    output = subprocess.check_output(os.path.join(install_dir, "bin/hello"))
     assert_equal("hello 42\n", output)
+    
     
 @test
 def result_of_build_command_is_reused_when_no_params_are_set(test_runner):
@@ -146,29 +148,6 @@ def result_of_build_command_is_not_reused_when_params_are_not_the_same(test_runn
     
     assert_equal("building\nbuilding\n", package.read_build_log())
     assert_equal("installing\ninstalling\n", package.read_install_log())
-
-@test
-def non_relocatable_application_is_installed_by_running_build_with_install_dir_as_param(test_runner):
-    _INSTALL = r"""#!/bin/sh
-set -e
-INSTALL_DIR=$1
-mkdir -p $INSTALL_DIR/bin
-cat > $INSTALL_DIR/bin/hello << EOF
-#!/bin/sh
-echo Hello there
-EOF
-
-chmod +x $INSTALL_DIR/bin/hello
-"""
-
-    package_dir = test_runner.create_local_package(
-        "fixed-root",
-        scripts={"build": _INSTALL}
-    )
-    install_dir = test_runner.install(package_dir, params={})
-    
-    output = subprocess.check_output(os.path.join(install_dir, "bin/hello"))
-    assert_equal("Hello there\n", output)
     
 @test
 def non_relocatable_application_can_be_run_using_run_script(test_runner):
