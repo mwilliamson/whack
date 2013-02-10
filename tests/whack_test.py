@@ -46,13 +46,12 @@ def test_install(build, expected_output):
         test_install_with_caching(build, expected_output, caching=caching)
 
 def test_install_with_caching(build, expected_output, caching):
-    with create_temporary_dir() as repo_dir, create_temporary_dir() as install_dir:
-        testing.write_package_source_in_repo(repo_dir, build)
+    with create_temporary_dir() as package_source_dir, create_temporary_dir() as install_dir:
+        testing.write_package_source(package_source_dir, {"build": build})
         
         _install(
-            "hello",
+            package_source_dir,
             install_dir,
-            builder_uris=[repo_dir],
             params={"version": "1"},
             caching=caching
         )
