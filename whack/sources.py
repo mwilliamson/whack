@@ -6,9 +6,6 @@ import uuid
 
 import blah
 
-from .files import copy_dir
-from . import downloads
-
 
 class PackageSourceNotFound(Exception):
     def __init__(self, package_name):

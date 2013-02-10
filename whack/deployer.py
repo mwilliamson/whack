@@ -1,5 +1,4 @@
 import os
-import subprocess
 import uuid
 
 from .files import copy_dir
