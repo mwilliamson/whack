@@ -40,9 +40,9 @@ class TestRunner(object):
         self._test_dir = tempfile.mkdtemp()
         self._cacher = DirectoryCacher(os.path.join(self._test_dir, "cache"))
     
-    def create_local_package(self, template_name, scripts):
+    def create_local_package(self, scripts):
         package_dir = self.create_temporary_dir()
-        testing.write_package(package_dir, template_name, scripts)
+        testing.write_package(package_dir, scripts)
         return package_dir
     
     def create_temporary_dir(self):
@@ -89,7 +89,6 @@ chmod +x $INSTALL_DIR/bin/hello
 """
 
     package_dir = test_runner.create_local_package(
-        "fixed-root",
         scripts={"build": _BUILD}
     )
     install_dir = test_runner.install(package_dir, params={})
@@ -113,7 +112,6 @@ chmod +x $INSTALL_DIR/bin/hello
 """
 
     package_dir = test_runner.create_local_package(
-        "fixed-root",
         scripts={"build": _BUILD}
     )
     install_dir = test_runner.install(package_dir, params={"hello_version": 42})
@@ -138,7 +136,6 @@ chmod +x $INSTALL_DIR/bin/hello
 """
 
     package_dir = test_runner.create_local_package(
-        "fixed-root",
         scripts={"build": _INSTALL}
     )
     install_dir = test_runner.install(package_dir, params={})
@@ -163,7 +160,6 @@ chmod +x $INSTALL_DIR/.bin/hello
 """
 
     package_dir = test_runner.create_local_package(
-        "fixed-root",
         scripts={"build": _INSTALL}
     )
     install_dir = test_runner.install(package_dir, params={})
@@ -196,7 +192,6 @@ chmod +x $INSTALL_DIR/bin/hello
 """
 
     package_dir = test_runner.create_local_package(
-        "fixed-root",
         scripts={"build": _INSTALL}
     )
     install_dir = test_runner.install(package_dir, params={})
@@ -221,7 +216,6 @@ chmod +x $INSTALL_DIR/.sbin/hello
 """
 
     package_dir = test_runner.create_local_package(
-        "fixed-root",
         scripts={"build": _INSTALL}
     )
     install_dir = test_runner.install(package_dir, params={})
@@ -240,7 +234,6 @@ echo 'Hello there' > $INSTALL_DIR/.bin/message
 """
 
     package_dir = test_runner.create_local_package(
-        "fixed-root",
         scripts={"build": _INSTALL}
     )
     install_dir = test_runner.install(package_dir, params={})
@@ -256,7 +249,6 @@ mkdir -p $INSTALL_DIR/.bin/sub
 """
 
     package_dir = test_runner.create_local_package(
-        "fixed-root",
         scripts={"build": _INSTALL}
     )
     install_dir = test_runner.install(package_dir, params={})
@@ -281,7 +273,6 @@ ln -s $INSTALL_DIR/.bin/hell $INSTALL_DIR/.bin/hello-borked
 """
 
     package_dir = test_runner.create_local_package(
-        "fixed-root",
         scripts={"build": _INSTALL}
     )
     install_dir = test_runner.install(package_dir, params={})
@@ -326,7 +317,6 @@ echo building >> {0}
 """.format(build_log)
 
     package_dir = test_runner.create_local_package(
-        "fixed-root",
         scripts={"build": _BUILD}
     )
     return LoggingPackage(package_dir, build_log)
