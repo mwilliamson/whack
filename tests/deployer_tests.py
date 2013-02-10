@@ -1,5 +1,7 @@
 import os
 import subprocess
+import tempfile
+import shutil
 
 from nose.tools import istest, assert_equal
 
@@ -11,75 +13,92 @@ from whack.files import write_file, mkdir_p
 
 @istest
 def run_script_in_installation_mounts_whack_root_before_running_command():
-    with create_temporary_dir() as package_dir, create_temporary_dir() as install_dir:
-        _write_files(package_dir, [
-            FileDescription("message", "Hello there"),
-            _sh_script_description("bin/hello", "cat {0}/message".format(WHACK_ROOT)),
-        ])
-        deployer = PackageDeployer()
-        deployer.deploy(package_dir, install_dir)
-        
-        command = [os.path.join(install_dir, "run"), "hello"]
+    deployed_package = _deploy_package([
+        FileDescription("message", "Hello there"),
+        _sh_script_description("bin/hello", "cat {0}/message".format(WHACK_ROOT)),
+    ])
+    with deployed_package:
+        command = [deployed_package.path("run"), "hello"]
         output = subprocess.check_output(command)
         assert_equal("Hello there", output)
 
 
 @istest
 def placing_executables_under_dot_bin_creates_directly_executable_files_under_bin():
-    with create_temporary_dir() as package_dir, create_temporary_dir() as install_dir:
-        _write_files(package_dir, [
-            FileDescription("message", "Hello there"),
-            _sh_script_description(".bin/hello", "cat {0}/message".format(WHACK_ROOT)),
-        ])
-        deployer = PackageDeployer()
-        deployer.deploy(package_dir, install_dir)
-        
-        command = [os.path.join(install_dir, "bin/hello")]
+    deployed_package = _deploy_package([
+        FileDescription("message", "Hello there"),
+        _sh_script_description(".bin/hello", "cat {0}/message".format(WHACK_ROOT)),
+    ])
+    with deployed_package:
+        command = [deployed_package.path("bin/hello")]
         output = subprocess.check_output(command)
         assert_equal("Hello there", output)
     
     
 @istest
 def placing_executables_under_dot_sbin_creates_directly_executable_files_under_sbin():
-    with create_temporary_dir() as package_dir, create_temporary_dir() as install_dir:
-        _write_files(package_dir, [
-            FileDescription("message", "Hello there"),
-            _sh_script_description(".sbin/hello", "cat {0}/message".format(WHACK_ROOT)),
-        ])
-        deployer = PackageDeployer()
-        deployer.deploy(package_dir, install_dir)
-        
-        command = [os.path.join(install_dir, "sbin/hello")]
+    deployed_package = _deploy_package([
+        FileDescription("message", "Hello there"),
+        _sh_script_description(".sbin/hello", "cat {0}/message".format(WHACK_ROOT)),
+    ])
+    with deployed_package:
+        command = [deployed_package.path("sbin/hello")]
         output = subprocess.check_output(command)
         assert_equal("Hello there", output)
 
 
 @istest
 def files_already_under_bin_are_not_replaced():
-    with create_temporary_dir() as package_dir, create_temporary_dir() as install_dir:
-        _write_files(package_dir, [
-            _sh_script_description("bin/hello", "echo Hello from bin"),
-            _sh_script_description(".bin/hello", "echo Hello from .bin"),
-        ])
-        deployer = PackageDeployer()
-        deployer.deploy(package_dir, install_dir)
-        
-        command = [os.path.join(install_dir, "bin/hello")]
-        output = subprocess.check_output(command)
+    deployed_package = _deploy_package([
+        _sh_script_description("bin/hello", "echo Hello from bin"),
+        _sh_script_description(".bin/hello", "echo Hello from .bin"),
+    ])
+    with deployed_package:
+        output = subprocess.check_output([deployed_package.path("bin/hello")])
         assert_equal("Hello from bin\n", output)
     
     
 @istest
 def non_executable_files_under_dot_bin_are_not_created_in_bin():
-    with create_temporary_dir() as package_dir, create_temporary_dir() as install_dir:
-        _write_files(package_dir, [
-            FileDescription(".bin/message", "Hello there"),
-        ])
-        deployer = PackageDeployer()
-        deployer.deploy(package_dir, install_dir)
-        
-        assert not os.path.exists(os.path.join(install_dir, "bin/message"))
+    deployed_package = _deploy_package([
+        FileDescription(".bin/message", "Hello there"),
+    ])
+    with deployed_package:
+        assert not os.path.exists(deployed_package.path("bin/message"))
 
+
+def _deploy_package(file_descriptions):
+    package_dir = tempfile.mkdtemp()
+    try:
+        install_dir = tempfile.mkdtemp()
+        try:
+            _write_files(package_dir, file_descriptions)
+            deployer = PackageDeployer()
+            deployer.deploy(package_dir, install_dir)
+            return DeployedPackage(package_dir, install_dir)
+        except:
+            shutil.rmtree(install_dir)
+            raise
+    except:
+        shutil.rmtree(package_dir)
+        raise
+        
+
+class DeployedPackage(object):
+    def __init__(self, package_dir, install_dir):
+        self._package_dir = package_dir
+        self._install_dir = install_dir
+        
+    def path(self, path):
+        return os.path.join(self._install_dir, path)
+        
+    def __enter__(self):
+        return self
+        
+    def __exit__(self, *args):
+        shutil.rmtree(self._package_dir)
+        shutil.rmtree(self._install_dir)
+        
 
 def _write_files(root_dir, file_descriptions):
     for file_description in file_descriptions:
