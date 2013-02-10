@@ -29,22 +29,16 @@ class BuildingPackageProvider(object):
         shutil.copytree(package_src.path, build_dir, ignore=ignore)
         build_env = params_to_build_env(params)
         self._fetch_downloads(build_dir, build_env)
-        
-        def run(command):
-            subprocess.check_call(
-                command,
-                cwd=build_dir,
-                env=build_env
-            )
             
         install_script = os.path.join(build_dir, "whack/build")
         os.mkdir(package_dir)
-        run([
+        build_command = [
             "whack-run-with-whack-root",
             package_dir,
             install_script,
             _WHACK_ROOT
-        ])
+        ]
+        subprocess.check_call(build_command, cwd=build_dir, env=build_env)
                 
         with open(os.path.join(package_dir, "run"), "w") as run_file:
             run_file.write('#!/usr/bin/env sh\nexec whack-run-with-whack-root "$(dirname $0)" "$@"')
