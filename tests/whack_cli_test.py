@@ -26,17 +26,6 @@ def application_is_installed_by_running_build_then_install_scripts():
 
 
 @istest
-def no_builder_repos_are_used_if_add_builder_repo_is_not_set():
-    argv = ["whack", "install", "hello=1", "apps/hello"]
-    operations = mock.Mock()
-    main(argv, operations)
-    
-    calls = operations.install.mock_calls
-    assert_equal(1, len(calls))
-    assert_equal([], calls[0].builder_uris)
-    
-
-@istest
 def params_are_passed_to_install_command_as_dict():
     argv = [
         "whack", "install", "hello=1", "apps/hello",
