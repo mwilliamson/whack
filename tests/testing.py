@@ -20,9 +20,9 @@ chmod +x hello
 
 def create_test_builder(repo_dir, build):
     builder_dir = os.path.join(repo_dir, "hello")
-    write_package(builder_dir, {"build": build})
+    write_package_source(builder_dir, {"build": build})
 
-def write_package(package_dir, scripts):
+def write_package_source(package_dir, scripts):
     whack_dir = os.path.join(package_dir, "whack")
     os.makedirs(whack_dir)
     for name, contents in scripts.iteritems():

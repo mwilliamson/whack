@@ -36,7 +36,7 @@ chmod +x hello
 @istest
 def package_from_source_control_can_be_downloaded_and_used():
     with create_temporary_dir() as package_dir, create_temporary_dir() as install_dir:
-        testing.write_package(
+        testing.write_package_source(
             package_dir,
             {"build": testing.HelloWorld.BUILD}
         )
@@ -54,7 +54,7 @@ def package_from_source_control_can_be_downloaded_and_used():
 @istest
 def package_from_local_filesystem_can_be_used():
     with create_temporary_dir() as package_dir, create_temporary_dir() as install_dir:
-        testing.write_package(
+        testing.write_package_source(
             package_dir,
             {"build": testing.HelloWorld.BUILD}
         )

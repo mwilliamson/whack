@@ -42,7 +42,7 @@ class TestRunner(object):
     
     def create_local_package(self, scripts):
         package_dir = self.create_temporary_dir()
-        testing.write_package(package_dir, scripts)
+        testing.write_package_source(package_dir, scripts)
         return package_dir
     
     def create_temporary_dir(self):
