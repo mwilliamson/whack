@@ -14,7 +14,7 @@ import whack.config
 @istest
 def application_is_installed_by_running_build_then_install_scripts():
     with create_temporary_dir() as repo_dir, create_temporary_dir() as install_dir:
-        testing.create_test_builder(
+        testing.write_package_source_in_repo(
             repo_dir,
             testing.HelloWorld.BUILD,
         )

@@ -18,7 +18,7 @@ chmod +x hello
 
     EXPECTED_OUTPUT = "Hello world!\n"
 
-def create_test_builder(repo_dir, build):
+def write_package_source_in_repo(repo_dir, build):
     builder_dir = os.path.join(repo_dir, "hello")
     write_package_source(builder_dir, {"build": build})
 

@@ -79,7 +79,7 @@ def test_install(build, expected_output):
 
 def test_install_with_caching(build, expected_output, caching):
     with create_temporary_dir() as repo_dir, create_temporary_dir() as install_dir:
-        testing.create_test_builder(repo_dir, build)
+        testing.write_package_source_in_repo(repo_dir, build)
         
         _install(
             "hello",
