@@ -39,6 +39,21 @@ def placing_executables_under_dot_bin_creates_directly_executable_files_under_bi
         assert_equal("Hello there", output)
 
 
+@istest
+def files_already_under_bin_are_not_replaced():
+    with create_temporary_dir() as package_dir, create_temporary_dir() as install_dir:
+        _write_files(package_dir, [
+            FileDescription("bin/hello", "#!/bin/sh\necho Hello from bin", 0755),
+            FileDescription(".bin/hello", "#!/bin/sh\necho Hello from .bin", 0755),
+        ])
+        deployer = PackageDeployer()
+        deployer.deploy(package_dir, install_dir)
+        
+        command = [os.path.join(install_dir, "bin/hello")]
+        output = subprocess.check_output(command)
+        assert_equal("Hello from bin\n", output)
+
+
 def _write_files(root_dir, file_descriptions):
     for file_description in file_descriptions:
         path = os.path.join(root_dir, file_description.path)
@@ -46,7 +61,7 @@ def _write_files(root_dir, file_descriptions):
         write_file(path, file_description.contents)
         os.chmod(path, file_description.permissions)
     
-    
+
 class FileDescription(object):
     def __init__(self, path, contents, permissions=0644):
         self.path = path
