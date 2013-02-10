@@ -33,13 +33,6 @@ chmod +x hello
     )
 
 
-def _convert_to_git_repo(cwd):
-    def _git(command):
-        subprocess.check_call(["git"] + command, cwd=cwd)
-    _git(["init"])
-    _git(["add", "."])
-    _git(["commit", "-m", "Initial commit"])
-
 def test_install(build, expected_output):
     for should_cache in [True, False]:
         caching = whack.config.caching_config(enabled=should_cache)
