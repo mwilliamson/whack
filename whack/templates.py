@@ -28,7 +28,7 @@ class RelocatableTemplate(object):
         
 class FixedRootTemplate(object):
     def build(self, run, build_dir, target_dir):
-        install_script = os.path.join(build_dir, "whack/install")
+        install_script = os.path.join(build_dir, "whack/build")
         os.mkdir(target_dir)
         run([
             "whack-run-with-whack-root",

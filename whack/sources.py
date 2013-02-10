@@ -66,7 +66,7 @@ class PackageSource(object):
         return _read_package_description(self.path).template_name
 
 
-_default_template_name = "relocatable"
+_default_template_name = "fixed-root"
 
 
 def _read_package_description(package_src_dir):

@@ -163,7 +163,7 @@ chmod +x $INSTALL_DIR/bin/hello
 
     package_dir = test_runner.create_local_package(
         "fixed-root",
-        scripts={"install": _INSTALL}
+        scripts={"build": _INSTALL}
     )
     install_dir = test_runner.install(package_dir, params={})
     
@@ -187,7 +187,7 @@ chmod +x $INSTALL_DIR/bin/hello
 
     package_dir = test_runner.create_local_package(
         "fixed-root",
-        scripts={"install": _INSTALL}
+        scripts={"build": _INSTALL}
     )
     install_dir = test_runner.install(package_dir, params={})
     
@@ -211,7 +211,7 @@ chmod +x $INSTALL_DIR/.bin/hello
 
     package_dir = test_runner.create_local_package(
         "fixed-root",
-        scripts={"install": _INSTALL}
+        scripts={"build": _INSTALL}
     )
     install_dir = test_runner.install(package_dir, params={})
     
@@ -243,7 +243,7 @@ chmod +x $INSTALL_DIR/bin/hello
 
     package_dir = test_runner.create_local_package(
         "fixed-root",
-        scripts={"install": _INSTALL}
+        scripts={"build": _INSTALL}
     )
     install_dir = test_runner.install(package_dir, params={})
     
@@ -267,7 +267,7 @@ chmod +x $INSTALL_DIR/.sbin/hello
 
     package_dir = test_runner.create_local_package(
         "fixed-root",
-        scripts={"install": _INSTALL}
+        scripts={"build": _INSTALL}
     )
     install_dir = test_runner.install(package_dir, params={})
     
@@ -285,7 +285,7 @@ echo 'Hello there' > $INSTALL_DIR/.bin/message
 
     package_dir = test_runner.create_local_package(
         "fixed-root",
-        scripts={"install": _INSTALL}
+        scripts={"build": _INSTALL}
     )
     install_dir = test_runner.install(package_dir, params={})
     
@@ -301,7 +301,7 @@ mkdir -p $INSTALL_DIR/.bin/sub
 
     package_dir = test_runner.create_local_package(
         "fixed-root",
-        scripts={"install": _INSTALL}
+        scripts={"build": _INSTALL}
     )
     install_dir = test_runner.install(package_dir, params={})
     
@@ -325,7 +325,7 @@ ln -s $INSTALL_DIR/.bin/hell $INSTALL_DIR/.bin/hello-borked
 
     package_dir = test_runner.create_local_package(
         "fixed-root",
-        scripts={"install": _INSTALL}
+        scripts={"build": _INSTALL}
     )
     install_dir = test_runner.install(package_dir, params={})
     

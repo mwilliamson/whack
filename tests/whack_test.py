@@ -8,29 +8,27 @@ import whack.config
 import testing
 from whack.tempdir import create_temporary_dir
 
+
 @istest
-def application_is_installed_by_running_build_then_install_scripts():
+def application_is_installed_by_running_build_script_and_copying_output():
     test_install(
         build=testing.HelloWorld.BUILD,
-        install=testing.HelloWorld.INSTALL,
         expected_output=testing.HelloWorld.EXPECTED_OUTPUT
     )
+
 
 @istest
 def version_is_passed_to_build_script():
     _TEST_BUILDER_BUILD = r"""#!/bin/sh
+set -e
+cd $1
 echo '#!/bin/sh' >> hello
 echo echo ${VERSION} >> hello
 chmod +x hello
 """
 
-    _TEST_BUILDER_INSTALL = r"""#!/bin/sh
-INSTALL_DIR=$1
-cp hello $INSTALL_DIR/hello
-"""
     test_install(
         build=_TEST_BUILDER_BUILD,
-        install=_TEST_BUILDER_INSTALL,
         expected_output="1\n"
     )
     
@@ -40,8 +38,8 @@ def package_from_source_control_can_be_downloaded_and_used():
     with create_temporary_dir() as package_dir, create_temporary_dir() as install_dir:
         testing.write_package(
             package_dir,
-            "relocatable",
-            {"build": testing.HelloWorld.BUILD, "install": testing.HelloWorld.INSTALL}
+            "fixed-root",
+            {"build": testing.HelloWorld.BUILD}
         )
         _convert_to_git_repo(package_dir)
         
@@ -59,8 +57,8 @@ def package_from_local_filesystem_can_be_used():
     with create_temporary_dir() as package_dir, create_temporary_dir() as install_dir:
         testing.write_package(
             package_dir,
-            "relocatable",
-            {"build": testing.HelloWorld.BUILD, "install": testing.HelloWorld.INSTALL}
+            "fixed-root",
+            {"build": testing.HelloWorld.BUILD}
         )
         
         _install(package_dir, install_dir)
@@ -76,14 +74,14 @@ def _convert_to_git_repo(cwd):
     _git(["add", "."])
     _git(["commit", "-m", "Initial commit"])
 
-def test_install(build, install, expected_output):
+def test_install(build, expected_output):
     for should_cache in [True, False]:
         caching = whack.config.caching_config(enabled=should_cache)
-        test_install_with_caching(build, install, expected_output, caching=caching)
+        test_install_with_caching(build, expected_output, caching=caching)
 
-def test_install_with_caching(build, install, expected_output, caching):
+def test_install_with_caching(build, expected_output, caching):
     with create_temporary_dir() as repo_dir, create_temporary_dir() as install_dir:
-        testing.create_test_builder(repo_dir, build, install)
+        testing.create_test_builder(repo_dir, build)
         
         _install(
             "hello",
