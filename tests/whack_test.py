@@ -33,20 +33,6 @@ chmod +x hello
     )
 
 
-@istest
-def package_from_local_filesystem_can_be_used():
-    with create_temporary_dir() as package_dir, create_temporary_dir() as install_dir:
-        testing.write_package_source(
-            package_dir,
-            {"build": testing.HelloWorld.BUILD}
-        )
-        
-        _install(package_dir, install_dir)
-        
-        output = subprocess.check_output([os.path.join(install_dir, "hello")])
-        assert_equal(testing.HelloWorld.EXPECTED_OUTPUT, output)
-
-
 def _convert_to_git_repo(cwd):
     def _git(command):
         subprocess.check_call(["git"] + command, cwd=cwd)
