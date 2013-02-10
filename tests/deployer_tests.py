@@ -67,6 +67,18 @@ def files_already_under_bin_are_not_replaced():
         command = [os.path.join(install_dir, "bin/hello")]
         output = subprocess.check_output(command)
         assert_equal("Hello from bin\n", output)
+    
+    
+@istest
+def non_executable_files_under_dot_bin_are_not_created_in_bin():
+    with create_temporary_dir() as package_dir, create_temporary_dir() as install_dir:
+        _write_files(package_dir, [
+            FileDescription(".bin/message", "Hello there"),
+        ])
+        deployer = PackageDeployer()
+        deployer.deploy(package_dir, install_dir)
+        
+        assert not os.path.exists(os.path.join(install_dir, "bin/message"))
 
 
 def _write_files(root_dir, file_descriptions):

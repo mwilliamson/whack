@@ -143,23 +143,6 @@ chmod +x $INSTALL_DIR/bin/hello
     output = subprocess.check_output([os.path.join(install_dir, "run"), "hello"])
     assert_equal("Hello there\n", output)
     
-    
-@test
-def non_executable_files_under_dot_bin_are_not_created_in_bin(test_runner):
-    _INSTALL = r"""#!/bin/sh
-set -e
-INSTALL_DIR=$1
-mkdir -p $INSTALL_DIR/.bin
-echo 'Hello there' > $INSTALL_DIR/.bin/message
-"""
-
-    package_dir = test_runner.create_local_package(
-        scripts={"build": _INSTALL}
-    )
-    install_dir = test_runner.install(package_dir, params={})
-    
-    assert_false(os.path.exists(os.path.join(install_dir, "bin/message")))
-    
 @test
 def directories_under_dot_bin_are_not_created_in_bin(test_runner):
     _INSTALL = r"""#!/bin/sh
