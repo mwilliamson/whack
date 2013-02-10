@@ -8,7 +8,6 @@ import stat
 from . import downloads
 from .hashes import Hasher
 from .tempdir import create_temporary_dir
-from .executables import create_directly_executable_dir
 from .common import WHACK_ROOT
 
 
@@ -38,13 +37,6 @@ class BuildingPackageProvider(object):
             WHACK_ROOT
         ]
         subprocess.check_call(build_command, cwd=build_dir, env=build_env)
-                
-        with open(os.path.join(package_dir, "run"), "w") as run_file:
-            run_file.write('#!/usr/bin/env sh\nexec whack-run-with-whack-root "$(dirname $0)" "$@"')
-        subprocess.check_call(["chmod", "+x", os.path.join(package_dir, "run")])
-        
-        create_directly_executable_dir(package_dir, "bin")
-        create_directly_executable_dir(package_dir, "sbin")
 
     def _fetch_downloads(self, build_dir, build_env):
         downloads_file_path = os.path.join(build_dir, "whack/downloads")
