@@ -142,62 +142,6 @@ chmod +x $INSTALL_DIR/bin/hello
     
     output = subprocess.check_output([os.path.join(install_dir, "run"), "hello"])
     assert_equal("Hello there\n", output)
-
-
-@test
-def placing_executables_under_dot_bin_creates_directly_executable_files_under_bin(test_runner):
-    _INSTALL = r"""#!/bin/sh
-set -e
-INSTALL_DIR=$1
-mkdir -p $INSTALL_DIR/.bin
-echo 'Hello there' > $INSTALL_DIR/message
-cat > $INSTALL_DIR/.bin/hello << EOF
-#!/bin/sh
-cat $INSTALL_DIR/message
-EOF
-
-chmod +x $INSTALL_DIR/.bin/hello
-"""
-
-    package_dir = test_runner.create_local_package(
-        scripts={"build": _INSTALL}
-    )
-    install_dir = test_runner.install(package_dir, params={})
-    
-    output = subprocess.check_output([os.path.join(install_dir, "bin/hello")])
-    assert_equal("Hello there\n", output)
-
-
-@test
-def files_already_under_bin_are_not_replaced(test_runner):
-    _INSTALL = r"""#!/bin/sh
-set -e
-INSTALL_DIR=$1
-mkdir -p $INSTALL_DIR/.bin
-mkdir -p $INSTALL_DIR/bin
-
-cat > $INSTALL_DIR/.bin/hello << EOF
-#!/bin/sh
-echo Hello from .bin
-EOF
-chmod +x $INSTALL_DIR/.bin/hello
-
-cat > $INSTALL_DIR/bin/hello << EOF
-#!/bin/sh
-echo Hello from bin
-EOF
-
-chmod +x $INSTALL_DIR/.bin/hello
-chmod +x $INSTALL_DIR/bin/hello
-"""
-
-    package_dir = test_runner.create_local_package(
-        scripts={"build": _INSTALL}
-    )
-    install_dir = test_runner.install(package_dir, params={})
-    
-    output = subprocess.check_output([os.path.join(install_dir, "bin/hello")])
-    assert_equal("Hello from bin\n", output)
     
     
 @test
