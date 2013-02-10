@@ -14,7 +14,7 @@ def run_script_in_installation_mounts_whack_root_before_running_command():
     with create_temporary_dir() as package_dir, create_temporary_dir() as install_dir:
         _write_files(package_dir, [
             FileDescription("message", "Hello there"),
-            FileDescription("bin/hello", "#!/bin/sh\ncat {0}/message".format(WHACK_ROOT), 0755),
+            _sh_script_description("bin/hello", "cat {0}/message".format(WHACK_ROOT)),
         ])
         deployer = PackageDeployer()
         deployer.deploy(package_dir, install_dir)
@@ -29,7 +29,7 @@ def placing_executables_under_dot_bin_creates_directly_executable_files_under_bi
     with create_temporary_dir() as package_dir, create_temporary_dir() as install_dir:
         _write_files(package_dir, [
             FileDescription("message", "Hello there"),
-            FileDescription(".bin/hello", "#!/bin/sh\ncat {0}/message".format(WHACK_ROOT), 0755),
+            _sh_script_description(".bin/hello", "cat {0}/message".format(WHACK_ROOT)),
         ])
         deployer = PackageDeployer()
         deployer.deploy(package_dir, install_dir)
@@ -43,8 +43,8 @@ def placing_executables_under_dot_bin_creates_directly_executable_files_under_bi
 def files_already_under_bin_are_not_replaced():
     with create_temporary_dir() as package_dir, create_temporary_dir() as install_dir:
         _write_files(package_dir, [
-            FileDescription("bin/hello", "#!/bin/sh\necho Hello from bin", 0755),
-            FileDescription(".bin/hello", "#!/bin/sh\necho Hello from .bin", 0755),
+            _sh_script_description("bin/hello", "echo Hello from bin"),
+            _sh_script_description(".bin/hello", "echo Hello from .bin"),
         ])
         deployer = PackageDeployer()
         deployer.deploy(package_dir, install_dir)
@@ -60,7 +60,11 @@ def _write_files(root_dir, file_descriptions):
         mkdir_p(os.path.dirname(path))
         write_file(path, file_description.contents)
         os.chmod(path, file_description.permissions)
-    
+
+
+def _sh_script_description(path, contents):
+    return FileDescription(path, "#!/bin/sh\n{0}".format(contents), 0755)
+
 
 class FileDescription(object):
     def __init__(self, path, contents, permissions=0644):
