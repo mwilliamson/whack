@@ -145,6 +145,31 @@ chmod +x $INSTALL_DIR/bin/hello
     
     output = subprocess.check_output([os.path.join(install_dir, "run"), "hello"])
     assert_equal("Hello there\n", output)
+
+
+@test
+def placing_executables_under_dot_bin_creates_directly_executable_files_under_bin(test_runner):
+    _INSTALL = r"""#!/bin/sh
+set -e
+INSTALL_DIR=$1
+mkdir -p $INSTALL_DIR/.bin
+echo 'Hello there' > $INSTALL_DIR/message
+cat > $INSTALL_DIR/.bin/hello << EOF
+#!/bin/sh
+cat $INSTALL_DIR/message
+EOF
+
+chmod +x $INSTALL_DIR/.bin/hello
+"""
+
+    package_dir = test_runner.create_local_package(
+        "fixed-root",
+        scripts={"build": _INSTALL}
+    )
+    install_dir = test_runner.install(package_dir, params={})
+    
+    output = subprocess.check_output([os.path.join(install_dir, "bin/hello")])
+    assert_equal("Hello there\n", output)
     
     
 @test
@@ -173,30 +198,6 @@ def result_of_build_command_is_not_reused_when_params_are_not_the_same(test_runn
     
     assert_equal("building\nbuilding\n", package.read_build_log())
     assert_equal("installing\ninstalling\n", package.read_install_log())
-    
-@test
-def non_relocatable_application_under_bin_can_be_run_directly_if_binaries_are_placed_in_dot_bin(test_runner):
-    _INSTALL = r"""#!/bin/sh
-set -e
-INSTALL_DIR=$1
-mkdir -p $INSTALL_DIR/.bin
-echo 'Hello there' > $INSTALL_DIR/message
-cat > $INSTALL_DIR/.bin/hello << EOF
-#!/bin/sh
-cat $INSTALL_DIR/message
-EOF
-
-chmod +x $INSTALL_DIR/.bin/hello
-"""
-
-    package_dir = test_runner.create_local_package(
-        "fixed-root",
-        scripts={"build": _INSTALL}
-    )
-    install_dir = test_runner.install(package_dir, params={})
-    
-    output = subprocess.check_output([os.path.join(install_dir, "bin/hello")])
-    assert_equal("Hello there\n", output)
     
 @test
 def files_already_under_bin_are_not_replaced(test_runner):
