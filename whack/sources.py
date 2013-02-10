@@ -62,13 +62,6 @@ class PackageSource(object):
     def __init__(self, path):
         self.path = path
 
-    def template_name(self):
-        return _read_package_description(self.path).template_name
-
-
-_default_template_name = "fixed-root"
-
-
 def _read_package_description(package_src_dir):
     whack_json_path = os.path.join(package_src_dir, "whack/whack.json")
     if os.path.exists(whack_json_path):
@@ -80,13 +73,9 @@ def _read_package_description(package_src_dir):
         
         
 class DefaultPackageDescription(object):
-    template_name = _default_template_name
+    pass
 
 
 class DictBackedPackageDescription(object):
     def __init__(self, values):
         self._values = values
-    
-    @property
-    def template_name(self):
-        return self._values.get("template", _default_template_name)
