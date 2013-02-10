@@ -28,7 +28,7 @@ class Download(object):
 def fetch_downloads(downloads_file_path, build_env, target_dir):
     downloads_file = _read_downloads_file(downloads_file_path, build_env)
     for download_line in downloads_file:
-        downloads.download(
+        download(
             download_line.url,
             os.path.join(target_dir, download_line.filename)
         )
