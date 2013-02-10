@@ -30,12 +30,12 @@ class BuildingPackageProvider(object):
         build_env = params_to_build_env(params)
         self._fetch_downloads(build_dir, build_env)
             
-        install_script = os.path.join(build_dir, "whack/build")
+        build_script = os.path.join(build_dir, "whack/build")
         os.mkdir(package_dir)
         build_command = [
             "whack-run-with-whack-root",
             package_dir,
-            install_script,
+            build_script,
             _WHACK_ROOT
         ]
         subprocess.check_call(build_command, cwd=build_dir, env=build_env)
