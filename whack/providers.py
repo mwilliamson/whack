@@ -1,7 +1,6 @@
 import os
 import subprocess
 import shutil
-import contextlib
 
 from . import downloads
 from .tempdir import create_temporary_dir
@@ -10,15 +9,11 @@ from .common import WHACK_ROOT
 
 
 class BuildingPackageProvider(object):
-    @contextlib.contextmanager
-    def provide_package(self, package_src, params):
+    def provide_package(self, package_src, params, package_dir):
         with create_temporary_dir() as temp_dir:
             build_dir = os.path.join(temp_dir, "build")
-            package_dir = os.path.join(temp_dir, "package")
             
             self._build(package_src, build_dir, package_dir, params)
-                
-            yield package_dir
     
     def _build(self, package_src, build_dir, package_dir, params):
         ignore = shutil.ignore_patterns(".svn", ".hg", ".hgignore", ".git", ".gitignore")
@@ -46,21 +41,16 @@ class CachingPackageProvider(object):
         self._cacher = cacher
         self._underlying_provider = BuildingPackageProvider()
     
-    @contextlib.contextmanager
-    def provide_package(self, package_source, params):
+    def provide_package(self, package_source, params, package_dir):
         package_name = name_package(package_source, params)
+        # TODO: merge directories rather than overwriting
+        shutil.rmtree(package_dir)
+        result = self._cacher.fetch(package_name, package_dir)
         
-        with create_temporary_dir() as temp_dir:
-            cached_package_dir = os.path.join(temp_dir, "package")
-            
-            result = self._cacher.fetch(package_name, cached_package_dir)
-            
-            if result.cache_hit:
-                yield cached_package_dir
-            else:
-                with self._underlying_provider.provide_package(package_source, params) as package_dir:
-                    self._cacher.put(package_name, package_dir)
-                    yield package_dir
+        if not result.cache_hit:
+            with create_temporary_dir() as temp_dir:    
+                self._underlying_provider.provide_package(package_source, params, package_dir)
+                self._cacher.put(package_name, package_dir)
 
 
 def params_to_build_env(params):
