@@ -28,7 +28,7 @@ def _generate_install_id_using_hash(package_src_dir, params):
     hasher.update(_uname("--machine"))
     hasher.update_with_dir(package_src_dir)
     hasher.update(json.dumps(params, sort_keys=True))
-    return hasher.hexdigest()
+    return hasher.ascii_digest()
 
 
 def _uname(arg):

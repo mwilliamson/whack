@@ -13,7 +13,7 @@ class Hasher(object):
             self.update(os.path.relpath(file_path, dir_path))
             self.update(open(file_path).read())
     
-    def hexdigest(self):
+    def ascii_digest(self):
         return self._hash.hexdigest()
 
 def _all_files(top):

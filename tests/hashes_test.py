@@ -12,7 +12,7 @@ def hashing_the_same_single_value_gives_the_same_hash():
     def create_hash():
         hasher = Hasher()
         hasher.update("one")
-        return hasher.hexdigest()
+        return hasher.ascii_digest()
     
     assert_equal(create_hash(), create_hash())
 
@@ -22,7 +22,7 @@ def hashing_multiple_values_in_the_same_order_gives_the_same_hash():
         hasher = Hasher()
         hasher.update("one")
         hasher.update("two")
-        return hasher.hexdigest()
+        return hasher.ascii_digest()
     
     assert_equal(create_hash(), create_hash())
     
@@ -36,7 +36,7 @@ def hashing_multiple_values_in_different_order_gives_different_hash():
     second_hasher.update("two")
     second_hasher.update("one")
     
-    assert_not_equal(first_hasher.hexdigest(), second_hasher.hexdigest())
+    assert_not_equal(first_hasher.ascii_digest(), second_hasher.ascii_digest())
 
 @istest
 def hash_of_directories_are_the_same_if_they_have_the_same_files():
@@ -79,7 +79,7 @@ class TestRunner(object):
         
         hasher = Hasher()
         hasher.update_with_dir(files_dir)
-        return hasher.hexdigest()
+        return hasher.ascii_digest()
     
     def create_files(self, files):
         root = os.path.join(self._test_dir, str(uuid.uuid4()))
