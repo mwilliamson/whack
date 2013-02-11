@@ -44,7 +44,8 @@ class CachingPackageProvider(object):
     def provide_package(self, package_source, params, package_dir):
         package_name = name_package(package_source, params)
         # TODO: merge directories rather than overwriting
-        shutil.rmtree(package_dir)
+        if os.path.exists(package_dir):
+            shutil.rmtree(package_dir)
         result = self._cacher.fetch(package_name, package_dir)
         
         if not result.cache_hit:
