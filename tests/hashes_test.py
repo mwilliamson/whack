@@ -5,7 +5,8 @@ import uuid
 
 from nose.tools import istest, assert_equal, assert_not_equal
 
-from whack.hashes import Hasher
+from whack.hashes import Hasher, integer_to_ascii
+
 
 @istest
 def hashing_the_same_single_value_gives_the_same_hash():
@@ -69,6 +70,23 @@ def hash_of_directories_are_different_if_they_have_different_file_contents():
         second_hash = test_runner.hash_for_files({"hello": "Goodbye world!"})
         
         assert_not_equal(first_hash, second_hash)
+
+
+@istest
+def integer_to_ascii_converts_integer_to_alphanumeric_string():
+    cases = [
+        (0, "0"),
+        (4, "4"),
+        (10, "a"),
+        (31, "v"),
+        (32, "10"),
+        (1023, "vv"),
+        (1024, "100"),
+    ]
+    
+    for input_integer, expected_ascii in cases:
+        assert_equal(expected_ascii, integer_to_ascii(input_integer))
+
 
 class TestRunner(object):
     def __init__(self):
