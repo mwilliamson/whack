@@ -5,7 +5,7 @@ from whack.naming import PackageNamer
 
 @istest
 def package_with_unnamed_source_has_name_equal_to_install_identifier():
-    package_source = PackageSource("/tmp/nginx-src", "nginx")
+    package_source = PackageSource("/tmp/nginx-src", None)
     package_name = _name_package(package_source, {})
     assert_equal("install-id(/tmp/nginx-src, {})", package_name)
 
