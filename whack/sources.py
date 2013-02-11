@@ -45,7 +45,11 @@ def _temporary_path():
 class PackageSource(object):
     def __init__(self, path):
         self.path = path
-        
+        self._description = _read_package_description(path)
+    
+    def name(self):
+        return self._description.name()
+    
     def __enter__(self):
         return self
         
@@ -75,9 +79,13 @@ def _read_package_description(package_src_dir):
         
         
 class DefaultPackageDescription(object):
-    pass
+    def name(self):
+        return None
 
 
 class DictBackedPackageDescription(object):
     def __init__(self, values):
         self._values = values
+        
+    def name(self):
+        return self._values.get("name", None)
