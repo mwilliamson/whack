@@ -48,9 +48,8 @@ class CachingPackageProvider(object):
         result = self._cacher.fetch(package_name, package_dir)
         
         if not result.cache_hit:
-            with create_temporary_dir() as temp_dir:    
-                self._underlying_provider.provide_package(package_source, params, package_dir)
-                self._cacher.put(package_name, package_dir)
+            self._underlying_provider.provide_package(package_source, params, package_dir)
+            self._cacher.put(package_name, package_dir)
 
 
 def params_to_build_env(params):
