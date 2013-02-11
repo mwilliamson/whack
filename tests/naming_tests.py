@@ -8,6 +8,13 @@ def package_with_unnamed_source_has_name_equal_to_install_identifier():
     package_source = PackageSource("/tmp/nginx-src", None)
     package_name = _name_package(package_source, {})
     assert_equal("install-id(/tmp/nginx-src, {})", package_name)
+    
+
+@istest
+def package_with_named_source_has_name_equal_to_name_of_source_followed_by_install_identifier():
+    package_source = PackageSource("/tmp/nginx-src", "nginx")
+    package_name = _name_package(package_source, {})
+    assert_equal("nginx-install-id(/tmp/nginx-src, {})", package_name)
 
 
 def _name_package(package_source, params):
