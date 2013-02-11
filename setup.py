@@ -18,7 +18,7 @@ setup(
     install_requires=[
         'blah>=0.1.10,<0.2',
         'requests>=1,<2',
-        "catchy>=0.1.2,<0.2",
+        "catchy>=0.1.3,<0.2",
         "spur>=0.3,<0.4",
         "locket>=0.1.1,<0.2",
     ],

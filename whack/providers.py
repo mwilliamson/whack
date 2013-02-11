@@ -6,6 +6,7 @@ from . import downloads
 from .tempdir import create_temporary_dir
 from .naming import name_package
 from .common import WHACK_ROOT
+from .files import mkdir_p
 
 
 class BuildingPackageProvider(object):
@@ -22,7 +23,7 @@ class BuildingPackageProvider(object):
         self._fetch_downloads(build_dir, build_env)
             
         build_script = os.path.join(build_dir, "whack/build")
-        os.mkdir(package_dir)
+        mkdir_p(package_dir)
         build_command = [
             "whack-run-with-whack-root",
             package_dir, # package_dir is mounted at WHACK_ROOT
@@ -43,9 +44,6 @@ class CachingPackageProvider(object):
     
     def provide_package(self, package_source, params, package_dir):
         package_name = name_package(package_source, params)
-        # TODO: merge directories rather than overwriting
-        if os.path.exists(package_dir):
-            shutil.rmtree(package_dir)
         result = self._cacher.fetch(package_name, package_dir)
         
         if not result.cache_hit:
