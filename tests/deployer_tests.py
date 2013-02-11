@@ -95,31 +95,24 @@ def working_symlinks_in_dot_bin_to_files_under_whack_root_are_created_in_bin():
 def _deploy_package(file_descriptions):
     package_dir = tempfile.mkdtemp()
     try:
-        install_dir = tempfile.mkdtemp()
-        try:
-            write_files(package_dir, file_descriptions)
-            deployer = PackageDeployer()
-            deployer.deploy(package_dir, install_dir)
-            return DeployedPackage(package_dir, install_dir)
-        except:
-            shutil.rmtree(install_dir)
-            raise
+        write_files(package_dir, file_descriptions)
+        deployer = PackageDeployer()
+        deployer.deploy(package_dir)
+        return DeployedPackage(package_dir)
     except:
         shutil.rmtree(package_dir)
         raise
         
 
 class DeployedPackage(object):
-    def __init__(self, package_dir, install_dir):
+    def __init__(self, package_dir):
         self._package_dir = package_dir
-        self._install_dir = install_dir
         
     def path(self, path):
-        return os.path.join(self._install_dir, path)
+        return os.path.join(self._package_dir, path)
         
     def __enter__(self):
         return self
         
     def __exit__(self, *args):
         shutil.rmtree(self._package_dir)
-        shutil.rmtree(self._install_dir)

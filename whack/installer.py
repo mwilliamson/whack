@@ -1,3 +1,6 @@
+from .files import copy_dir
+
+
 class Installer(object):
     def __init__(self, package_source_fetcher, package_provider, deployer):
         self._package_source_fetcher = package_source_fetcher
@@ -13,7 +16,8 @@ class Installer(object):
             params = {}
             
         with self._provide_package(package_source, params) as package_dir:
-            self._deployer.deploy(package_dir, install_dir)
+            copy_dir(package_dir, install_dir)
+            self._deployer.deploy(install_dir)
             
     def _provide_package(self, package_source, params):
         return self._package_provider.provide_package(package_source, params)
