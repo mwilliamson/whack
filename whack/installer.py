@@ -5,15 +5,15 @@ class Installer(object):
         self._deployer = deployer
 
     def install(self, package_name, install_dir, params=None):
-        with self._fetch_package_source(package_name) as package_source:
-            return self._install_from_package_source(package_source, install_dir, params)
-            
-    def _install_from_package_source(self, package_source, install_dir, params=None):
+        self.build(package_name, install_dir, params)
+        self._deployer.deploy(install_dir)
+    
+    def build(self, package_name, target_dir, params=None):
         if params is None:
             params = {}
             
-        self._provide_package(package_source, params, install_dir)
-        self._deployer.deploy(install_dir)
+        with self._fetch_package_source(package_name) as package_source:    
+            self._provide_package(package_source, params, target_dir)
         
     def _provide_package(self, package_source, params, install_dir):
         return self._package_provider.provide_package(
