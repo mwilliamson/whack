@@ -1,12 +1,11 @@
 import os
 import subprocess
-import shutil
 
 from . import downloads
 from .tempdir import create_temporary_dir
 from .naming import name_package
 from .common import WHACK_ROOT
-from .files import mkdir_p, copy_dir
+from .files import mkdir_p
 
 
 class BuildingPackageProvider(object):
