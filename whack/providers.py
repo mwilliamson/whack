@@ -17,10 +17,7 @@ class BuildingPackageProvider(object):
             self._build(package_src, build_dir, package_dir, params)
     
     def _build(self, package_src, build_dir, package_dir, params):
-        for source_dir in package_src.source_paths():
-            target_dir = os.path.join(build_dir, source_dir)
-            mkdir_p(target_dir)
-            copy_dir(os.path.join(package_src.path, source_dir), target_dir)
+        package_src.write_to_dir(build_dir)
             
         build_env = params_to_build_env(params)
         self._fetch_downloads(build_dir, build_env)

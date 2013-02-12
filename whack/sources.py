@@ -6,6 +6,8 @@ import uuid
 
 import blah
 
+from .files import mkdir_p, copy_dir
+
 
 class PackageSourceNotFound(Exception):
     def __init__(self, package_name):
@@ -49,8 +51,15 @@ class PackageSource(object):
     
     def name(self):
         return self._description.name()
+    
+    def write_to_dir(self, destination_dir):
+        for source_dir in self._source_paths():
+            target_dir = os.path.join(destination_dir, source_dir)
+            mkdir_p(target_dir)
+            copy_dir(os.path.join(self.path, source_dir), target_dir)
         
-    def source_paths(self):
+    
+    def _source_paths(self):
         return ["whack"]
     
     def __enter__(self):
