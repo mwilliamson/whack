@@ -1,6 +1,5 @@
 import os
 import subprocess
-import shutil
 
 from . import downloads
 from .tempdir import create_temporary_dir
