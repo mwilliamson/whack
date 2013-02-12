@@ -22,8 +22,8 @@ def _name_package(package_source, params):
     return package_namer.name_package(package_source, {})
 
 
-def _generate_install_id(source_dir_path, params):
-    return "install-id({0}, {1})".format(source_dir_path, params)
+def _generate_install_id(package_source, params):
+    return "install-id({0}, {1})".format(package_source.path, params)
 
 
 class PackageSource(object):

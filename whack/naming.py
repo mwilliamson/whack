@@ -1,5 +1,6 @@
 import subprocess
 import json
+import os
 
 from .hashes import Hasher
 
@@ -14,7 +15,7 @@ class PackageNamer(object):
         self._generate_install_id = generate_install_id
         
     def name_package(self, package_source, params):
-        install_id = self._generate_install_id(package_source.path, params)
+        install_id = self._generate_install_id(package_source, params)
         name = package_source.name()
         if name is None:
             return install_id
@@ -22,11 +23,13 @@ class PackageNamer(object):
             return "{0}-{1}".format(name, install_id)
 
 
-def _generate_install_id_using_hash(package_src_dir, params):
+def _generate_install_id_using_hash(package_source, params):
     hasher = Hasher()
     hasher.update(_uname("--kernel-name"))
     hasher.update(_uname("--machine"))
-    hasher.update_with_dir(package_src_dir)
+    for source_path in package_source.source_paths():
+        absolute_source_path = os.path.join(package_source.path, source_path)
+        hasher.update_with_dir(absolute_source_path)
     hasher.update(json.dumps(params, sort_keys=True))
     return hasher.ascii_digest()
 
