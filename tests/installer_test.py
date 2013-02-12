@@ -54,6 +54,10 @@ class TestRunner(object):
         return os.path.join(self._test_dir, str(uuid.uuid4()))
 
     def install(self, package_dir, params):
+        install_dir = self.create_temporary_dir()
+        return self.install_to_dir(package_dir, params, install_dir)
+        
+    def install_to_dir(self, package_dir, params, install_dir):
         package_name = "test-package"
         
         package_source_fetcher = InMemoryPackageSourceFetcher({
@@ -63,9 +67,9 @@ class TestRunner(object):
         deployer = PackageDeployer()
         installer = Installer(package_source_fetcher, package_provider, deployer)
         
-        install_dir = self.create_temporary_dir()
         installer.install(package_name, install_dir, params=params)
         return install_dir
+        
         
     def __enter__(self):
         return self
@@ -92,6 +96,36 @@ chmod +x $INSTALL_DIR/bin/hello
         scripts={"build": _BUILD}
     )
     install_dir = test_runner.install(package_dir, params={})
+    
+    output = subprocess.check_output(os.path.join(install_dir, "bin/hello"))
+    assert_equal("Hello there\n", output)
+
+
+@test
+def install_works_with_relative_path_for_install_dir(test_runner):
+    _BUILD = r"""#!/bin/sh
+set -e
+INSTALL_DIR=$1
+mkdir -p $INSTALL_DIR/bin
+cat > $INSTALL_DIR/bin/hello << EOF
+#!/bin/sh
+echo Hello there
+EOF
+
+chmod +x $INSTALL_DIR/bin/hello
+"""
+
+    package_dir = test_runner.create_local_package(
+        scripts={"build": _BUILD}
+    )
+    install_dir = test_runner.create_temporary_dir()
+    original_dir = os.getcwd()
+    try:
+        os.chdir(install_dir)
+        test_runner.install_to_dir(package_dir, params={}, install_dir=".")
+    finally:
+        os.chdir(original_dir)
+        
     
     output = subprocess.check_output(os.path.join(install_dir, "bin/hello"))
     assert_equal("Hello there\n", output)
