@@ -6,7 +6,7 @@ from . import downloads
 from .tempdir import create_temporary_dir
 from .naming import name_package
 from .common import WHACK_ROOT
-from .files import mkdir_p
+from .files import mkdir_p, copy_dir
 
 
 class BuildingPackageProvider(object):
@@ -17,8 +17,11 @@ class BuildingPackageProvider(object):
             self._build(package_src, build_dir, package_dir, params)
     
     def _build(self, package_src, build_dir, package_dir, params):
-        ignore = shutil.ignore_patterns(".svn", ".hg", ".hgignore", ".git", ".gitignore")
-        shutil.copytree(package_src.path, build_dir, ignore=ignore)
+        for source_dir in package_src.source_paths():
+            target_dir = os.path.join(build_dir, source_dir)
+            mkdir_p(target_dir)
+            copy_dir(os.path.join(package_src.path, source_dir), target_dir)
+            
         build_env = params_to_build_env(params)
         self._fetch_downloads(build_dir, build_env)
             

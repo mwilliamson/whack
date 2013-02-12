@@ -49,6 +49,9 @@ class PackageSource(object):
     
     def name(self):
         return self._description.name()
+        
+    def source_paths(self):
+        return ["whack"]
     
     def __enter__(self):
         return self
