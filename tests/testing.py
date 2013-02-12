@@ -1,7 +1,7 @@
 import os
 import os.path
 import subprocess
-import json
+
 
 class HelloWorld(object):
     BUILD = r"""#!/bin/sh

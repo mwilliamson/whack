@@ -7,10 +7,10 @@ import functools
 import uuid
 import contextlib
 
-from nose.tools import istest, assert_equal, assert_false
+from nose.tools import istest, assert_equal
 
 from whack.installer import Installer
-from whack.sources import PackageSource, PackageSourceFetcher
+from whack.sources import PackageSource
 from whack.providers import CachingPackageProvider
 from whack.deployer import PackageDeployer
 from catchy import DirectoryCacher
