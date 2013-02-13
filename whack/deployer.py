@@ -12,13 +12,15 @@ class PackageDeployer(object):
             run_file.write('#!/usr/bin/env sh\nexec whack-run "$(dirname $0)" "$@"')
         subprocess.check_call(["chmod", "+x", os.path.join(install_dir, "run")])
         
-        _create_directly_executable_dir(install_dir, "bin")
-        _create_directly_executable_dir(install_dir, "sbin")
+        whack_root_id = str(uuid.uuid4())
+        
+        _create_directly_executable_dir(install_dir, "bin", whack_root_id)
+        _create_directly_executable_dir(install_dir, "sbin", whack_root_id)
         
         with open(os.path.join(install_dir, ".whack-root-id"), "w") as root_id_file:
-            root_id_file.write(str(uuid.uuid4()))
+            root_id_file.write(whack_root_id)
 
-def _create_directly_executable_dir(install_dir, bin_dir_name):
+def _create_directly_executable_dir(install_dir, bin_dir_name, whack_root_id):
     def install_path(path):
         return os.path.join(install_dir, path)
     
@@ -33,7 +35,7 @@ def _create_directly_executable_dir(install_dir, bin_dir_name):
                 bin_file.write(
                     '#!/usr/bin/env sh\n\n' +
                     'ACTIVE_ROOT_ID_FILE=\'{0}\'\n'.format(WHACK_ROOT) +
-                    'MY_ROOT_ID=`cat $(dirname $0)/../.whack-root-id`\n' +
+                    'MY_ROOT_ID=\'{0}\'\n'.format(whack_root_id) +
                     'ACTIVE_ROOT_ID=`cat "$ACTIVE_ROOT_ID_FILE" 2>/dev/null`\n' +
                     'TARGET="{0}/.{1}/{2}"\n'.format(WHACK_ROOT, bin_dir_name, bin_filename) +
                     'if [ -f "$ACTIVE_ROOT_ID_FILE" ] && [ "$MY_ROOT_ID" = "$ACTIVE_ROOT_ID" ]; then\n' +
