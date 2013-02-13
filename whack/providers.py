@@ -27,7 +27,7 @@ class BuildingPackageProvider(object):
         build_script = os.path.join(build_dir, "whack/build")
         mkdir_p(package_dir)
         build_command = [
-            "whack-run-with-whack-root",
+            "whack-run",
             os.path.abspath(package_dir), # package_dir is mounted at WHACK_ROOT
             build_script, # build_script is executed
             WHACK_ROOT # WHACK_ROOT is passed as the first argument to build_script
