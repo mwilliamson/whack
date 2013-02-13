@@ -113,11 +113,12 @@ def whack_root_is_remounted_if_in_different_whack_root():
         second_deployed_package = _deploy_package([
             sh_script_description(".bin/hello2", "{0}".format(first_deployed_package.path("bin/hello"))),
         ])
-        _add_echo_to_run_command(first_deployed_package)
-        _add_echo_to_run_command(second_deployed_package)
-        command = [second_deployed_package.path("bin/hello2")]
-        output = subprocess.check_output(command)
-        assert_equal("Run!\nRun!\nHello there", output)
+        with second_deployed_package:
+            _add_echo_to_run_command(first_deployed_package)
+            _add_echo_to_run_command(second_deployed_package)
+            command = [second_deployed_package.path("bin/hello2")]
+            output = subprocess.check_output(command)
+            assert_equal("Run!\nRun!\nHello there", output)
 
 
 def _add_echo_to_run_command(deployed_package):
