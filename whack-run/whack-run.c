@@ -3,15 +3,20 @@
 #include <sched.h>
 #include <sys/stat.h>
 #include <sys/mount.h>
+#include <sys/syscall.h>
 #include <unistd.h>
 #include <string.h>
+
+#ifndef CLONE_NEWNS
+#define CLONE_NEWNS 0x00020000
+#endif
 
 
 char* apps_dest_dir = "/usr/local/whack";
 char* apps_bin_dir = "/usr/local/whack/bin";
         
 int unshare_mount_namespace() {
-    return unshare(CLONE_NEWNS);
+    return syscall(__NR_unshare, CLONE_NEWNS);
 }
 
 int directory_exists(char* path) {
