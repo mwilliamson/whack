@@ -110,8 +110,9 @@ def whack_root_is_remounted_if_in_different_whack_root():
         sh_script_description(".bin/hello", "cat {0}/message".format(WHACK_ROOT)),
     ])
     with first_deployed_package:
+        hello_path = first_deployed_package.path("bin/hello")
         second_deployed_package = _deploy_package([
-            sh_script_description(".bin/hello2", "{0}".format(first_deployed_package.path("bin/hello"))),
+            sh_script_description(".bin/hello2", "{0}".format(hello_path)),
         ])
         with second_deployed_package:
             _add_echo_to_run_command(first_deployed_package)
