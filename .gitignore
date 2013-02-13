@@ -1,4 +1,4 @@
 *.pyc
 _virtualenv
 whack.egg-info
-/src/whack-run-with-whack-root
+/whack-run/whack-run
