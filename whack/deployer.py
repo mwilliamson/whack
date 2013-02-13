@@ -34,7 +34,7 @@ def _create_directly_executable_dir(install_dir, bin_dir_name, whack_root_id):
             with open(bin_file_path, "w") as bin_file:
                 bin_file.write(
                     '#!/usr/bin/env sh\n\n' +
-                    'ACTIVE_ROOT_ID_FILE=\'{0}\'\n'.format(WHACK_ROOT) +
+                    'ACTIVE_ROOT_ID_FILE=\'{0}\'/.whack-root-id\n'.format(WHACK_ROOT) +
                     'MY_ROOT_ID=\'{0}\'\n'.format(whack_root_id) +
                     'ACTIVE_ROOT_ID=`cat "$ACTIVE_ROOT_ID_FILE" 2>/dev/null`\n' +
                     'TARGET="{0}/.{1}/{2}"\n'.format(WHACK_ROOT, bin_dir_name, bin_filename) +
