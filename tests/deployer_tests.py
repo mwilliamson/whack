@@ -90,6 +90,27 @@ def working_symlinks_in_dot_bin_to_files_under_whack_root_are_created_in_bin():
         assert not os.path.exists(deployed_package.path("bin/hello-borked"))
 
 
+@istest
+def whack_root_is_not_remounted_if_already_in_same_whack_root():
+    deployed_package = _deploy_package([
+        sh_script_description(".bin/hello", "echo Hello there"),
+        sh_script_description(".bin/hello2", "{0}/bin/hello".format(WHACK_ROOT)),
+    ])
+    with deployed_package:
+        # This is a huge honking hack. I'm sorry.
+        run_command_path = deployed_package.path("run")
+        
+        with open(run_command_path) as run_command_file:
+            run_contents = run_command_file.read()
+        run_contents = run_contents.replace("\n", "\necho Run!\n", 1)
+        with open(run_command_path, "w") as run_command_file:
+            run_command_file.write(run_contents)
+            
+        command = [deployed_package.path("bin/hello2")]
+        output = subprocess.check_output(command)
+        assert_equal("Run!\nHello there\n", output)
+
+
 def _deploy_package(file_descriptions):
     package_dir = tempfile.mkdtemp()
     try:
