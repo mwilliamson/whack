@@ -97,18 +97,38 @@ def whack_root_is_not_remounted_if_already_in_same_whack_root():
         sh_script_description(".bin/hello2", "{0}/bin/hello".format(WHACK_ROOT)),
     ])
     with deployed_package:
-        # This is a huge honking hack. I'm sorry.
-        run_command_path = deployed_package.path("run")
-        
-        with open(run_command_path) as run_command_file:
-            run_contents = run_command_file.read()
-        run_contents = run_contents.replace("\n", "\necho Run!\n", 1)
-        with open(run_command_path, "w") as run_command_file:
-            run_command_file.write(run_contents)
-            
+        _add_echo_to_run_command(deployed_package)
         command = [deployed_package.path("bin/hello2")]
         output = subprocess.check_output(command)
         assert_equal("Run!\nHello there\n", output)
+
+
+@istest
+def whack_root_is_remounted_if_in_different_whack_root():
+    first_deployed_package = _deploy_package([
+        plain_file("message", "Hello there"),
+        sh_script_description(".bin/hello", "cat {0}/message".format(WHACK_ROOT)),
+    ])
+    with first_deployed_package:
+        second_deployed_package = _deploy_package([
+            sh_script_description(".bin/hello2", "{0}".format(first_deployed_package.path("bin/hello"))),
+        ])
+        _add_echo_to_run_command(first_deployed_package)
+        _add_echo_to_run_command(second_deployed_package)
+        command = [second_deployed_package.path("bin/hello2")]
+        output = subprocess.check_output(command)
+        assert_equal("Run!\nRun!\nHello there", output)
+
+
+def _add_echo_to_run_command(deployed_package):
+    # This is a huge honking hack. I'm sorry.
+    run_command_path = deployed_package.path("run")
+    with open(run_command_path) as run_command_file:
+        run_contents = run_command_file.read()
+    run_contents = run_contents.replace("\n", "\necho Run!\n", 1)
+    with open(run_command_path, "w") as run_command_file:
+        run_command_file.write(run_contents)
+    
 
 
 def _deploy_package(file_descriptions):
