@@ -36,6 +36,11 @@ int mount_bind(char* src_path, char* dest_path) {
 }
 
 int main(int argc, char **argv) {
+    if (argc == 2 && strcmp(argv[1], "--source-hash") == 0) {
+        printf("%s\n", WHACK_RUN_SOURCE_HASH);
+        return 0;
+    }
+    
     if (argc < 3) {
         printf("Usage: %s <apps-dir> <app> <args>\n", argv[0]);
         return 1;
