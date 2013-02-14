@@ -13,7 +13,6 @@
 
 
 char* apps_dest_dir = "/usr/local/whack";
-char* apps_bin_dir = "/usr/local/whack/bin";
         
 int unshare_mount_namespace() {
     return syscall(__NR_unshare, CLONE_NEWNS);
@@ -75,10 +74,6 @@ int main(int argc, char **argv) {
         app_args[i - 2] = argv[i];
     }
     app_args[argc - 2] = 0;
-    char* original_path = getenv("PATH");
-    char* new_path = (char*)malloc(sizeof(char) * strlen(original_path) + strlen(apps_bin_dir) + strlen(":") + 1);
-    sprintf(new_path, "%s:%s", apps_bin_dir, original_path);
-    setenv("PATH", new_path, 1);
     
     if (execvp(app, app_args) != 0) {
         printf("ERROR: failed to exec %s\n", app);

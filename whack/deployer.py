@@ -9,7 +9,11 @@ from .common import WHACK_ROOT
 class PackageDeployer(object):
     def deploy(self, install_dir):
         with open(os.path.join(install_dir, "run"), "w") as run_file:
-            run_file.write('#!/usr/bin/env sh\nexec whack-run "$(dirname $0)" "$@"')
+            run_file.write(
+                '#!/usr/bin/env sh\n' +
+                'PATH=$(dirname $0)/bin:$PATH\n' +
+                'exec whack-run "$(dirname $0)" "$@"'
+            )
         subprocess.check_call(["chmod", "+x", os.path.join(install_dir, "run")])
         
         whack_root_id = str(uuid.uuid4())
