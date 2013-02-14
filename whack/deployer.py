@@ -11,7 +11,7 @@ class PackageDeployer(object):
         with open(os.path.join(install_dir, "run"), "w") as run_file:
             run_file.write(
                 '#!/usr/bin/env sh\n' +
-                'PATH=$(dirname $0)/bin:$PATH\n' +
+                'PATH=$(dirname $0)/sbin:$(dirname $0)/bin:$PATH\n' +
                 'exec whack-run "$(dirname $0)" "$@"'
             )
         subprocess.check_call(["chmod", "+x", os.path.join(install_dir, "run")])

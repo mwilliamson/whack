@@ -39,6 +39,17 @@ def path_environment_variable_includes_bin_directory_under_whack_root():
 
 
 @istest
+def path_environment_variable_includes_sbin_directory_under_whack_root():
+    deployed_package = _deploy_package([
+        sh_script_description("sbin/hello", "echo Hello there"),
+    ])
+    with deployed_package:
+        command = [deployed_package.path("run"), "hello"]
+        output = subprocess.check_output(command)
+        assert_equal("Hello there\n", output)
+
+
+@istest
 def placing_executables_under_dot_bin_creates_directly_executable_files_under_bin():
     deployed_package = _deploy_package([
         plain_file("message", "Hello there"),
