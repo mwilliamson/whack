@@ -19,9 +19,23 @@ def run_script_in_installation_mounts_whack_root_before_running_command():
         sh_script_description("bin/hello", "cat {0}/message".format(WHACK_ROOT)),
     ])
     with deployed_package:
-        command = [deployed_package.path("run"), "hello"]
+        command = [
+            deployed_package.path("run"),
+            deployed_package.path("bin/hello")
+        ]
         output = subprocess.check_output(command)
         assert_equal("Hello there", output)
+
+
+@istest
+def path_environment_variable_includes_bin_directory_under_whack_root():
+    deployed_package = _deploy_package([
+        sh_script_description("bin/hello", "echo Hello there"),
+    ])
+    with deployed_package:
+        command = [deployed_package.path("run"), "hello"]
+        output = subprocess.check_output(command)
+        assert_equal("Hello there\n", output)
 
 
 @istest

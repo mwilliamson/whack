@@ -174,7 +174,10 @@ chmod +x $INSTALL_DIR/bin/hello
     )
     install_dir = test_runner.install(package_dir, params={})
     
-    output = subprocess.check_output([os.path.join(install_dir, "run"), "hello"])
+    output = subprocess.check_output([
+        os.path.join(install_dir, "run"),
+        os.path.join(install_dir, "bin/hello"),
+    ])
     assert_equal("Hello there\n", output)
     
     
