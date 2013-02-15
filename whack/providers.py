@@ -10,9 +10,7 @@ from .files import mkdir_p, copy_dir
 
 class BuildingPackageProvider(object):
     def provide_package(self, package_src, params, package_dir):
-        with create_temporary_dir() as temp_dir:
-            build_dir = os.path.join(temp_dir, "build")
-            
+        with create_temporary_dir() as build_dir:
             self._build(package_src, build_dir, package_dir, params)
     
     def _build(self, package_src, build_dir, package_dir, params):
