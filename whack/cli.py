@@ -25,8 +25,27 @@ def parse_args(argv):
         subparser.set_defaults(func=command.execute)
         command.create_parser(subparser)
 
-    return parser.parse_args(argv[1:])
-    
+    args = parser.parse_args(argv[1:])
+
+    args.caching = whack.config.caching_config(
+            enabled=not args.no_cache,
+            http_cache_url=args.http_cache_url,
+            http_cache_key=args.http_cache_key
+        )
+
+    params = {}
+    for parameter_arg in args.add_parameter:
+        if "=" in parameter_arg:
+            key, value = parameter_arg.split("=", 1)
+            params[key] = value
+        else:
+            params[parameter_arg] = ""
+            
+    args.params = params
+
+    return args
+
+
 class InstallCommand(object):
     def __init__(self, name):
         self.name = name
@@ -40,20 +59,6 @@ class InstallCommand(object):
         subparser.add_argument("--add-parameter", "-p", action="append", default=[])
     
     def execute(self, operations, args):
-        params = {}
-        for parameter_arg in args.add_parameter:
-            if "=" in parameter_arg:
-                key, value = parameter_arg.split("=", 1)
-                params[key] = value
-            else:
-                params[parameter_arg] = ""
-        
-        caching = whack.config.caching_config(
-            enabled=not args.no_cache,
-            http_cache_url=args.http_cache_url,
-            http_cache_key=args.http_cache_key
-        )
-        
         if self.name == "install":
             operation = operations.install
         elif self.name == "build":
@@ -64,6 +69,6 @@ class InstallCommand(object):
         operation(
             package=args.package,
             install_dir=args.target_dir,
-            caching=caching,
-            params=params
+            caching=args.caching,
+            params=args.params
         )

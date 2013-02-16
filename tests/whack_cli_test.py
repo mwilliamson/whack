@@ -3,7 +3,6 @@ import subprocess
 import contextlib
 
 from nose.tools import istest, assert_equal
-import mock
 
 from whack import cli
 import whack.config
@@ -61,15 +60,11 @@ def http_cache_key_is_passed_along():
     _test_install_arg_parse(argv, caching=caching_config)
 
 
-def _test_install_arg_parse(argv, env={}, **expected_kwargs):
-    operations = mock.Mock()
-    with _updated_env(env):
-        cli.main(argv, operations)
+def _test_install_arg_parse(argv, **expected_kwargs):
+    args = cli.parse_args(argv)
     
-    assert_equal(1, len(operations.install.mock_calls))
-    args, kwargs = operations.install.call_args
     for key, value in expected_kwargs.iteritems():
-        assert_equal(value, kwargs[key])
+        assert_equal(value, getattr(args, key))
 
 
 class CliOperations(object):
