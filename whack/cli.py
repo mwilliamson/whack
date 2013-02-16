@@ -7,6 +7,11 @@ env_default = whack.args.env_default(prefix="WHACK")
 
 
 def main(argv, operations):
+    args = parse_args(argv)
+    args.func(operations, args)
+
+
+def parse_args(argv):
     commands = [
         InstallCommand("install"),
         InstallCommand("build"),
@@ -19,10 +24,8 @@ def main(argv, operations):
         subparser = subparsers.add_parser(command.name)
         subparser.set_defaults(func=command.execute)
         command.create_parser(subparser)
-    
-    args = parser.parse_args(argv[1:])
-    args.func(operations, args)
-    
+
+    return parser.parse_args(argv[1:])
     
 class InstallCommand(object):
     def __init__(self, name):
