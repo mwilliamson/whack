@@ -1,6 +1,7 @@
 import os
 import subprocess
 import functools
+import contextlib
 
 from nose.tools import istest, assert_equal
 
@@ -57,8 +58,34 @@ def test_install(ops, build, expected_output):
 
 
 def _run_test(caching, test_func):
-    ops = whack.operations.create(caching)
-    return test_func(ops)
+    with _temporary_xdg_cache_dir():
+        ops = whack.operations.create(caching)
+        return test_func(ops)
+
+
+@contextlib.contextmanager
+def _temporary_xdg_cache_dir():
+    key = "XDG_CACHE_HOME"
+    with create_temporary_dir() as cache_dir:
+        with _updated_env({key: cache_dir}):
+            yield
+
+
+@contextlib.contextmanager
+def _updated_env(env_updates):
+    original_env = {}
+    for key, updated_value in env_updates.iteritems():
+        original_env[key] = os.environ.get(key)
+    os.environ[key] = updated_value
+
+    try:
+        yield
+    finally:
+        for key, original_value in original_env.iteritems():
+            if original_value is None:
+                del os.environ[key]
+            else:
+                os.environ[key] = original_value
 
 
 WhackNoCachingTests = test_set.create(
