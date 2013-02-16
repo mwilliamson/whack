@@ -13,7 +13,7 @@ from . import test_sets
 
 
 test_set = test_sets.TestSetBuilder()
-
+create = test_set.create
 test = test_set.add_test
 
 

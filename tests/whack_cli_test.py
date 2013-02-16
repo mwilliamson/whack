@@ -9,6 +9,7 @@ import testing
 from whack.tempdir import create_temporary_dir
 from whack.cli import main
 import whack.config
+from . import whack_test
 
 
 @istest
@@ -85,6 +86,31 @@ def _test_install_arg_parse(argv, env={}, **expected_kwargs):
     args, kwargs = operations.install.call_args
     for key, value in expected_kwargs.iteritems():
         assert_equal(value, kwargs[key])
+
+
+class CliOperations(object):
+    def install(self, package_name, install_dir, params):
+        params_args = [
+            "-p{0}={1}".format(key, value)
+            for key, value in params.iteritems()
+        ]
+        subprocess.check_call(
+            ["whack", "install", package_name, install_dir] + params_args
+        )
+        
+    def build(self, package_name, install_dir, params):
+        pass
+
+
+def _run_cli_operations_test(test_func):
+    ops = CliOperations()
+    test_func(ops)
+
+
+WhackCliOperationsTest = whack_test.create(
+    "WhackCliOperationsTest",
+    _run_cli_operations_test,
+)
 
 
 @contextlib.contextmanager
