@@ -1,5 +1,3 @@
-import os
-
 from catchy import HttpCacher, xdg_directory_cacher, NoCachingStrategy
 
 from .installer import Installer

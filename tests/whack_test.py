@@ -3,7 +3,7 @@ import subprocess
 import functools
 import contextlib
 
-from nose.tools import istest, assert_equal
+from nose.tools import assert_equal
 
 import whack.operations
 import whack.config
