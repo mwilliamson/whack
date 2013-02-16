@@ -8,15 +8,7 @@ from .providers import CachingPackageProvider
 from .deployer import PackageDeployer
 
 
-def install(*args, **kwargs):
-    return _installer_command(lambda installer: installer.install, *args, **kwargs)
-    
-
-def build(*args, **kwargs):
-    return _installer_command(lambda installer: installer.build, *args, **kwargs)
-
-
-def _installer_command(command, package, install_dir, caching, params):
+def create(caching):
     if not caching.enabled:
         cacher = NoCachingStrategy()
     elif caching.http_cache_url is not None:
@@ -29,5 +21,26 @@ def _installer_command(command, package, install_dir, caching, params):
     package_provider = CachingPackageProvider(cacher)
     deployer = PackageDeployer()
     installer = Installer(package_source_fetcher, package_provider, deployer)
-    command(installer)(package, install_dir, params)
     
+    return Operations(installer)
+
+
+class Operations(object):
+    def __init__(self, installer):
+        self._installer = installer
+        
+    def install(self, package_name, install_dir, params):
+        return self._installer.install(package_name, install_dir, params)
+        
+    def build(self, package_name, install_dir, params):
+        return self._installer.build(package_name, install_dir, params)
+
+
+def install(package, install_dir, caching, params):
+    operations = create(caching)
+    operations.install(package, install_dir, params)
+    
+
+def build(command, package, install_dir, caching, params):
+    operations = create(caching)
+    operations.build(package, install_dir, params)
