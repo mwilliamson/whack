@@ -46,8 +46,7 @@ def test_install(ops, build, expected_output):
     with create_temporary_dir() as package_source_dir, create_temporary_dir() as install_dir:
         testing.write_package_source(package_source_dir, {"build": build})
         
-        _install(
-            ops,
+        ops.install(
             package_source_dir,
             install_dir,
             params={"version": "1"},
@@ -55,14 +54,6 @@ def test_install(ops, build, expected_output):
         
         output = subprocess.check_output([os.path.join(install_dir, "hello")])
         assert_equal(expected_output, output)
-    
-
-def _install(ops, package, install_dir, params=None):
-    ops.install(
-        package,
-        install_dir,
-        params=params
-    )
 
 
 def _run_test(caching, test_func):
