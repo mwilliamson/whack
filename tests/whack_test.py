@@ -22,6 +22,7 @@ def application_is_installed_by_running_build_script_and_copying_output(ops):
     test_install(
         ops,
         build=testing.HelloWorld.BUILD,
+        params={},
         expected_output=testing.HelloWorld.EXPECTED_OUTPUT
     )
 
@@ -39,18 +40,19 @@ chmod +x hello
     test_install(
         ops,
         build=_TEST_BUILDER_BUILD,
+        params={"version": "1"},
         expected_output="1\n"
     )
 
 
-def test_install(ops, build, expected_output):
+def test_install(ops, build, params, expected_output):
     with create_temporary_dir() as package_source_dir, create_temporary_dir() as install_dir:
         testing.write_package_source(package_source_dir, {"build": build})
         
         ops.install(
             package_source_dir,
             install_dir,
-            params={"version": "1"},
+            params=params,
         )
         
         output = subprocess.check_output([os.path.join(install_dir, "hello")])
