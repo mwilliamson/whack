@@ -33,17 +33,28 @@ def parse_args(argv):
             http_cache_key=args.http_cache_key
         )
 
-    params = {}
-    for parameter_arg in args.add_parameter:
-        if "=" in parameter_arg:
-            key, value = parameter_arg.split("=", 1)
-            params[key] = value
-        else:
-            params[parameter_arg] = ""
-            
-    args.params = params
-
     return args
+
+
+class KeyValueAction(argparse.Action):
+    def __init__(self, default=None, **kwargs):
+        if default is None:
+            default = {}
+            
+        super(type(self), self).__init__(default=default, **kwargs)
+    
+    def __call__(self, parser, namespace, values, option_string=None):
+        if getattr(namespace, self.dest, None) is None:
+            setattr(namespace, self.dest, {})
+        
+        pairs = getattr(namespace, self.dest)
+        if "=" in values:
+            key, value = values.split("=", 1)
+            pairs[key] = value
+        else:
+            pairs[values] = ""
+        
+        setattr(namespace, self.dest, pairs)
 
 
 class InstallCommand(object):
@@ -56,7 +67,11 @@ class InstallCommand(object):
         subparser.add_argument("--no-cache", action="store_true")
         subparser.add_argument("--http-cache-url", action=env_default)
         subparser.add_argument("--http-cache-key", action=env_default)
-        subparser.add_argument("--add-parameter", "-p", action="append", default=[])
+        subparser.add_argument(
+            "--add-parameter", "-p",
+            action=KeyValueAction,
+            dest="params",
+        )
     
     def execute(self, operations, args):
         if self.name == "install":
