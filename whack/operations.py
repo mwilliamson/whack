@@ -1,6 +1,6 @@
 import os
 
-from catchy import HttpCacher, DirectoryCacher, NoCachingStrategy
+from catchy import HttpCacher, xdg_directory_cacher, NoCachingStrategy
 
 from .installer import Installer
 from .sources import PackageSourceFetcher
@@ -15,7 +15,7 @@ def create(caching):
         # TODO: add DirectoryCacher in front of HttpCacher
         cacher = HttpCacher(caching.http_cache_url, caching.http_cache_key)
     else:
-        cacher = DirectoryCacher(os.path.expanduser("~/.cache/whack/builds"))
+        cacher = xdg_directory_cacher("whack/builds")
     
     package_source_fetcher = PackageSourceFetcher()
     package_provider = CachingPackageProvider(cacher)
