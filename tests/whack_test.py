@@ -27,7 +27,7 @@ def application_is_installed_by_running_build_script_and_copying_output(ops):
 
 
 @test
-def version_is_passed_to_build_script(ops):
+def params_are_passed_to_build_script(ops):
     _TEST_BUILDER_BUILD = r"""#!/bin/sh
 set -e
 cd $1
