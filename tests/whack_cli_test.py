@@ -5,25 +5,9 @@ import contextlib
 from nose.tools import istest, assert_equal
 import mock
 
-import testing
-from whack.tempdir import create_temporary_dir
 from whack.cli import main
 import whack.config
 from . import whack_test
-
-
-@istest
-def application_is_installed_by_running_build_then_install_scripts():
-    with create_temporary_dir() as package_source_dir, create_temporary_dir() as install_dir:
-        testing.write_package_source(
-            package_source_dir,
-            {"build": testing.HelloWorld.BUILD},
-        )
-        
-        subprocess.check_call(["whack", "install", package_source_dir, install_dir])
-        
-        output = subprocess.check_output([os.path.join(install_dir, "hello")])
-        assert_equal(testing.HelloWorld.EXPECTED_OUTPUT, output)
 
 
 @istest
