@@ -1,3 +1,4 @@
 nose==1.2.1
 mock==1.0.1
 staticserver==0.1.0
+nose-test-sets>=0.2.0,<0.3

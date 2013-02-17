@@ -4,15 +4,15 @@ import functools
 import contextlib
 
 from nose.tools import assert_equal
+from nose_test_sets import TestSetBuilder
 
 import whack.operations
 import whack.config
 import testing
 from whack.tempdir import create_temporary_dir
-from . import test_sets
 
 
-test_set = test_sets.TestSetBuilder()
+test_set = TestSetBuilder()
 create = test_set.create
 test = test_set.add_test
 
