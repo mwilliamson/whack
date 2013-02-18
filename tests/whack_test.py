@@ -10,6 +10,7 @@ import whack.operations
 import whack.config
 import testing
 from whack.tempdir import create_temporary_dir
+from whack.files import sh_script_description
 
 
 test_set = TestSetBuilder()
@@ -47,8 +48,7 @@ chmod +x hello
 
 @test
 def build_leaves_undeployed_build_in_target_directory(ops):
-    with create_temporary_dir() as package_source_dir:
-        testing.write_package_source(package_source_dir, {"build": testing.HelloWorld.BUILD})
+    with _package_source(testing.HelloWorld.BUILD) as package_source_dir:
         with create_temporary_dir() as target_dir:
             ops.build(package_source_dir, target_dir, params={})
         
@@ -66,8 +66,8 @@ echo '#!/bin/sh' >> hello
 echo echo ${VERSION} >> hello
 chmod +x hello
 """
-    with create_temporary_dir() as package_source_dir:
-        testing.write_package_source(package_source_dir, {"build": _TEST_BUILDER_BUILD})
+    
+    with _package_source(_TEST_BUILDER_BUILD) as package_source_dir:
         with create_temporary_dir() as target_dir:
             ops.build(package_source_dir, target_dir, params={"version": "1"})
         
@@ -76,18 +76,19 @@ chmod +x hello
 
 
 def test_install(ops, build, params, expected_output):
-    with create_temporary_dir() as package_source_dir, create_temporary_dir() as install_dir:
-        testing.write_package_source(package_source_dir, {"build": build})
-        
-        ops.install(
-            package_source_dir,
-            install_dir,
-            params=params,
-        )
-        
-        output = subprocess.check_output([os.path.join(install_dir, "hello")])
-        assert_equal(expected_output, output)
-        assert _is_deployed(install_dir)
+    with _package_source(build) as package_source_dir:
+        with create_temporary_dir() as install_dir:
+            ops.install(
+                package_source_dir,
+                install_dir,
+                params=params,
+            )
+            
+            output = subprocess.check_output([
+                os.path.join(install_dir, "hello")
+            ])
+            assert_equal(expected_output, output)
+            assert _is_deployed(install_dir)
 
 
 def _run_test(caching, test_func):
@@ -98,7 +99,13 @@ def _run_test(caching, test_func):
 
 def _is_deployed(package_dir):
     return os.path.exists(os.path.join(package_dir, ".whack-root-id"))
-    
+
+
+def _package_source(build):
+    return create_temporary_dir([
+        sh_script_description("whack/build", build),
+    ])
+
 
 @contextlib.contextmanager
 def _temporary_xdg_cache_dir():
