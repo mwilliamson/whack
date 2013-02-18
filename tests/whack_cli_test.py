@@ -69,18 +69,20 @@ def _test_install_arg_parse(argv, **expected_kwargs):
 
 class CliOperations(object):
     def install(self, package_name, install_dir, params):
+        self._command("install", package_name, install_dir, params)
+        
+    def build(self, package_name, target_dir, params):
+        self._command("build", package_name, target_dir, params)
+        
+    def _command(self, command_name, package_name, target_dir, params):
         params_args = [
             "-p{0}={1}".format(key, value)
             for key, value in params.iteritems()
         ]
         subprocess.check_call(
-            ["whack", "install", package_name, install_dir] + params_args
+            ["whack", command_name, package_name, target_dir] + params_args
         )
         
-    def build(self, package_name, install_dir, params):
-        subprocess.check_call(
-            ["whack", "build", package_name, install_dir]
-        )
 
 
 def _run_cli_operations_test(test_func):

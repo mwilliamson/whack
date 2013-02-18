@@ -28,7 +28,7 @@ def application_is_installed_by_running_build_script_and_copying_output(ops):
 
 
 @test
-def params_are_passed_to_build_script(ops):
+def params_are_passed_to_build_script_during_install(ops):
     _TEST_BUILDER_BUILD = r"""#!/bin/sh
 set -e
 cd $1
@@ -54,6 +54,24 @@ def build_leaves_undeployed_build_in_target_directory(ops):
         
             output = subprocess.check_output([os.path.join(target_dir, "hello")])
             assert_equal(testing.HelloWorld.EXPECTED_OUTPUT, output)
+
+
+@test
+def params_are_passed_to_build_script_during_build(ops):
+    _TEST_BUILDER_BUILD = r"""#!/bin/sh
+set -e
+cd $1
+echo '#!/bin/sh' >> hello
+echo echo ${VERSION} >> hello
+chmod +x hello
+"""
+    with create_temporary_dir() as package_source_dir:
+        testing.write_package_source(package_source_dir, {"build": _TEST_BUILDER_BUILD})
+        with create_temporary_dir() as target_dir:
+            ops.build(package_source_dir, target_dir, params={"version": "1"})
+        
+            output = subprocess.check_output([os.path.join(target_dir, "hello")])
+            assert_equal("1\n", output)
 
 
 def test_install(ops, build, params, expected_output):
