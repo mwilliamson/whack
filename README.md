@@ -10,5 +10,29 @@ On the first installation, the application is compiled and copied to the target
 directory. On subsequent installations, a cached version of the application is
 copied to the target directory.
 
+## Installation
 
+Before you can use Whack, you need to install a utility called `whack-run`. You
+can download Whack from [GitHub][github] or [PyPI][pypi]. Then, from within
+the Whack's directory:
 
+```
+cd whack-run
+make
+```
+
+And as root:
+
+```
+make install
+```
+
+This installs the binary `whack-run` to `/usr/local/bin`. Once `whack-run` has
+been installed, you can install Whack as an ordinary Python package:
+
+```
+pip install whack
+```
+
+[github]: https://github.com/mwilliamson/whack
+[pypi]: https://pypi.python.org/pypi/whack
