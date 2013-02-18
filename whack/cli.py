@@ -15,6 +15,7 @@ def parse_args(argv):
     commands = [
         InstallCommand("install"),
         InstallCommand("build"),
+        DeployCommand(),
     ]
     
     parser = argparse.ArgumentParser()
@@ -64,14 +65,12 @@ class InstallCommand(object):
     def create_parser(self, subparser):
         subparser.add_argument('package')
         subparser.add_argument('target_dir', metavar="target-dir")
-        subparser.add_argument("--no-cache", action="store_true")
-        subparser.add_argument("--http-cache-url", action=env_default)
-        subparser.add_argument("--http-cache-key", action=env_default)
         subparser.add_argument(
             "--add-parameter", "-p",
             action=KeyValueAction,
             dest="params",
         )
+        _add_caching_args(subparser)
     
     def execute(self, operations, args):
         if self.name == "install":
@@ -87,3 +86,21 @@ class InstallCommand(object):
             caching=args.caching,
             params=args.params
         )
+
+
+class DeployCommand(object):
+    name = "deploy"
+    
+    def create_parser(self, subparser):
+        subparser.add_argument('package_dir', metavar="package-dir")
+        _add_caching_args(subparser)
+
+    def execute(self, operations, args):
+        operations.deploy(args.package_dir, args.caching)
+
+
+def _add_caching_args(parser):
+    parser.add_argument("--no-cache", action="store_true")
+    parser.add_argument("--http-cache-url", action=env_default)
+    parser.add_argument("--http-cache-key", action=env_default)
+    

@@ -73,7 +73,10 @@ class CliOperations(object):
         
     def build(self, package_name, target_dir, params):
         self._command("build", package_name, target_dir, params)
-        
+    
+    def deploy(self, package_dir):
+        subprocess.check_call(["whack", "deploy", package_dir])
+    
     def _command(self, command_name, package_name, target_dir, params):
         params_args = [
             "-p{0}={1}".format(key, value)

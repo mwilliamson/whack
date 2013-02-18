@@ -6,11 +6,12 @@ import contextlib
 from nose.tools import assert_equal
 from nose_test_sets import TestSetBuilder
 
+from whack.common import WHACK_ROOT
 import whack.operations
 import whack.config
 import testing
 from whack.tempdir import create_temporary_dir
-from whack.files import sh_script_description
+from whack.files import sh_script_description, plain_file
 
 
 test_set = TestSetBuilder()
@@ -73,6 +74,20 @@ chmod +x hello
         
             output = subprocess.check_output([os.path.join(target_dir, "hello")])
             assert_equal("1\n", output)
+
+
+@test
+def directory_is_deployed_in_place_by_default(ops):
+    package_files = [
+        plain_file("message", "Hello there"),
+        sh_script_description(".bin/hello", "cat {0}/message".format(WHACK_ROOT)),
+    ]
+    
+    with create_temporary_dir(package_files) as package_dir:
+        ops.deploy(package_dir)
+        output = subprocess.check_output([os.path.join(package_dir, "bin/hello")])
+        assert_equal("Hello there", output)
+        assert _is_deployed(package_dir)
 
 
 def test_install(ops, build, params, expected_output):

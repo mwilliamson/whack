@@ -20,18 +20,22 @@ def create(caching):
     deployer = PackageDeployer()
     installer = Installer(package_source_fetcher, package_provider, deployer)
     
-    return Operations(installer)
+    return Operations(installer, deployer)
 
 
 class Operations(object):
-    def __init__(self, installer):
+    def __init__(self, installer, deployer):
         self._installer = installer
+        self._deployer = deployer
         
     def install(self, package_name, install_dir, params):
         return self._installer.install(package_name, install_dir, params)
         
     def build(self, package_name, install_dir, params):
         return self._installer.build(package_name, install_dir, params)
+        
+    def deploy(self, package_dir):
+        return self._deployer.deploy(package_dir)
 
 
 def install(package, install_dir, caching, params):
@@ -42,3 +46,8 @@ def install(package, install_dir, caching, params):
 def build(package, install_dir, caching, params):
     operations = create(caching)
     operations.build(package, install_dir, params)
+
+
+def deploy(package_dir, caching):
+    operations = create(caching)
+    operations.deploy(package_dir)
