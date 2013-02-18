@@ -54,6 +54,7 @@ def build_leaves_undeployed_build_in_target_directory(ops):
         
             output = subprocess.check_output([os.path.join(target_dir, "hello")])
             assert_equal(testing.HelloWorld.EXPECTED_OUTPUT, output)
+            assert not _is_deployed(target_dir)
 
 
 @test
@@ -86,6 +87,7 @@ def test_install(ops, build, params, expected_output):
         
         output = subprocess.check_output([os.path.join(install_dir, "hello")])
         assert_equal(expected_output, output)
+        assert _is_deployed(install_dir)
 
 
 def _run_test(caching, test_func):
@@ -93,6 +95,10 @@ def _run_test(caching, test_func):
         ops = whack.operations.create(caching)
         return test_func(ops)
 
+
+def _is_deployed(package_dir):
+    return os.path.exists(os.path.join(package_dir, ".whack-root-id"))
+    
 
 @contextlib.contextmanager
 def _temporary_xdg_cache_dir():
