@@ -14,7 +14,7 @@ copied to the target directory.
 
 Before you can use Whack, you need to install a utility called `whack-run`. You
 can download Whack from [GitHub][github] or [PyPI][pypi]. Then, from within
-the Whack's directory:
+Whack's source directory:
 
 ```
 cd whack-run
