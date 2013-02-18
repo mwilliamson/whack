@@ -5,10 +5,10 @@ command. For instance, to install nginx 1.2.6 to `~/apps/nginx`:
 
     whack install git+https://github.com/mwilliamson/whack-package-nginx.git \
         -p nginx_version=1.2.6 ~/apps/nginx
-    
-Where possible, the build of each application will be relocatable. On the first
-installation, the application is compiled and copied to the target directory. On
-subsequent installations, a cached version of the application is copied to the
-target directory.
+
+On the first installation, the application is compiled and copied to the target
+directory. On subsequent installations, a cached version of the application is
+copied to the target directory.
+
 
 
