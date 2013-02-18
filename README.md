@@ -97,15 +97,15 @@ $ whack-run ~/web-app/nginx ~/web-app/nginx/.sbin/nginx
 
 When using `whack-run`, the following happens:
 
-# `whack-run` calls `unshare(CLONE_NEWNS)`, creating a private mount namespace.
+1. `whack-run` calls `unshare(CLONE_NEWNS)`, creating a private mount namespace.
   
-# `whack-run` mounts `~/web-app/nginx` onto `/usr/local/whack`. Since we called
+2. `whack-run` mounts `~/web-app/nginx` onto `/usr/local/whack`. Since we called
   `unshare` earlier, this mount is only visible to this process.
   
-# `whack-run` drops its user and group privileges. `whack-run` is installed
+3. `whack-run` drops its user and group privileges. `whack-run` is installed
   with the `setuid` bit set so it call `unshare` and `mount`.
 
-# `whack-run` calls `exec` with the arguments it was passed i.e.
+4. `whack-run` calls `exec` with the arguments it was passed i.e.
   `exec ~/web-app/nginx/.sbin/nginx`
 
 Using `whack-run` to run nginx is a bit tedious. However, we can call
