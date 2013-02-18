@@ -78,7 +78,9 @@ class CliOperations(object):
         )
         
     def build(self, package_name, install_dir, params):
-        pass
+        subprocess.check_call(
+            ["whack", "build", package_name, install_dir]
+        )
 
 
 def _run_cli_operations_test(test_func):

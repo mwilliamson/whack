@@ -45,6 +45,17 @@ chmod +x hello
     )
 
 
+@test
+def build_leaves_undeployed_build_in_target_directory(ops):
+    with create_temporary_dir() as package_source_dir:
+        testing.write_package_source(package_source_dir, {"build": testing.HelloWorld.BUILD})
+        with create_temporary_dir() as target_dir:
+            ops.build(package_source_dir, target_dir, params={})
+        
+            output = subprocess.check_output([os.path.join(target_dir, "hello")])
+            assert_equal(testing.HelloWorld.EXPECTED_OUTPUT, output)
+
+
 def test_install(ops, build, params, expected_output):
     with create_temporary_dir() as package_source_dir, create_temporary_dir() as install_dir:
         testing.write_package_source(package_source_dir, {"build": build})

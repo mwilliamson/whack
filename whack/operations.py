@@ -39,6 +39,6 @@ def install(package, install_dir, caching, params):
     operations.install(package, install_dir, params)
     
 
-def build(command, package, install_dir, caching, params):
+def build(package, install_dir, caching, params):
     operations = create(caching)
     operations.build(package, install_dir, params)
