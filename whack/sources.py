@@ -62,13 +62,13 @@ class PackageSource(object):
 
 class TemporaryPackageSource(object):
     def __init__(self, path):
-        self.path = path
+        self._path = path
     
     def __enter__(self):
-        return self
+        return PackageSource(self._path)
     
     def __exit__(self, *args):
-        shutil.rmtree(self.path)
+        shutil.rmtree(self._path)
         
 
 def _read_package_description(package_src_dir):
