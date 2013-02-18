@@ -93,10 +93,14 @@ class DeployCommand(object):
     
     def create_parser(self, subparser):
         subparser.add_argument('package_dir', metavar="package-dir")
+        
+        target_group = subparser.add_mutually_exclusive_group(required=True)
+        target_group.add_argument("--in-place", action="store_true")
+        target_group.add_argument("target_dir", metavar="target-dir", nargs="?")
         _add_caching_args(subparser)
 
     def execute(self, operations, args):
-        operations.deploy(args.package_dir, args.caching)
+        operations.deploy(args.caching, args.package_dir, args.target_dir)
 
 
 def _add_caching_args(parser):

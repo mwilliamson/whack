@@ -77,7 +77,24 @@ chmod +x hello
 
 
 @test
-def directory_is_deployed_in_place_by_default(ops):
+def built_package_can_be_deployed_to_different_directory(ops):
+    package_files = [
+        plain_file("message", "Hello there"),
+        sh_script_description(".bin/hello", "cat {0}/message".format(WHACK_ROOT)),
+    ]
+    
+    with create_temporary_dir(package_files) as package_dir:
+        with create_temporary_dir() as install_dir:
+            ops.deploy(package_dir, install_dir)
+            output = subprocess.check_output([os.path.join(install_dir, "bin/hello")])
+            assert_equal("Hello there", output)
+            assert _is_deployed(install_dir)
+            assert not _is_deployed(package_dir)
+    
+
+
+@test
+def directory_can_be_deployed_in_place(ops):
     package_files = [
         plain_file("message", "Hello there"),
         sh_script_description(".bin/hello", "cat {0}/message".format(WHACK_ROOT)),

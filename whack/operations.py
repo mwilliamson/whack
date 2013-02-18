@@ -34,8 +34,8 @@ class Operations(object):
     def build(self, package_name, install_dir, params):
         return self._installer.build(package_name, install_dir, params)
         
-    def deploy(self, package_dir):
-        return self._deployer.deploy(package_dir)
+    def deploy(self, package_dir, target_dir=None):
+        return self._deployer.deploy(package_dir, target_dir)
 
 
 def install(package, install_dir, caching, params):
@@ -48,6 +48,6 @@ def build(package, install_dir, caching, params):
     operations.build(package, install_dir, params)
 
 
-def deploy(package_dir, caching):
+def deploy(caching, package_dir, target_dir):
     operations = create(caching)
-    operations.deploy(package_dir)
+    operations.deploy(package_dir, target_dir)
