@@ -29,26 +29,27 @@ class PackageSourceFetcher(object):
         else:
             raise PackageSourceNotFound(package)
     
-    def _fetch_package_from_tarball(self, package):
-        package_source_dir = _temporary_path()
-        mkdir_p(package_source_dir)
-        
-        try:
+    def _fetch_package_from_tarball(self, tarball_path):
+        def extract_tarball(destination_dir):
+            mkdir_p(destination_dir)
             subprocess.check_call([
-                "tar", "xzf", package,
-                "--directory", package_source_dir,
+                "tar", "xzf", tarball_path,
+                "--directory", destination_dir,
                 "--strip-components", "1"
             ])
-            return TemporaryPackageSource(package_source_dir)
-        except:
-            shutil.rmtree(package_source_dir)
-            raise
         
+        return self._create_temporary_package_source(extract_tarball)
     
-    def _fetch_package_from_source_control(self, package):
+    def _fetch_package_from_source_control(self, source_control_uri):
+        def fetch_archive(destination_dir):
+            blah.archive(source_control_uri, destination_dir)
+        
+        return self._create_temporary_package_source(fetch_archive)
+
+    def _create_temporary_package_source(self, fetch_package_source_dir):
         package_source_dir = _temporary_path()
         try:
-            blah.archive(package, package_source_dir)
+            fetch_package_source_dir(package_source_dir)
             return TemporaryPackageSource(package_source_dir)
         except:
             shutil.rmtree(package_source_dir)
