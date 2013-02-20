@@ -7,6 +7,7 @@ import uuid
 import blah
 
 from .hashes import Hasher
+from .files import mkdir_p, copy_dir
 
 
 class PackageSourceNotFound(Exception):
@@ -54,12 +55,18 @@ class PackageSource(object):
     
     def source_hash(self):
         hasher = Hasher()
-        for source_path in self.source_paths():
+        for source_path in self._source_paths():
             absolute_source_path = os.path.join(self.path, source_path)
             hasher.update_with_dir(absolute_source_path)
         return hasher.ascii_digest()
-        
-    def source_paths(self):
+    
+    def write_to(self, target_dir):
+        for source_dir in self._source_paths():
+            target_sub_dir = os.path.join(target_dir, source_dir)
+            mkdir_p(target_sub_dir)
+            copy_dir(os.path.join(self.path, source_dir), target_sub_dir)
+    
+    def _source_paths(self):
         return ["whack"]
     
     def __enter__(self):
