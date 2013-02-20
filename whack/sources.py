@@ -38,7 +38,13 @@ class PackageSourceFetcher(object):
         return "://" not in uri
         
     def _is_local_path(self, path):
-        return path.startswith("/") or path.startswith(".")
+        return (
+            path.startswith("/") or
+            path.startswith("./") or
+            path.startswith("../") or 
+            path == "." or
+            path == ".."
+        )
 
 
 def _temporary_path():
