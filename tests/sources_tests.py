@@ -68,6 +68,27 @@ def writing_package_source_includes_files_specified_in_description():
 
 
 @istest
+def writing_package_source_includes_directories_specified_in_description():
+    with create_temporary_dir() as package_source_dir:
+        whack_description = {
+            "sourcePaths": ["names"]
+        }
+        write_files(package_source_dir, [
+            plain_file("whack/whack.json", json.dumps(whack_description)),
+            plain_file("names/bob", "Bob"),
+        ])
+        
+        source_fetcher = PackageSourceFetcher()
+        with source_fetcher.fetch(package_source_dir) as package_source:
+            with create_temporary_dir() as target_dir:
+                package_source.write_to(target_dir)
+                assert_equal(
+                    "Bob",
+                    read_file(os.path.join(target_dir, "names/bob"))
+                )
+
+
+@istest
 def error_is_raised_if_package_source_cannot_be_found():
     source_fetcher = PackageSourceFetcher()
     assert_raises(PackageSourceNotFound, lambda: source_fetcher.fetch("nginx"))
