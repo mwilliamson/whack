@@ -3,13 +3,12 @@ import json
 import shutil
 import tempfile
 import uuid
-import subprocess
 
 import blah
 import requests
 
 from .hashes import Hasher
-from .files import copy_dir, mkdir_p, write_file
+from .files import copy_dir, mkdir_p
 from .tarballs import extract_tarball
 
 
