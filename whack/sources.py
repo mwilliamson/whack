@@ -47,7 +47,7 @@ def _temporary_path():
 
 class PackageSource(object):
     def __init__(self, path):
-        self.path = path
+        self._path = path
         self._description = _read_package_description(path)
     
     def name(self):
@@ -56,7 +56,7 @@ class PackageSource(object):
     def source_hash(self):
         hasher = Hasher()
         for source_path in self._source_paths():
-            absolute_source_path = os.path.join(self.path, source_path)
+            absolute_source_path = os.path.join(self._path, source_path)
             hasher.update_with_dir(absolute_source_path)
         return hasher.ascii_digest()
     
@@ -64,7 +64,7 @@ class PackageSource(object):
         for source_dir in self._source_paths():
             target_sub_dir = os.path.join(target_dir, source_dir)
             mkdir_p(target_sub_dir)
-            copy_dir(os.path.join(self.path, source_dir), target_sub_dir)
+            copy_dir(os.path.join(self._path, source_dir), target_sub_dir)
     
     def _source_paths(self):
         return ["whack"]

@@ -12,23 +12,39 @@ from whack.files import read_file, write_file, write_files, plain_file
 @istest
 def can_fetch_package_source_from_source_control():
     with create_temporary_dir() as package_source_dir:
-        write_file(os.path.join(package_source_dir, "name"), "Bob")
+        write_files(package_source_dir, [
+            plain_file("whack/whack.json", json.dumps({})),
+            plain_file("whack/name", "Bob"),
+        ])
         _convert_to_git_repo(package_source_dir)
         
         source_fetcher = PackageSourceFetcher()
         repo_uri = "git+file://{0}".format(package_source_dir)
         with source_fetcher.fetch(repo_uri) as package_source:
-            assert_equal("Bob", read_file(os.path.join(package_source.path, "name")))
+            with create_temporary_dir() as target_dir:
+                package_source.write_to(target_dir)
+                assert_equal(
+                    "Bob",
+                    read_file(os.path.join(target_dir, "whack/name"))
+                )
 
 
 @istest
 def can_fetch_package_source_from_local_path():
     with create_temporary_dir() as package_source_dir:
-        write_file(os.path.join(package_source_dir, "name"), "Bob")
+        write_files(package_source_dir, [
+            plain_file("whack/whack.json", json.dumps({})),
+            plain_file("whack/name", "Bob"),
+        ])
         
         source_fetcher = PackageSourceFetcher()
         with source_fetcher.fetch(package_source_dir) as package_source:
-            assert_equal("Bob", read_file(os.path.join(package_source.path, "name")))
+            with create_temporary_dir() as target_dir:
+                package_source.write_to(target_dir)
+                assert_equal(
+                    "Bob",
+                    read_file(os.path.join(target_dir, "whack/name"))
+                )
 
 
 @istest
