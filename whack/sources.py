@@ -92,16 +92,11 @@ def _read_package_description(package_src_dir):
     if os.path.exists(whack_json_path):
         with open(whack_json_path, "r") as whack_json_file:
             whack_json = json.load(whack_json_file)
-        return DictBackedPackageDescription(whack_json)
     else:
-        return DefaultPackageDescription()
+        whack_json = {}
+    return DictBackedPackageDescription(whack_json)
         
         
-class DefaultPackageDescription(object):
-    def name(self):
-        return None
-
-
 class DictBackedPackageDescription(object):
     def __init__(self, values):
         self._values = values
