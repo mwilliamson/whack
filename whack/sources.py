@@ -51,7 +51,7 @@ class PackageSourceFetcher(object):
             mkdir_p(temp_dir)
             tarball_path = os.path.join(temp_dir, "package-source.tar.gz")
             response = requests.get(url, stream=True)
-            if response.status_code is not 200:
+            if response.status_code != 200:
                 raise Exception("Status code was: {0}".format(response.status_code))
             with open(tarball_path, "wb") as tarball_file:
                 shutil.copyfileobj(response.raw, tarball_file)
