@@ -6,7 +6,7 @@ from nose.tools import istest, assert_equal, assert_raises
 
 from whack.sources import PackageSourceFetcher, PackageSourceNotFound, PackageSource
 from whack.tempdir import create_temporary_dir
-from whack.files import read_file, write_file, write_files, plain_file
+from whack.files import read_file, write_files, plain_file
 
 
 @istest
@@ -44,7 +44,27 @@ def _assert_package_source_can_be_written_to_target_dir(source_filter):
                     "Bob",
                     read_file(os.path.join(target_dir, "whack/name"))
                 )
-    
+
+
+@istest
+def writing_package_source_includes_files_specified_in_description():
+    with create_temporary_dir() as package_source_dir:
+        whack_description = {
+            "sourcePaths": ["name"]
+        }
+        write_files(package_source_dir, [
+            plain_file("whack/whack.json", json.dumps(whack_description)),
+            plain_file("name", "Bob"),
+        ])
+        
+        source_fetcher = PackageSourceFetcher()
+        with source_fetcher.fetch(package_source_dir) as package_source:
+            with create_temporary_dir() as target_dir:
+                package_source.write_to(target_dir)
+                assert_equal(
+                    "Bob",
+                    read_file(os.path.join(target_dir, "name"))
+                )
 
 
 @istest

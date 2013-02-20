@@ -7,7 +7,7 @@ import uuid
 import blah
 
 from .hashes import Hasher
-from .files import mkdir_p, copy_dir
+from .files import copy_dir
 
 
 class PackageSourceNotFound(Exception):
@@ -63,17 +63,23 @@ class PackageSource(object):
     def write_to(self, target_dir):
         for source_dir in self._source_paths():
             target_sub_dir = os.path.join(target_dir, source_dir)
-            mkdir_p(target_sub_dir)
-            copy_dir(os.path.join(self._path, source_dir), target_sub_dir)
+            _copy_dir_or_file(os.path.join(self._path, source_dir), target_sub_dir)
     
     def _source_paths(self):
-        return ["whack"]
+        return ["whack"] + self._description.source_paths()
     
     def __enter__(self):
         return self
         
     def __exit__(self, *args):
         pass
+
+
+def _copy_dir_or_file(source, destination):
+    if os.path.isdir(source):
+        copy_dir(source, destination)
+    else:
+        shutil.copyfile(source, destination)
 
 
 class TemporaryPackageSource(object):
@@ -103,3 +109,6 @@ class DictBackedPackageDescription(object):
         
     def name(self):
         return self._values.get("name", None)
+        
+    def source_paths(self):
+        return self._values.get("sourcePaths", [])
