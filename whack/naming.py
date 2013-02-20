@@ -1,6 +1,5 @@
 import subprocess
 import json
-import os
 
 from .hashes import Hasher
 
@@ -27,9 +26,7 @@ def _generate_install_id_using_hash(package_source, params):
     hasher = Hasher()
     hasher.update(_uname("--kernel-name"))
     hasher.update(_uname("--machine"))
-    for source_path in package_source.source_paths():
-        absolute_source_path = os.path.join(package_source.path, source_path)
-        hasher.update_with_dir(absolute_source_path)
+    hasher.update(package_source.source_hash())
     hasher.update(json.dumps(params, sort_keys=True))
     return hasher.ascii_digest()
 

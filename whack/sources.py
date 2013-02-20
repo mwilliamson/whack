@@ -6,6 +6,8 @@ import uuid
 
 import blah
 
+from .hashes import Hasher
+
 
 class PackageSourceNotFound(Exception):
     def __init__(self, package_name):
@@ -50,6 +52,13 @@ class PackageSource(object):
     def name(self):
         return self._description.name()
     
+    def source_hash(self):
+        hasher = Hasher()
+        for source_path in self.source_paths():
+            absolute_source_path = os.path.join(self.path, source_path)
+            hasher.update_with_dir(absolute_source_path)
+        return hasher.ascii_digest()
+        
     def source_paths(self):
         return ["whack"]
     
