@@ -3,11 +3,12 @@ import json
 import shutil
 import tempfile
 import uuid
+import subprocess
 
 import blah
 
 from .hashes import Hasher
-from .files import copy_dir
+from .files import copy_dir, mkdir_p
 
 
 class PackageSourceNotFound(Exception):
@@ -21,9 +22,28 @@ class PackageSourceFetcher(object):
         if blah.is_source_control_uri(package):
             return self._fetch_package_from_source_control(package)
         elif self._is_local_path(package):
-            return PackageSource(package)
+            if self._is_tarball(package):
+                return self._fetch_package_from_tarball(package)
+            else:
+                return PackageSource(package)
         else:
             raise PackageSourceNotFound(package)
+    
+    def _fetch_package_from_tarball(self, package):
+        package_source_dir = _temporary_path()
+        mkdir_p(package_source_dir)
+        
+        try:
+            subprocess.check_call([
+                "tar", "xzf", package,
+                "--directory", package_source_dir,
+                "--strip-components", "1"
+            ])
+            return TemporaryPackageSource(package_source_dir)
+        except:
+            shutil.rmtree(package_source_dir)
+            raise
+        
     
     def _fetch_package_from_source_control(self, package):
         package_source_dir = _temporary_path()
@@ -33,7 +53,10 @@ class PackageSourceFetcher(object):
         except:
             shutil.rmtree(package_source_dir)
             raise
-            
+    
+    def _is_tarball(self, uri):
+        return uri.endswith(".tar.gz")
+    
     def _is_local_uri(self, uri):
         return "://" not in uri
         

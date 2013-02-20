@@ -21,10 +21,25 @@ def can_fetch_package_source_from_source_control():
 
 
 @istest
-def can_fetch_package_source_from_local_path():
+def can_fetch_package_source_from_local_dir():
     _assert_package_source_can_be_written_to_target_dir(
         lambda package_source_dir: package_source_dir
     )
+
+
+@istest
+def can_fetch_package_source_from_local_tarball():
+    with create_temporary_dir() as temp_dir:
+        def create_tarball(package_source_dir):
+            tarball_path = os.path.join(temp_dir, "package.tar.gz")
+            subprocess.check_call([
+                "tar", "czf", tarball_path,
+                "--directory", os.path.dirname(package_source_dir),
+                os.path.basename(package_source_dir)
+            ])
+            return tarball_path
+        
+        _assert_package_source_can_be_written_to_target_dir(create_tarball)
 
 
 def _assert_package_source_can_be_written_to_target_dir(source_filter):
