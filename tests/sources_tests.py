@@ -58,6 +58,18 @@ def source_hash_does_not_require_download_when_using_whack_source_uris():
         assert_equal("a452cd", package_source.source_hash())
 
 
+@istest
+def can_fetch_package_source_from_whack_source_uri():
+    with create_temporary_dir() as server_root:
+        with start_static_http_server(server_root) as server:
+            def create_tarball(package_source_dir):
+                tarball_path = os.path.join(server_root, "package-a452cd.tar.gz")
+                _create_tarball(tarball_path, package_source_dir)
+                return "whack-source+http://localhost:{0}/static/package-a452cd.tar.gz".format(server.port)
+                
+            _assert_package_source_can_be_written_to_target_dir(create_tarball)
+
+
 def _create_tarball(tarball_path, source):
     subprocess.check_call([
         "tar", "czf", tarball_path,

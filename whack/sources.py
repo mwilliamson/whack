@@ -102,21 +102,38 @@ class WhackSourceUriFetcher(object):
         
         result = re.search(r"/(?:[^./]*-)?([^./]*)\..*$", actual_url)
         source_hash = result.group(1)
-        return RemotePackageSource(source_hash)
+        return RemotePackageSource(source_hash, actual_url)
 
 
 class RemotePackageSource(object):
-    def __init__(self, source_hash):
+    def __init__(self, source_hash, uri):
         self._source_hash = source_hash
+        self._uri = uri
+        self._package_source_dir = None
         
     def source_hash(self):
         return self._source_hash
-        
+    
+    def write_to(self, target_dir):
+        self._fetch_package_source().write_to(target_dir)
+    
+    def _fetch_package_source(self):
+        if self._package_source_dir is None:
+            self._package_source_dir = _temporary_path()
+            mkdir_p(self._package_source_dir)
+            fetcher = PackageSourceFetcher()
+            with fetcher.fetch(self._uri) as package_source:
+                package_source.write_to(self._package_source_dir)
+            
+        return PackageSource(self._package_source_dir)
+    
     def __enter__(self):
         return self
         
     def __exit__(self, *args):
-        pass
+        if self._package_source_dir is not None:
+            if os.path.exists(self._package_source_dir):
+                shutil.rmtree(self._package_source_dir)
 
 
 def _create_temporary_package_source(fetch_package_source_dir):
