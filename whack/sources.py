@@ -10,6 +10,7 @@ import requests
 
 from .hashes import Hasher
 from .files import copy_dir, mkdir_p, write_file
+from .tarballs import extract_tarball
 
 
 class PackageSourceNotFound(Exception):
@@ -33,11 +34,11 @@ class PackageSourceFetcher(object):
             raise PackageSourceNotFound(package)
     
     def _fetch_package_from_tarball(self, tarball_path):
-        def extract_tarball(destination_dir):
-            self._extract_tarball(tarball_path, destination_dir)
+        def fetch_directory(destination_dir):
+            extract_tarball(tarball_path, destination_dir, strip_components=1)
             return destination_dir
         
-        return self._create_temporary_package_source(extract_tarball)
+        return self._create_temporary_package_source(fetch_directory)
     
     def _fetch_package_from_source_control(self, source_control_uri):
         def fetch_archive(destination_dir):
@@ -47,7 +48,7 @@ class PackageSourceFetcher(object):
         return self._create_temporary_package_source(fetch_archive)
 
     def _fetch_package_from_http(self, url):
-        def fetch_tarball(temp_dir):
+        def fetch_directory(temp_dir):
             mkdir_p(temp_dir)
             tarball_path = os.path.join(temp_dir, "package-source.tar.gz")
             response = requests.get(url, stream=True)
@@ -57,10 +58,10 @@ class PackageSourceFetcher(object):
                 shutil.copyfileobj(response.raw, tarball_file)
             
             package_source_dir = os.path.join(temp_dir, "package-source")
-            self._extract_tarball(tarball_path, package_source_dir)
+            extract_tarball(tarball_path, package_source_dir, strip_components=1)
             return package_source_dir
             
-        return self._create_temporary_package_source(fetch_tarball)
+        return self._create_temporary_package_source(fetch_directory)
 
     def _create_temporary_package_source(self, fetch_package_source_dir):
         temp_dir = _temporary_path()
@@ -78,14 +79,6 @@ class PackageSourceFetcher(object):
     
     def _is_tarball(self, uri):
         return uri.endswith(".tar.gz")
-    
-    def _extract_tarball(self, tarball_path, destination_dir):
-        mkdir_p(destination_dir)
-        subprocess.check_call([
-            "tar", "xzf", tarball_path,
-            "--directory", destination_dir,
-            "--strip-components", "1"
-        ])
     
     def _is_local_uri(self, uri):
         return "://" not in uri
