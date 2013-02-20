@@ -20,33 +20,59 @@ class PackageSourceNotFound(Exception):
 
 class PackageSourceFetcher(object):
     def fetch(self, package):
-        if blah.is_source_control_uri(package):
-            return self._fetch_package_from_source_control(package)
-        elif self._is_http_uri(package) and self._is_tarball(package):
-            return self._fetch_package_from_http(package)
-        elif self._is_local_path(package):
-            if self._is_tarball(package):
-                return self._fetch_package_from_tarball(package)
-            else:
-                return PackageSource(package)
+        fetchers = [
+            SourceControlFetcher(),
+            HttpFetcher(),
+            LocalPathFetcher(),
+        ]
+        for fetcher in fetchers:
+            if fetcher.can_fetch(package):
+                return fetcher.fetch(package)
+                
+        raise PackageSourceNotFound(package)
+    
+
+class SourceControlFetcher(object):
+    def can_fetch(self, package):
+        return blah.is_source_control_uri(package)
+        
+    def fetch(self, source_control_uri):
+        def fetch_archive(destination_dir):
+            blah.archive(source_control_uri, destination_dir)
+            return destination_dir
+        
+        return _create_temporary_package_source(fetch_archive)
+        
+        
+class LocalPathFetcher(object):
+    def can_fetch(self, package):
+        return (
+            package.startswith("/") or
+            package.startswith("./") or
+            package.startswith("../") or 
+            package == "." or
+            package == ".."
+        )
+        
+    def fetch(self, path):
+        if _is_tarball(path):
+            return self._fetch_package_from_tarball(path)
         else:
-            raise PackageSourceNotFound(package)
+            return PackageSource(path)
     
     def _fetch_package_from_tarball(self, tarball_path):
         def fetch_directory(destination_dir):
             extract_tarball(tarball_path, destination_dir, strip_components=1)
             return destination_dir
         
-        return self._create_temporary_package_source(fetch_directory)
-    
-    def _fetch_package_from_source_control(self, source_control_uri):
-        def fetch_archive(destination_dir):
-            blah.archive(source_control_uri, destination_dir)
-            return destination_dir
+        return _create_temporary_package_source(fetch_directory)
         
-        return self._create_temporary_package_source(fetch_archive)
 
-    def _fetch_package_from_http(self, url):
+class HttpFetcher(object):
+    def can_fetch(self, package):
+        return package.startswith("http://")
+        
+    def fetch(self, url):
         def fetch_directory(temp_dir):
             mkdir_p(temp_dir)
             tarball_path = os.path.join(temp_dir, "package-source.tar.gz")
@@ -60,40 +86,27 @@ class PackageSourceFetcher(object):
             extract_tarball(tarball_path, package_source_dir, strip_components=1)
             return package_source_dir
             
-        return self._create_temporary_package_source(fetch_directory)
-
-    def _create_temporary_package_source(self, fetch_package_source_dir):
-        temp_dir = _temporary_path()
-        try:
-            return TemporaryPackageSource(
-                fetch_package_source_dir(temp_dir),
-                temp_dir
-            )
-        except:
-            shutil.rmtree(temp_dir)
-            raise
-    
-    def _is_http_uri(self, uri):
-        return uri.startswith("http://")
-    
-    def _is_tarball(self, uri):
-        return uri.endswith(".tar.gz")
-    
-    def _is_local_uri(self, uri):
-        return "://" not in uri
+        return _create_temporary_package_source(fetch_directory)
         
-    def _is_local_path(self, path):
-        return (
-            path.startswith("/") or
-            path.startswith("./") or
-            path.startswith("../") or 
-            path == "." or
-            path == ".."
+
+def _create_temporary_package_source(fetch_package_source_dir):
+    temp_dir = _temporary_path()
+    try:
+        return TemporaryPackageSource(
+            fetch_package_source_dir(temp_dir),
+            temp_dir
         )
+    except:
+        shutil.rmtree(temp_dir)
+        raise
 
 
 def _temporary_path():
     return os.path.join(tempfile.gettempdir(), str(uuid.uuid4()))
+
+
+def _is_tarball(path):
+    return path.endswith(".tar.gz")
 
 
 class PackageSource(object):
