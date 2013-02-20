@@ -48,7 +48,15 @@ def can_fetch_package_source_from_tarball_on_http_server():
                 return "http://localhost:{0}/static/package.tar.gz".format(server.port)
                 
             _assert_package_source_can_be_written_to_target_dir(create_tarball)
-            
+
+
+@istest
+def source_hash_does_not_require_download_when_using_whack_source_uris():
+    source_fetcher = PackageSourceFetcher()
+    package_source_name = "whack-source+http://localhost:{0}/package-a452cd.tar.gz"
+    with source_fetcher.fetch(package_source_name) as package_source:
+        assert_equal("a452cd", package_source.source_hash())
+
 
 def _create_tarball(tarball_path, source):
     subprocess.check_call([

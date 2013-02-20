@@ -3,6 +3,7 @@ import json
 import shutil
 import tempfile
 import uuid
+import re
 
 import blah
 import requests
@@ -24,6 +25,7 @@ class PackageSourceFetcher(object):
             SourceControlFetcher(),
             HttpFetcher(),
             LocalPathFetcher(),
+            WhackSourceUriFetcher(),
         ]
         for fetcher in fetchers:
             if fetcher.can_fetch(package):
@@ -87,7 +89,35 @@ class HttpFetcher(object):
             return package_source_dir
             
         return _create_temporary_package_source(fetch_directory)
+
+
+class WhackSourceUriFetcher(object):
+    _prefix = "whack-source+"
+    
+    def can_fetch(self, package):
+        return package.startswith(self._prefix) and _is_tarball(package)
         
+    def fetch(self, uri):
+        actual_url = uri[len(self._prefix):]
+        
+        result = re.search(r"/(?:[^./]*-)?([^./]*)\..*$", actual_url)
+        source_hash = result.group(1)
+        return RemotePackageSource(source_hash)
+
+
+class RemotePackageSource(object):
+    def __init__(self, source_hash):
+        self._source_hash = source_hash
+        
+    def source_hash(self):
+        return self._source_hash
+        
+    def __enter__(self):
+        return self
+        
+    def __exit__(self, *args):
+        pass
+
 
 def _create_temporary_package_source(fetch_package_source_dir):
     temp_dir = _temporary_path()
