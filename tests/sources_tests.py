@@ -7,6 +7,7 @@ from nose.tools import istest, assert_equal, assert_raises
 from whack.sources import PackageSourceFetcher, PackageSourceNotFound, PackageSource
 from whack.tempdir import create_temporary_dir
 from whack.files import read_file, write_files, plain_file
+from .httpserver import start_static_http_server
 
 
 @istest
@@ -32,15 +33,31 @@ def can_fetch_package_source_from_local_tarball():
     with create_temporary_dir() as temp_dir:
         def create_tarball(package_source_dir):
             tarball_path = os.path.join(temp_dir, "package.tar.gz")
-            subprocess.check_call([
-                "tar", "czf", tarball_path,
-                "--directory", os.path.dirname(package_source_dir),
-                os.path.basename(package_source_dir)
-            ])
-            return tarball_path
+            return _create_tarball(tarball_path, package_source_dir)
         
         _assert_package_source_can_be_written_to_target_dir(create_tarball)
 
+
+@istest
+def can_fetch_package_source_from_tarball_on_http_server():
+    with create_temporary_dir() as server_root:
+        with start_static_http_server(server_root) as server:
+            def create_tarball(package_source_dir):
+                tarball_path = os.path.join(server_root, "package.tar.gz")
+                _create_tarball(tarball_path, package_source_dir)
+                return "http://localhost:{0}/static/package.tar.gz".format(server.port)
+                
+            _assert_package_source_can_be_written_to_target_dir(create_tarball)
+            
+
+def _create_tarball(tarball_path, source):
+    subprocess.check_call([
+        "tar", "czf", tarball_path,
+        "--directory", os.path.dirname(source),
+        os.path.basename(source)
+    ])
+    return tarball_path
+    
 
 def _assert_package_source_can_be_written_to_target_dir(source_filter):
     with create_temporary_dir() as package_source_dir:

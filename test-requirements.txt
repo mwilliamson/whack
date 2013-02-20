@@ -1,4 +1,5 @@
 nose==1.2.1
 mock==1.0.1
-staticserver==0.1.0
 nose-test-sets>=0.2.0,<0.3
+starboard>=0.1.2,<0.2
+pyramid>=1.4,<1.5
