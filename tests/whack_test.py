@@ -107,6 +107,21 @@ def directory_can_be_deployed_in_place(ops):
         assert _is_deployed(package_dir)
 
 
+@test
+def source_tarballs_created_by_whack_can_be_built(ops):
+    with _package_source(testing.HelloWorld.BUILD) as package_source_dir:
+        with create_temporary_dir() as tarball_dir:
+            source_tarball = ops.create_source_tarball(
+                package_source_dir,
+                tarball_dir
+            )
+            with create_temporary_dir() as target_dir:
+                ops.build(source_tarball.uri, target_dir, params={})
+            
+                output = subprocess.check_output([os.path.join(target_dir, "hello")])
+                assert_equal(testing.HelloWorld.EXPECTED_OUTPUT, output)
+
+
 def test_install(ops, build, params, expected_output):
     with _package_source(build) as package_source_dir:
         with create_temporary_dir() as install_dir:

@@ -1,7 +1,7 @@
 from catchy import HttpCacher, xdg_directory_cacher, NoCachingStrategy
 
 from .installer import Installer
-from .sources import PackageSourceFetcher
+from .sources import PackageSourceFetcher, create_source_tarball
 from .providers import CachingPackageProvider
 from .deployer import PackageDeployer
 
@@ -36,6 +36,9 @@ class Operations(object):
         
     def deploy(self, package_dir, target_dir=None):
         return self._deployer.deploy(package_dir, target_dir)
+        
+    def create_source_tarball(self, source_dir, tarball_dir):
+        return create_source_tarball(source_dir, tarball_dir)
 
 
 def install(package, install_dir, caching, params):

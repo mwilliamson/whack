@@ -16,6 +16,7 @@ def parse_args(argv):
         InstallCommand("install"),
         InstallCommand("build"),
         DeployCommand(),
+        CreateSourceTarballCommand(),
     ]
     
     parser = argparse.ArgumentParser()
@@ -23,6 +24,7 @@ def parse_args(argv):
     
     for command in commands:
         subparser = subparsers.add_parser(command.name)
+        _add_caching_args(subparser)
         subparser.set_defaults(func=command.execute)
         command.create_parser(subparser)
 
@@ -70,7 +72,6 @@ class InstallCommand(object):
             action=KeyValueAction,
             dest="params",
         )
-        _add_caching_args(subparser)
     
     def execute(self, operations, args):
         if self.name == "install":
@@ -97,10 +98,24 @@ class DeployCommand(object):
         target_group = subparser.add_mutually_exclusive_group(required=True)
         target_group.add_argument("--in-place", action="store_true")
         target_group.add_argument("target_dir", metavar="target-dir", nargs="?")
-        _add_caching_args(subparser)
 
     def execute(self, operations, args):
         operations.deploy(args.caching, args.package_dir, args.target_dir)
+
+
+class CreateSourceTarballCommand(object):
+    name = "create-source-tarball"
+    
+    def create_parser(self, subparser):
+        subparser.add_argument("package_source_dir", metavar="package-source-dir")
+        subparser.add_argument("source_tarball_dir", metavar="source-tarball-dir")
+        
+    def execute(self, operations, args):
+        source_tarball = operations.create_source_tarball(
+            args.package_source_dir,
+            args.source_tarball_dir
+        )
+        print source_tarball.uri
 
 
 def _add_caching_args(parser):

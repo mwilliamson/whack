@@ -6,6 +6,7 @@ from nose.tools import istest, assert_equal
 
 from whack import cli
 import whack.config
+from whack.sources import SourceTarball
 from . import whack_test
 
 
@@ -79,6 +80,13 @@ class CliOperations(object):
             subprocess.check_call(["whack", "deploy", package_dir, "--in-place"])
         else:
             subprocess.check_call(["whack", "deploy", package_dir, target_dir])
+            
+    def create_source_tarball(self, source_dir, tarball_dir):
+        output = subprocess.check_output([
+            "whack", "create-source-tarball",
+            source_dir, tarball_dir,
+        ])
+        return SourceTarball(output.strip())
     
     def _command(self, command_name, package_name, target_dir, params):
         params_args = [

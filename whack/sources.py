@@ -10,7 +10,7 @@ import requests
 
 from .hashes import Hasher
 from .files import copy_dir, mkdir_p
-from .tarballs import extract_tarball
+from .tarballs import extract_tarball, create_tarball
 
 
 class PackageSourceNotFound(Exception):
@@ -109,17 +109,22 @@ class WhackSourceUriFetcher(object):
     def fetch(self, uri):
         actual_url = uri[len(self._prefix):]
         
-        result = re.search(r"/(?:[^./]*-)?([^./]*)\..*$", actual_url)
-        source_hash = result.group(1)
-        return RemotePackageSource(source_hash, actual_url)
+        result = re.search(r"/(?:([^./]*)-)?([^./]*)\..*$", actual_url)
+        name = result.group(1)
+        source_hash = result.group(2)
+        return RemotePackageSource(name, source_hash, actual_url)
 
 
 class RemotePackageSource(object):
-    def __init__(self, source_hash, uri):
+    def __init__(self, name, source_hash, uri):
+        self._name = name
         self._source_hash = source_hash
         self._uri = uri
         self._package_source_dir = None
-        
+    
+    def name(self):
+        return self._name
+    
     def source_hash(self):
         return self._source_hash
     
@@ -241,3 +246,17 @@ class DictBackedPackageDescription(object):
         
     def source_paths(self):
         return self._values.get("sourcePaths", [])
+
+
+def create_source_tarball(source_dir, tarball_dir):
+    package_source = PackageSource(source_dir)
+    full_name = "{0}-{1}".format(package_source.name(), package_source.source_hash())
+    path = os.path.join(tarball_dir, "{0}.tar.gz".format(full_name))
+    create_tarball(path, source_dir)
+    uri = "whack-source+{0}".format(path)
+    return SourceTarball(uri)
+
+
+class SourceTarball(object):
+    def __init__(self, uri):
+        self.uri = uri
