@@ -5,7 +5,9 @@ import contextlib
 
 from nose.tools import istest, assert_equal, assert_raises
 
-from whack.sources import PackageSourceFetcher, PackageSourceNotFound, SourceHashMismatch, PackageSource
+from whack.sources import \
+    PackageSourceFetcher, PackageSourceNotFound, SourceHashMismatch, \
+    PackageSource, create_source_tarball
 from whack.tempdir import create_temporary_dir
 from whack.files import read_file, write_files, plain_file
 from whack.tarballs import create_tarball
@@ -62,9 +64,11 @@ def source_hash_does_not_require_download_when_using_whack_source_uris():
 def can_fetch_package_source_from_whack_source_uri():
     with _temporary_static_server() as server:
         def create_source(package_source_dir):
-            tarball_path = os.path.join(server.root, "package-35eskc8kcp84pv8f92l0c8749gac0ul0.tar.gz")
-            create_tarball(tarball_path, package_source_dir)
-            return "whack-source+http://localhost:{0}/static/package-35eskc8kcp84pv8f92l0c8749gac0ul0.tar.gz".format(server.port)
+            source_tarball = create_source_tarball(package_source_dir, server.root)
+            return "whack-source+http://localhost:{0}/static/{1}".format(
+                server.port,
+                source_tarball.uri.split("/")[-1],
+            )
             
         _assert_package_source_can_be_written_to_target_dir(create_source)
 
