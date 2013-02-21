@@ -78,7 +78,6 @@ def error_is_raised_if_hash_is_not_correct():
     with _temporary_static_server() as server:
         with create_temporary_dir() as package_source_dir:
             write_files(package_source_dir, [
-                plain_file("whack/whack.json", json.dumps({})),
                 plain_file("whack/name", "Bob"),
             ])
             tarball_path = os.path.join(server.root, "package-a452cd.tar.gz")
@@ -93,7 +92,6 @@ def error_is_raised_if_hash_is_not_correct():
 def _assert_package_source_can_be_written_to_target_dir(source_filter):
     with create_temporary_dir() as package_source_dir:
         write_files(package_source_dir, [
-            plain_file("whack/whack.json", json.dumps({})),
             plain_file("whack/name", "Bob"),
         ])
         
