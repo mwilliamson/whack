@@ -76,8 +76,7 @@ def can_fetch_package_source_from_whack_source_uri():
 @istest
 def error_is_raised_if_hash_is_not_correct():
     with _temporary_static_server() as server:
-        package_source_files = [plain_file("whack/name", "Bob")]
-        with create_temporary_dir(package_source_files) as package_source_dir:
+        with _create_temporary_package_source_dir() as package_source_dir:
             tarball_path = os.path.join(server.root, "package-a452cd.tar.gz")
             create_tarball(tarball_path, package_source_dir)
             package_uri = "whack-source+http://localhost:{0}/static/package-a452cd.tar.gz".format(server.port)
@@ -88,8 +87,7 @@ def error_is_raised_if_hash_is_not_correct():
     
 
 def _assert_package_source_can_be_written_to_target_dir(source_filter):
-    package_source_files = [plain_file("whack/name", "Bob")]
-    with create_temporary_dir(package_source_files) as package_source_dir:
+    with _create_temporary_package_source_dir() as package_source_dir:
         package_source_name = source_filter(package_source_dir)
         
         with _fetch_source(package_source_name) as package_source:
@@ -99,6 +97,13 @@ def _assert_package_source_can_be_written_to_target_dir(source_filter):
                     "Bob",
                     read_file(os.path.join(target_dir, "whack/name"))
                 )
+
+
+@contextlib.contextmanager
+def _create_temporary_package_source_dir():
+    package_source_files = [plain_file("whack/name", "Bob")]
+    with create_temporary_dir(package_source_files) as package_source_dir:
+        yield package_source_dir
 
 
 @istest
