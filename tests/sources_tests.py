@@ -52,9 +52,8 @@ def can_fetch_package_source_from_tarball_on_http_server():
 
 @istest
 def source_hash_does_not_require_download_when_using_whack_source_uris():
-    source_fetcher = PackageSourceFetcher()
     package_source_name = "whack-source+http://localhost:{0}/package-35eskc8kcp84pv8f92l0c8749gac0ul0.tar.gz"
-    with source_fetcher.fetch(package_source_name) as package_source:
+    with _fetch_source(package_source_name) as package_source:
         assert_equal("35eskc8kcp84pv8f92l0c8749gac0ul0", package_source.source_hash())
 
 
@@ -81,8 +80,7 @@ def error_is_raised_if_hash_is_not_correct():
             _create_tarball(tarball_path, package_source_dir)
             package_uri = "whack-source+http://localhost:{0}/static/package-a452cd.tar.gz".format(server.port)
             
-            source_fetcher = PackageSourceFetcher()
-            with source_fetcher.fetch(package_uri) as package_source:
+            with _fetch_source(package_uri) as package_source:
                 with create_temporary_dir() as target_dir:
                     assert_raises(SourceHashMismatch, lambda: package_source.write_to(target_dir))
 
@@ -126,8 +124,7 @@ def writing_package_source_includes_files_specified_in_description():
             plain_file("name", "Bob"),
         ])
         
-        source_fetcher = PackageSourceFetcher()
-        with source_fetcher.fetch(package_source_dir) as package_source:
+        with _fetch_source(package_source_dir) as package_source:
             with create_temporary_dir() as target_dir:
                 package_source.write_to(target_dir)
                 assert_equal(
@@ -147,8 +144,7 @@ def writing_package_source_includes_directories_specified_in_description():
             plain_file("names/bob", "Bob"),
         ])
         
-        source_fetcher = PackageSourceFetcher()
-        with source_fetcher.fetch(package_source_dir) as package_source:
+        with _fetch_source(package_source_dir) as package_source:
             with create_temporary_dir() as target_dir:
                 package_source.write_to(target_dir)
                 assert_equal(
@@ -159,8 +155,7 @@ def writing_package_source_includes_directories_specified_in_description():
 
 @istest
 def error_is_raised_if_package_source_cannot_be_found():
-    source_fetcher = PackageSourceFetcher()
-    assert_raises(PackageSourceNotFound, lambda: source_fetcher.fetch("nginx"))
+    assert_raises(PackageSourceNotFound, lambda: _fetch_source("nginx"))
     
 
 @istest
@@ -196,7 +191,12 @@ def _convert_to_git_repo(cwd):
     _git(["init"])
     _git(["add", "."])
     _git(["commit", "-m", "Initial commit"])
-    
+
+
+def _fetch_source(package_source_uri):
+    source_fetcher = PackageSourceFetcher()
+    return source_fetcher.fetch(package_source_uri)
+
 
 @contextlib.contextmanager
 def _temporary_static_server():
