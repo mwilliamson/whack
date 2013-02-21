@@ -1,6 +1,7 @@
 import os
 import subprocess
 import json
+import contextlib
 
 from nose.tools import istest, assert_equal, assert_raises
 
@@ -40,14 +41,13 @@ def can_fetch_package_source_from_local_tarball():
 
 @istest
 def can_fetch_package_source_from_tarball_on_http_server():
-    with create_temporary_dir() as server_root:
-        with start_static_http_server(server_root) as server:
-            def create_tarball(package_source_dir):
-                tarball_path = os.path.join(server_root, "package.tar.gz")
-                _create_tarball(tarball_path, package_source_dir)
-                return "http://localhost:{0}/static/package.tar.gz".format(server.port)
-                
-            _assert_package_source_can_be_written_to_target_dir(create_tarball)
+    with _temporary_static_server() as server:
+        def create_tarball(package_source_dir):
+            tarball_path = os.path.join(server.root, "package.tar.gz")
+            _create_tarball(tarball_path, package_source_dir)
+            return "http://localhost:{0}/static/package.tar.gz".format(server.port)
+            
+        _assert_package_source_can_be_written_to_target_dir(create_tarball)
 
 
 @istest
@@ -60,33 +60,31 @@ def source_hash_does_not_require_download_when_using_whack_source_uris():
 
 @istest
 def can_fetch_package_source_from_whack_source_uri():
-    with create_temporary_dir() as server_root:
-        with start_static_http_server(server_root) as server:
-            def create_tarball(package_source_dir):
-                tarball_path = os.path.join(server_root, "package-35eskc8kcp84pv8f92l0c8749gac0ul0.tar.gz")
-                _create_tarball(tarball_path, package_source_dir)
-                return "whack-source+http://localhost:{0}/static/package-35eskc8kcp84pv8f92l0c8749gac0ul0.tar.gz".format(server.port)
-                
-            _assert_package_source_can_be_written_to_target_dir(create_tarball)
+    with _temporary_static_server() as server:
+        def create_tarball(package_source_dir):
+            tarball_path = os.path.join(server.root, "package-35eskc8kcp84pv8f92l0c8749gac0ul0.tar.gz")
+            _create_tarball(tarball_path, package_source_dir)
+            return "whack-source+http://localhost:{0}/static/package-35eskc8kcp84pv8f92l0c8749gac0ul0.tar.gz".format(server.port)
+            
+        _assert_package_source_can_be_written_to_target_dir(create_tarball)
 
 
 @istest
 def error_is_raised_if_hash_is_not_correct():
-    with create_temporary_dir() as server_root:
-        with start_static_http_server(server_root) as server:
-            with create_temporary_dir() as package_source_dir:
-                write_files(package_source_dir, [
-                    plain_file("whack/whack.json", json.dumps({})),
-                    plain_file("whack/name", "Bob"),
-                ])
-                tarball_path = os.path.join(server_root, "package-a452cd.tar.gz")
-                _create_tarball(tarball_path, package_source_dir)
-                package_uri = "whack-source+http://localhost:{0}/static/package-a452cd.tar.gz".format(server.port)
-                
-                source_fetcher = PackageSourceFetcher()
-                with source_fetcher.fetch(package_uri) as package_source:
-                    with create_temporary_dir() as target_dir:
-                        assert_raises(SourceHashMismatch, lambda: package_source.write_to(target_dir))
+    with _temporary_static_server() as server:
+        with create_temporary_dir() as package_source_dir:
+            write_files(package_source_dir, [
+                plain_file("whack/whack.json", json.dumps({})),
+                plain_file("whack/name", "Bob"),
+            ])
+            tarball_path = os.path.join(server.root, "package-a452cd.tar.gz")
+            _create_tarball(tarball_path, package_source_dir)
+            package_uri = "whack-source+http://localhost:{0}/static/package-a452cd.tar.gz".format(server.port)
+            
+            source_fetcher = PackageSourceFetcher()
+            with source_fetcher.fetch(package_uri) as package_source:
+                with create_temporary_dir() as target_dir:
+                    assert_raises(SourceHashMismatch, lambda: package_source.write_to(target_dir))
 
 
 def _create_tarball(tarball_path, source):
@@ -198,3 +196,10 @@ def _convert_to_git_repo(cwd):
     _git(["init"])
     _git(["add", "."])
     _git(["commit", "-m", "Initial commit"])
+    
+
+@contextlib.contextmanager
+def _temporary_static_server():
+    with create_temporary_dir() as server_root:
+        with start_static_http_server(server_root) as server:
+            yield server

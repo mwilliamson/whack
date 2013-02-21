@@ -16,11 +16,12 @@ def start_static_http_server(root):
     server_thread.daemon = True
     server_thread.start()
     
-    return Server(server, server_thread, port)
+    return Server(server, server_thread, root, port)
 
 
 class Server(object):
-    def __init__(self, server, thread, port):
+    def __init__(self, server, thread, root, port):
+        self.root = root
         self.port = port
         self._server = server
         self._thread = thread
