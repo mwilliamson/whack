@@ -17,6 +17,15 @@ class PackageSourceNotFound(Exception):
     def __init__(self, package_name):
         message = "Could not find source for package: {0}".format(package_name)
         Exception.__init__(self, message)
+        
+        
+class SourceHashMismatch(Exception):
+    def __init__(self, expected_hash, actual_hash):
+        message = "Expected hash {0} but was {1}".format(
+            expected_hash,
+            actual_hash
+        )
+        Exception.__init__(self, message)
 
 
 class PackageSourceFetcher(object):
@@ -123,9 +132,17 @@ class RemotePackageSource(object):
             mkdir_p(self._package_source_dir)
             fetcher = PackageSourceFetcher()
             with fetcher.fetch(self._uri) as package_source:
+                self._verify_hash(package_source)
+                
                 package_source.write_to(self._package_source_dir)
             
         return PackageSource(self._package_source_dir)
+    
+    def _verify_hash(self, package_source):
+        expected_hash = self._source_hash
+        actual_hash = package_source.source_hash()
+        if expected_hash != actual_hash:
+            raise SourceHashMismatch(expected_hash, actual_hash)
     
     def __enter__(self):
         return self
