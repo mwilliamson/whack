@@ -77,15 +77,15 @@ class CliOperations(object):
     
     def deploy(self, package_dir, target_dir=None):
         if target_dir is None:
-            subprocess.check_call(["whack", "deploy", package_dir, "--in-place"])
+            self._whack("deploy", package_dir, "--in-place")
         else:
-            subprocess.check_call(["whack", "deploy", package_dir, target_dir])
+            self._whack("deploy", package_dir, target_dir)
             
     def create_source_tarball(self, source_dir, tarball_dir):
-        output = subprocess.check_output([
-            "whack", "create-source-tarball",
+        output = self._whack(
+            "create-source-tarball",
             source_dir, tarball_dir,
-        ])
+        )
         return SourceTarball(output.strip())
     
     def _command(self, command_name, package_name, target_dir, params):
@@ -93,9 +93,10 @@ class CliOperations(object):
             "-p{0}={1}".format(key, value)
             for key, value in params.iteritems()
         ]
-        subprocess.check_call(
-            ["whack", command_name, package_name, target_dir] + params_args
-        )
+        self._whack(command_name, package_name, target_dir, *params_args)
+        
+    def _whack(self, *args):
+        return subprocess.check_output(["whack"] + list(args))
         
 
 
