@@ -13,6 +13,9 @@ from .files import copy_dir, mkdir_p
 from .tarballs import extract_tarball, create_tarball
 
 
+_whack_source_uri_prefix = "whack-source+"
+
+
 class PackageSourceNotFound(Exception):
     def __init__(self, package_name):
         message = "Could not find source for package: {0}".format(package_name)
@@ -101,13 +104,11 @@ class HttpFetcher(object):
 
 
 class WhackSourceUriFetcher(object):
-    _prefix = "whack-source+"
-    
     def can_fetch(self, package):
-        return package.startswith(self._prefix) and _is_tarball(package)
+        return package.startswith(_whack_source_uri_prefix) and _is_tarball(package)
         
     def fetch(self, uri):
-        actual_url = uri[len(self._prefix):]
+        actual_url = uri[len(_whack_source_uri_prefix):]
         
         result = re.search(r"/(?:([^./]*)-)?([^./]*)\..*$", actual_url)
         name = result.group(1)
@@ -253,7 +254,7 @@ def create_source_tarball(source_dir, tarball_dir):
     full_name = "{0}-{1}".format(package_source.name(), package_source.source_hash())
     path = os.path.join(tarball_dir, "{0}.tar.gz".format(full_name))
     create_tarball(path, source_dir)
-    uri = "whack-source+{0}".format(path)
+    uri = "{0}{1}".format(_whack_source_uri_prefix, path)
     return SourceTarball(uri)
 
 
