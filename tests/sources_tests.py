@@ -92,8 +92,7 @@ def _assert_package_source_can_be_written_to_target_dir(source_filter):
     with create_temporary_dir(package_source_files) as package_source_dir:
         package_source_name = source_filter(package_source_dir)
         
-        source_fetcher = PackageSourceFetcher()
-        with source_fetcher.fetch(package_source_name) as package_source:
+        with _fetch_source(package_source_name) as package_source:
             with create_temporary_dir() as target_dir:
                 package_source.write_to(target_dir)
                 assert_equal(
