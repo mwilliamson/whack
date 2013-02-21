@@ -13,7 +13,7 @@ from .files import copy_dir, mkdir_p
 from .tarballs import extract_tarball, create_tarball
 
 
-_whack_source_uri_prefix = "whack-source+"
+_whack_source_uri_suffix = ".whack-source"
 
 
 class PackageSourceNotFound(Exception):
@@ -32,12 +32,13 @@ class SourceHashMismatch(Exception):
 
 
 class PackageSourceFetcher(object):
-    def fetch(self, package):
-        fetchers = [
-            SourceControlFetcher(),
+    def fetch(self, package, lazy=True):
+        fetchers = [SourceControlFetcher()]
+        if lazy:
+            fetchers.append(WhackSourceUriFetcher())
+        fetchers += [
             HttpFetcher(),
             LocalPathFetcher(),
-            WhackSourceUriFetcher(),
         ]
         for fetcher in fetchers:
             if fetcher.can_fetch(package):
@@ -69,7 +70,7 @@ class LocalPathFetcher(object):
         )
         
     def fetch(self, path):
-        if _is_tarball(path):
+        if os.path.isfile(path):
             return self._fetch_package_from_tarball(path)
         else:
             return PackageSource(path)
@@ -105,15 +106,13 @@ class HttpFetcher(object):
 
 class WhackSourceUriFetcher(object):
     def can_fetch(self, package):
-        return package.startswith(_whack_source_uri_prefix) and _is_tarball(package)
+        return package.endswith(_whack_source_uri_suffix)
         
     def fetch(self, uri):
-        actual_url = uri[len(_whack_source_uri_prefix):]
-        
-        result = re.search(r"/(?:([^./]*)-)?([^./]*)\..*$", actual_url)
+        result = re.search(r"/(?:([^./]*)-)?([^./]*)\..*$", uri)
         name = result.group(1)
         source_hash = result.group(2)
-        return RemotePackageSource(name, source_hash, actual_url)
+        return RemotePackageSource(name, source_hash, uri)
 
 
 class RemotePackageSource(object):
@@ -137,7 +136,7 @@ class RemotePackageSource(object):
             self._package_source_dir = _temporary_path()
             mkdir_p(self._package_source_dir)
             fetcher = PackageSourceFetcher()
-            with fetcher.fetch(self._uri) as package_source:
+            with fetcher.fetch(self._uri, lazy=False) as package_source:
                 self._verify_hash(package_source)
                 
                 package_source.write_to(self._package_source_dir)
@@ -252,12 +251,12 @@ class DictBackedPackageDescription(object):
 def create_source_tarball(source_dir, tarball_dir):
     package_source = PackageSource(source_dir)
     full_name = "{0}-{1}".format(package_source.name(), package_source.source_hash())
-    path = os.path.join(tarball_dir, "{0}.tar.gz".format(full_name))
+    filename = "{0}{1}".format(full_name, _whack_source_uri_suffix)
+    path = os.path.join(tarball_dir, filename)
     create_tarball(path, source_dir)
-    uri = "{0}{1}".format(_whack_source_uri_prefix, path)
-    return SourceTarball(uri)
+    return SourceTarball(path)
 
 
 class SourceTarball(object):
-    def __init__(self, uri):
-        self.uri = uri
+    def __init__(self, path):
+        self.path = path

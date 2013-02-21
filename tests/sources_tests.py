@@ -55,7 +55,7 @@ def can_fetch_package_source_from_tarball_on_http_server():
 
 @istest
 def source_hash_does_not_require_download_when_using_whack_source_uris():
-    package_source_name = "whack-source+http://localhost:{0}/package-35eskc8kcp84pv8f92l0c8749gac0ul0.tar.gz"
+    package_source_name = "http://localhost:{0}/package-35eskc8kcp84pv8f92l0c8749gac0ul0.whack-source"
     with _fetch_source(package_source_name) as package_source:
         assert_equal("35eskc8kcp84pv8f92l0c8749gac0ul0", package_source.source_hash())
 
@@ -65,9 +65,9 @@ def can_fetch_package_source_from_whack_source_uri():
     with _temporary_static_server() as server:
         def create_source(package_source_dir):
             source_tarball = create_source_tarball(package_source_dir, server.root)
-            return "whack-source+http://localhost:{0}/static/{1}".format(
+            return "http://localhost:{0}/static/{1}".format(
                 server.port,
-                source_tarball.uri.split("/")[-1],
+                source_tarball.path.split("/")[-1],
             )
             
         _assert_package_source_can_be_written_to_target_dir(create_source)
@@ -77,9 +77,9 @@ def can_fetch_package_source_from_whack_source_uri():
 def error_is_raised_if_hash_is_not_correct():
     with _temporary_static_server() as server:
         with _create_temporary_package_source_dir() as package_source_dir:
-            tarball_path = os.path.join(server.root, "package-a452cd.tar.gz")
+            tarball_path = os.path.join(server.root, "package-a452cd.whack-source")
             create_tarball(tarball_path, package_source_dir)
-            package_uri = "whack-source+http://localhost:{0}/static/package-a452cd.tar.gz".format(server.port)
+            package_uri = "http://localhost:{0}/static/package-a452cd.whack-source".format(server.port)
             
             with _fetch_source(package_uri) as package_source:
                 with create_temporary_dir() as target_dir:

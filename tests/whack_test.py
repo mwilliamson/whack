@@ -116,7 +116,7 @@ def source_tarballs_created_by_whack_can_be_built(ops):
                 tarball_dir
             )
             with create_temporary_dir() as target_dir:
-                ops.build(source_tarball.uri, target_dir, params={})
+                ops.build(source_tarball.path, target_dir, params={})
             
                 output = subprocess.check_output([os.path.join(target_dir, "hello")])
                 assert_equal(testing.HelloWorld.EXPECTED_OUTPUT, output)

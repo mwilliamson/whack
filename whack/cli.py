@@ -115,7 +115,7 @@ class CreateSourceTarballCommand(object):
             args.package_source_dir,
             args.source_tarball_dir
         )
-        print source_tarball.uri
+        print source_tarball.path
 
 
 def _add_caching_args(parser):
