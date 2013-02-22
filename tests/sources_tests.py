@@ -55,7 +55,14 @@ def can_fetch_package_source_from_tarball_on_http_server():
 
 @istest
 def source_hash_does_not_require_download_when_using_whack_source_uris():
-    package_source_name = "http://localhost:{0}/package-35eskc8kcp84pv8f92l0c8749gac0ul0.whack-source"
+    package_source_name = "http://localhost/package-35eskc8kcp84pv8f92l0c8749gac0ul0.whack-source"
+    with _fetch_source(package_source_name) as package_source:
+        assert_equal("35eskc8kcp84pv8f92l0c8749gac0ul0", package_source.source_hash())
+
+
+@istest
+def can_find_source_hash_of_nameless_source_packages_using_whack_source_uri():
+    package_source_name = "http://localhost/35eskc8kcp84pv8f92l0c8749gac0ul0.whack-source"
     with _fetch_source(package_source_name) as package_source:
         assert_equal("35eskc8kcp84pv8f92l0c8749gac0ul0", package_source.source_hash())
 
