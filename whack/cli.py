@@ -1,6 +1,5 @@
 import argparse
 
-import whack.config
 import whack.args
 
 env_default = whack.args.env_default(prefix="WHACK")
@@ -28,15 +27,7 @@ def parse_args(argv):
         subparser.set_defaults(func=command.execute)
         command.create_parser(subparser)
 
-    args = parser.parse_args(argv[1:])
-
-    args.caching = whack.config.caching_config(
-            enabled=not args.no_cache,
-            http_cache_url=args.http_cache_url,
-            http_cache_key=args.http_cache_key
-        )
-
-    return args
+    return parser.parse_args(argv[1:])
 
 
 class KeyValueAction(argparse.Action):
@@ -84,7 +75,7 @@ class InstallCommand(object):
         operation(
             package=args.package,
             install_dir=args.target_dir,
-            caching=args.caching,
+            caching_enabled=args.caching_enabled,
             params=args.params
         )
 
@@ -100,7 +91,7 @@ class DeployCommand(object):
         target_group.add_argument("target_dir", metavar="target-dir", nargs="?")
 
     def execute(self, operations, args):
-        operations.deploy(args.caching, args.package_dir, args.target_dir)
+        operations.deploy(args.caching_enabled, args.package_dir, args.target_dir)
 
 
 class CreateSourceTarballCommand(object):
@@ -119,7 +110,5 @@ class CreateSourceTarballCommand(object):
 
 
 def _add_caching_args(parser):
-    parser.add_argument("--no-cache", action="store_true")
-    parser.add_argument("--http-cache-url", action=env_default)
-    parser.add_argument("--http-cache-key", action=env_default)
+    parser.add_argument("--no-cache", action="store_false", dest="caching_enabled")
     

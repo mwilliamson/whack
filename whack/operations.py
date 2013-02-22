@@ -1,4 +1,4 @@
-from catchy import HttpCacher, xdg_directory_cacher, NoCachingStrategy
+from catchy import xdg_directory_cacher, NoCachingStrategy
 
 from .installer import Installer
 from .sources import PackageSourceFetcher, create_source_tarball
@@ -6,12 +6,9 @@ from .providers import CachingPackageProvider
 from .deployer import PackageDeployer
 
 
-def create(caching):
-    if not caching.enabled:
+def create(caching_enabled):
+    if not caching_enabled:
         cacher = NoCachingStrategy()
-    elif caching.http_cache_url is not None:
-        # TODO: add DirectoryCacher in front of HttpCacher
-        cacher = HttpCacher(caching.http_cache_url, caching.http_cache_key)
     else:
         cacher = xdg_directory_cacher("whack/builds")
     
@@ -41,16 +38,16 @@ class Operations(object):
         return create_source_tarball(source_dir, tarball_dir)
 
 
-def install(package, install_dir, caching, params):
-    operations = create(caching)
+def install(package, install_dir, caching_enabled, params):
+    operations = create(caching_enabled)
     operations.install(package, install_dir, params)
     
 
-def build(package, install_dir, caching, params):
-    operations = create(caching)
+def build(package, install_dir, caching_enabled, params):
+    operations = create(caching_enabled)
     operations.build(package, install_dir, params)
 
 
-def deploy(caching, package_dir, target_dir):
-    operations = create(caching)
+def deploy(caching_enabled, package_dir, target_dir):
+    operations = create(caching_enabled)
     operations.deploy(package_dir, target_dir)

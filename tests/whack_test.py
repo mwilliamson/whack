@@ -8,7 +8,6 @@ from nose_test_sets import TestSetBuilder
 
 from whack.common import WHACK_ROOT
 import whack.operations
-import whack.config
 import testing
 from whack.tempdir import create_temporary_dir
 from whack.files import sh_script_description, plain_file
@@ -138,9 +137,9 @@ def test_install(ops, build, params, expected_output):
             assert _is_deployed(install_dir)
 
 
-def _run_test(caching, test_func):
+def _run_test(test_func, caching_enabled):
     with _temporary_xdg_cache_dir():
-        ops = whack.operations.create(caching)
+        ops = whack.operations.create(caching_enabled)
         return test_func(ops)
 
 
@@ -181,11 +180,11 @@ def _updated_env(env_updates):
 
 WhackNoCachingTests = test_set.create(
     "WhackNoCachingTests",
-    functools.partial(_run_test, whack.config.caching_config(enabled=False))
+    functools.partial(_run_test, caching_enabled=False)
 )
 
 
 WhackCachingTests = test_set.create(
     "WhackCachingTests",
-    functools.partial(_run_test, whack.config.caching_config(enabled=True))
+    functools.partial(_run_test, caching_enabled=True)
 )
