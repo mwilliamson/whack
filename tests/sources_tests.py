@@ -153,21 +153,13 @@ def error_is_raised_if_package_source_cannot_be_found():
 
 @istest
 def name_is_stored_in_whack_json():
-    with create_temporary_dir() as package_source_dir:
-        write_files(package_source_dir, [
-            plain_file("whack/whack.json", json.dumps({"name": "nginx"})),
-        ])
-        package_source = PackageSource(package_source_dir)
+    with _source_package_with_description({"name": "nginx"}) as package_source:
         assert_equal("nginx", package_source.name())
     
 
 @istest
 def name_of_package_source_is_none_if_not_specified_in_whack_json():
-    with create_temporary_dir() as package_source_dir:
-        write_files(package_source_dir, [
-            plain_file("whack/whack.json", json.dumps({})),
-        ])
-        package_source = PackageSource(package_source_dir)
+    with _source_package_with_description({}) as package_source:
         assert_equal(None, package_source.name())
     
 
@@ -180,11 +172,7 @@ def name_of_package_source_is_none_if_whack_json_does_not_exist():
 
 @istest
 def full_name_of_package_source_includes_name_if_not_none():
-    with create_temporary_dir() as package_source_dir:
-        write_files(package_source_dir, [
-            plain_file("whack/whack.json", json.dumps({"name": "nginx"})),
-        ])
-        package_source = PackageSource(package_source_dir)
+    with _source_package_with_description({"name": "nginx"}) as package_source:
         assert_equal(
             "nginx-{0}".format(package_source.source_hash()),
             package_source.full_name()
@@ -193,11 +181,7 @@ def full_name_of_package_source_includes_name_if_not_none():
 
 @istest
 def full_name_of_package_source_is_source_hash_if_name_is_none():
-    with create_temporary_dir() as package_source_dir:
-        write_files(package_source_dir, [
-            plain_file("whack/whack.json", json.dumps({})),
-        ])
-        package_source = PackageSource(package_source_dir)
+    with _source_package_with_description({}) as package_source:
         assert_equal(package_source.source_hash(), package_source.full_name())
 
 
@@ -219,3 +203,12 @@ def _temporary_static_server():
     with create_temporary_dir() as server_root:
         with start_static_http_server(server_root) as server:
             yield server
+
+
+@contextlib.contextmanager
+def _source_package_with_description(description):
+    with create_temporary_dir() as package_source_dir:
+        write_files(package_source_dir, [
+            plain_file("whack/whack.json", json.dumps(description)),
+        ])
+        yield PackageSource(package_source_dir)
