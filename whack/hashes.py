@@ -19,7 +19,7 @@ class Hasher(object):
 
 
 def integer_to_ascii(value):
-    characters = "0123456789abcdefghijklmnopqrstuv"
+    characters = "0123456789abcdefghijklmnopqrstuvwxyz"
     
     if value == 0:
         return characters[0]

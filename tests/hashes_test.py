@@ -78,14 +78,14 @@ def integer_to_ascii_converts_integer_to_alphanumeric_string():
         (0, "0"),
         (4, "4"),
         (10, "a"),
-        (31, "v"),
-        (32, "10"),
-        (1023, "vv"),
-        (1024, "100"),
+        (35, "z"),
+        (36, "10"),
+        (1295, "zz"),
+        (1296, "100"),
     ]
     
     for input_integer, expected_ascii in cases:
-        assert_equal(expected_ascii, integer_to_ascii(input_integer))
+        assert_equal(integer_to_ascii(input_integer), expected_ascii)
 
 
 class TestRunner(object):
