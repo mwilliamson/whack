@@ -176,6 +176,29 @@ def name_of_package_source_is_none_if_whack_json_does_not_exist():
     with create_temporary_dir() as package_source_dir:
         package_source = PackageSource(package_source_dir)
         assert_equal(None, package_source.name())
+    
+
+@istest
+def full_name_of_package_source_includes_name_if_not_none():
+    with create_temporary_dir() as package_source_dir:
+        write_files(package_source_dir, [
+            plain_file("whack/whack.json", json.dumps({"name": "nginx"})),
+        ])
+        package_source = PackageSource(package_source_dir)
+        assert_equal(
+            "nginx-{0}".format(package_source.source_hash()),
+            package_source.full_name()
+        )
+    
+
+@istest
+def full_name_of_package_source_is_source_hash_if_name_is_none():
+    with create_temporary_dir() as package_source_dir:
+        write_files(package_source_dir, [
+            plain_file("whack/whack.json", json.dumps({})),
+        ])
+        package_source = PackageSource(package_source_dir)
+        assert_equal(package_source.source_hash(), package_source.full_name())
 
 
 def _convert_to_git_repo(cwd):

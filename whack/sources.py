@@ -185,6 +185,14 @@ class PackageSource(object):
     
     def name(self):
         return self._description.name()
+        
+    def full_name(self):
+        name = self.name()
+        source_hash = self.source_hash()
+        if name is None:
+            return source_hash
+        else:
+            return "{0}-{1}".format(name, source_hash)
     
     def source_hash(self):
         hasher = Hasher()
@@ -250,7 +258,7 @@ class DictBackedPackageDescription(object):
 
 def create_source_tarball(source_dir, tarball_dir):
     package_source = PackageSource(source_dir)
-    full_name = "{0}-{1}".format(package_source.name(), package_source.source_hash())
+    full_name = package_source.full_name()
     filename = "{0}{1}".format(full_name, _whack_source_uri_suffix)
     path = os.path.join(tarball_dir, filename)
     create_tarball(path, source_dir)
