@@ -1,45 +1,70 @@
 import os
 import subprocess
+import shutil
+
+import requests
+from bs4 import BeautifulSoup
 
 from . import downloads
 from .tempdir import create_temporary_dir
 from .naming import name_package
 from .common import WHACK_ROOT, PackageNotAvailableError
 from .files import mkdir_p
+from .builder import build
+from .tarballs import extract_tarball
 
 
-def create_package_provider(cacher, enable_build=True):
-    underlying_providers = []
+def create_package_provider(cacher, enable_build=True, indices=None):
+    if indices is None:
+        indices = []
+    
+    underlying_providers = map(IndexPackageProvider, indices)
     if enable_build:
         underlying_providers.append(BuildingPackageProvider())
     return CachingPackageProvider(cacher, underlying_providers)
 
 
+class IndexPackageProvider(object):
+    def __init__(self, index):
+        self._index = index
+        
+    def provide_package(self, package_source, params, package_dir):
+        # TODO: bundle up package_source and params into a PackageRequest
+        package_name = name_package(package_source, params)
+        # TODO: remove duplication with sources.IndexFetcher
+        index_response = requests.get(self._index)
+        if index_response.status_code != 200:
+            # TODO: should we log and carry on? Definitely shouldn't swallow
+            # silently
+            raise Exception("Index {0} returned status code {1}".format(
+                index, index_response.status_code
+            ))
+        html_document = BeautifulSoup(index_response.text)
+        for link in html_document.find_all("a"):
+            if link.get_text().strip() == "{0}.whack-package".format(package_name):
+                url = link.get("href")
+                self._fetch_and_extract(url, package_dir)
+                return True
+        return None
+        
+    def _fetch_and_extract(self, url, package_dir):
+        # TODO: remove duplication with sources module
+        with create_temporary_dir() as temp_dir:
+            tarball_path = os.path.join(temp_dir, "package.tar.gz")
+            response = requests.get(url, stream=True)
+            if response.status_code != 200:
+                raise Exception("Status code was: {0}".format(response.status_code))
+            with open(tarball_path, "wb") as tarball_file:
+                shutil.copyfileobj(response.raw, tarball_file)
+            
+            # TODO: verify hash
+            extract_tarball(tarball_path, package_dir, strip_components=1)
+    
+
 class BuildingPackageProvider(object):
     def provide_package(self, package_src, params, package_dir):
-        with create_temporary_dir() as build_dir:
-            self._build(package_src, build_dir, package_dir, params)
+        build(package_src, params, package_dir)
         return True
-    
-    def _build(self, package_src, build_dir, package_dir, params):
-        package_src.write_to(build_dir)
-            
-        build_env = params_to_build_env(params)
-        self._fetch_downloads(build_dir, build_env)
-            
-        build_script = os.path.join(build_dir, "whack/build")
-        mkdir_p(package_dir)
-        build_command = [
-            "whack-run",
-            os.path.abspath(package_dir), # package_dir is mounted at WHACK_ROOT
-            build_script, # build_script is executed
-            WHACK_ROOT # WHACK_ROOT is passed as the first argument to build_script
-        ]
-        subprocess.check_call(build_command, cwd=build_dir, env=build_env)
-
-    def _fetch_downloads(self, build_dir, build_env):
-        downloads_file_path = os.path.join(build_dir, "whack/downloads")
-        downloads.fetch_downloads(downloads_file_path, build_env, build_dir)
 
 
 class CachingPackageProvider(object):
@@ -61,11 +86,3 @@ class CachingPackageProvider(object):
             if package is not None:
                 return package
         raise PackageNotAvailableError()
-        
-
-
-def params_to_build_env(params):
-    build_env = os.environ.copy()
-    for name, value in (params or {}).iteritems():
-        build_env[name.upper()] = str(value)
-    return build_env

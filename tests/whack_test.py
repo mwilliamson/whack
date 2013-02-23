@@ -8,9 +8,11 @@ from nose_test_sets import TestSetBuilder
 
 from whack.common import WHACK_ROOT, PackageNotAvailableError
 import whack.operations
-import testing
+from whack.sources import PackageSourceFetcher
+from whack.builder import build
 from whack.tempdir import create_temporary_dir
 from whack.files import sh_script_description, plain_file
+import testing
 from .indexserver import start_index_server
 
 
@@ -154,6 +156,34 @@ def error_is_raised_if_build_step_is_disabled_and_pre_built_package_cannot_be_fo
                 PackageNotAvailableError,
                 lambda: operations.install(package_source_dir, target_dir)
             )
+
+
+@test
+def can_install_package_when_build_step_is_disabled_if_pre_built_package_can_be_found(create_operations):
+    with _package_source(testing.HelloWorld.BUILD) as package_source_dir:
+        with start_index_server() as index_server:
+            indices = [index_server.index_url()]
+            
+            source_tarball = index_server.add_source(package_source_dir)
+            
+            source_fetcher = PackageSourceFetcher()
+            with source_fetcher.fetch(source_tarball.path) as package_source:
+                with create_temporary_dir() as package_dir:
+                    build(package_source, {}, package_dir)
+                    index_server.add_package(package_dir)
+            
+            with create_temporary_dir() as install_dir:
+                operations = create_operations(
+                    enable_build=False,
+                    indices=[index_server.index_url()]
+                )
+                operations.install(package_source_dir, install_dir)
+            
+                output = subprocess.check_output([
+                    os.path.join(install_dir, "hello")
+                ])
+                assert_equal(testing.HelloWorld.EXPECTED_OUTPUT, output)
+                
 
 
 def test_install(ops, build, params, expected_output):

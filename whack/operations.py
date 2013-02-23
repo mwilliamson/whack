@@ -13,7 +13,11 @@ def create(caching_enabled, indices=None, enable_build=True):
         cacher = xdg_directory_cacher("whack/builds")
     
     package_source_fetcher = PackageSourceFetcher(indices)
-    package_provider = create_package_provider(cacher, enable_build=enable_build)
+    package_provider = create_package_provider(
+        cacher,
+        enable_build=enable_build,
+        indices=indices,
+    )
     deployer = PackageDeployer()
     installer = Installer(package_source_fetcher, package_provider, deployer)
     
