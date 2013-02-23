@@ -32,10 +32,16 @@ def _download_tarball(url, tarball_dir):
     return tarball_path
 
 
-def create_tarball(tarball_path, source):
-    subprocess.check_call([
+def create_tarball(tarball_path, source, rename_dir=None):
+    args = [
         "tar", "czf", tarball_path,
         "--directory", os.path.dirname(source),
         os.path.basename(source)
-    ])
+    ]
+    if rename_dir is not None:
+        args += [
+            "--transform",
+            "s/^{0}/{1}/".format(os.path.basename(source), rename_dir),
+        ]
+    subprocess.check_call(args)
     return tarball_path

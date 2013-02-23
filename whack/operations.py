@@ -52,7 +52,7 @@ class Operations(object):
             package_name = read_file(os.path.join(package_dir, ".whack-package-name"))
             package_filename = "{0}.whack-package".format(package_name)
             package_tarball_path = os.path.join(tarball_dir, package_filename)
-            create_tarball(package_tarball_path, package_dir)
+            create_tarball(package_tarball_path, package_dir, rename_dir=package_name)
             return PackageTarball(package_tarball_path)
 
 
