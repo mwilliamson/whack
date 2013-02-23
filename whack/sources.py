@@ -5,6 +5,7 @@ import tempfile
 import uuid
 import re
 
+from bs4 import BeautifulSoup
 import blah
 import requests
 
@@ -32,8 +33,11 @@ class SourceHashMismatch(Exception):
 
 
 class PackageSourceFetcher(object):
-    def fetch(self, package, lazy=True):
-        fetchers = [SourceControlFetcher()]
+    def fetch(self, package, indices=None, lazy=True):
+        if indices is None:
+            indices = []
+        
+        fetchers = [IndexFetcher(indices), SourceControlFetcher()]
         if lazy:
             fetchers.append(WhackSourceUriFetcher())
         fetchers += [
@@ -52,6 +56,36 @@ class PackageSourceFetcher(object):
             return fetcher.fetch(package)
         else:
             return None
+
+
+class IndexFetcher(object):
+    def __init__(self, indices):
+        self._indices = indices
+    
+    def can_fetch(self, package):
+        return re.match(r"^[a-z0-9\-]+$", package)
+        
+    def fetch(self, package_name):
+        for index in self._indices:
+            source = self._fetch_from_index(index, package_name)
+            if source is not None:
+                return source
+        return None
+        
+    def _fetch_from_index(self, index, package_name):
+        index_response = requests.get(index)
+        if index_response.status_code != 200:
+            # TODO: should we log and carry on? Definitely shouldn't swallow
+            # silently
+            raise Exception("Index {0} returned status code {1}".format(
+                index, index_response.status_code
+            ))
+        html_document = BeautifulSoup(index_response.text)
+        for link in html_document.find_all("a"):
+            if link.get_text().strip() == "{0}{1}".format(package_name, _whack_source_uri_suffix):
+                source_url = link.get("href")
+                return HttpFetcher().fetch(source_url)
+        return None
     
 
 class SourceControlFetcher(object):

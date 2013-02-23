@@ -21,5 +21,6 @@ setup(
         "catchy>=0.1.3,<0.2",
         "spur>=0.3,<0.4",
         "locket>=0.1.1,<0.2",
+        "beautifulsoup4>=4.1.3,<5",
     ],
 )

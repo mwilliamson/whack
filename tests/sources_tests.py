@@ -9,7 +9,7 @@ from whack.sources import \
     PackageSourceFetcher, PackageSourceNotFound, SourceHashMismatch, \
     PackageSource, create_source_tarball
 from whack.tempdir import create_temporary_dir
-from whack.files import read_file, write_files, plain_file
+from whack.files import read_file, write_file, write_files, plain_file
 from whack.tarballs import create_tarball
 from .httpserver import start_static_http_server
 
@@ -91,13 +91,38 @@ def error_is_raised_if_hash_is_not_correct():
             with _fetch_source(package_uri) as package_source:
                 with create_temporary_dir() as target_dir:
                     assert_raises(SourceHashMismatch, lambda: package_source.write_to(target_dir))
+
+
+@istest
+def can_fetch_package_source_using_url_from_html_index():
+    with _temporary_static_server() as server:
+        index_url = "http://localhost:{0}/static/packages.html".format(server.port)
+        index_path = os.path.join(server.root, "packages.html")
+        
+        def create_source(package_source_dir):
+            source_tarball = create_source_tarball(package_source_dir, server.root)
+            source_filename = source_tarball.path.split("/")[-1]
+            source_full_name = source_filename.split(".")[0]
+            source_url = "http://localhost:{0}/static/{1}".format(
+                server.port,
+                source_filename,
+            )
+            write_file(index_path, _html_for_index([
+                (source_filename, source_url)
+            ]))
+            return source_full_name
+            
+        _assert_package_source_can_be_written_to_target_dir(
+            create_source,
+            indices=[index_url]
+        )
     
 
-def _assert_package_source_can_be_written_to_target_dir(source_filter):
+def _assert_package_source_can_be_written_to_target_dir(source_filter, indices=None):
     with _create_temporary_package_source_dir() as package_source_dir:
         package_source_name = source_filter(package_source_dir)
         
-        with _fetch_source(package_source_name) as package_source:
+        with _fetch_source(package_source_name, indices) as package_source:
             with create_temporary_dir() as target_dir:
                 package_source.write_to(target_dir)
                 assert_equal(
@@ -155,7 +180,7 @@ def writing_package_source_includes_directories_specified_in_description():
 
 @istest
 def error_is_raised_if_package_source_cannot_be_found():
-    assert_raises(PackageSourceNotFound, lambda: _fetch_source("nginx"))
+    assert_raises(PackageSourceNotFound, lambda: _fetch_source("nginx/1"))
     
 
 @istest
@@ -200,9 +225,9 @@ def _convert_to_git_repo(cwd):
     _git(["commit", "-m", "Initial commit"])
 
 
-def _fetch_source(package_source_uri):
+def _fetch_source(package_source_uri, indices=None):
     source_fetcher = PackageSourceFetcher()
-    return source_fetcher.fetch(package_source_uri)
+    return source_fetcher.fetch(package_source_uri, indices=indices)
 
 
 @contextlib.contextmanager
@@ -219,3 +244,20 @@ def _source_package_with_description(description):
             plain_file("whack/whack.json", json.dumps(description)),
         ])
         yield PackageSource(package_source_dir)
+
+
+def _html_for_index(packages):
+    links = [
+        '<a href="{0}">{1}</a>'.format(url, name)
+        for name, url in packages
+    ]
+    return """
+<!DOCTYPE html>
+<html>
+  <head>
+  </head>
+  <body>
+    {0}
+  </body>
+</html>
+    """.format("".join(links))
