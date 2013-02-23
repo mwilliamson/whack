@@ -48,7 +48,7 @@ def can_fetch_package_source_from_tarball_on_http_server():
         def create_source(package_source_dir):
             tarball_path = os.path.join(server.root, "package.tar.gz")
             create_tarball(tarball_path, package_source_dir)
-            return "http://localhost:{0}/static/package.tar.gz".format(server.port)
+            return server.static_url("package.tar.gz")
             
         _assert_package_source_can_be_written_to_target_dir(create_source)
 
@@ -72,10 +72,8 @@ def can_fetch_package_source_from_whack_source_uri():
     with _temporary_static_server() as server:
         def create_source(package_source_dir):
             source_tarball = create_source_tarball(package_source_dir, server.root)
-            return "http://localhost:{0}/static/{1}".format(
-                server.port,
-                os.path.relpath(source_tarball.path, server.root),
-            )
+            filename = os.path.relpath(source_tarball.path, server.root)
+            return server.static_url(filename)
             
         _assert_package_source_can_be_written_to_target_dir(create_source)
 
@@ -86,7 +84,7 @@ def error_is_raised_if_hash_is_not_correct():
         with _create_temporary_package_source_dir() as package_source_dir:
             tarball_path = os.path.join(server.root, "package-a452cd.whack-source")
             create_tarball(tarball_path, package_source_dir)
-            package_uri = "http://localhost:{0}/static/package-a452cd.whack-source".format(server.port)
+            package_uri = server.static_url("package-a452cd.whack-source")
             
             with _fetch_source(package_uri) as package_source:
                 with create_temporary_dir() as target_dir:
@@ -96,17 +94,14 @@ def error_is_raised_if_hash_is_not_correct():
 @istest
 def can_fetch_package_source_using_url_from_html_index():
     with _temporary_static_server() as server:
-        index_url = "http://localhost:{0}/static/packages.html".format(server.port)
+        index_url = server.static_url("packages.html")
         index_path = os.path.join(server.root, "packages.html")
         
         def create_source(package_source_dir):
             source_tarball = create_source_tarball(package_source_dir, server.root)
             source_filename = os.path.relpath(source_tarball.path, server.root)
             source_full_name = source_tarball.full_name
-            source_url = "http://localhost:{0}/static/{1}".format(
-                server.port,
-                source_filename,
-            )
+            source_url = server.static_url(source_filename)
             write_file(index_path, _html_for_index([
                 (source_filename, source_url)
             ]))

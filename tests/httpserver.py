@@ -25,7 +25,10 @@ class Server(object):
         self.port = port
         self._server = server
         self._thread = thread
-        
+    
+    def static_url(self, path):
+        return "http://localhost:{0}/static/{1}".format(self.port, path)
+    
     def __enter__(self):
         return self
         
