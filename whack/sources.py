@@ -33,11 +33,14 @@ class SourceHashMismatch(Exception):
 
 
 class PackageSourceFetcher(object):
-    def fetch(self, package, indices=None, lazy=True):
+    def __init__(self, indices=None):
         if indices is None:
-            indices = []
-        
-        fetchers = [IndexFetcher(indices), SourceControlFetcher()]
+            self._indices = []
+        else:
+            self._indices = indices
+    
+    def fetch(self, package, lazy=True):
+        fetchers = [IndexFetcher(self._indices), SourceControlFetcher()]
         if lazy:
             fetchers.append(WhackSourceUriFetcher())
         fetchers += [

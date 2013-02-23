@@ -221,8 +221,8 @@ def _convert_to_git_repo(cwd):
 
 
 def _fetch_source(package_source_uri, indices=None):
-    source_fetcher = PackageSourceFetcher()
-    return source_fetcher.fetch(package_source_uri, indices=indices)
+    source_fetcher = PackageSourceFetcher(indices=indices)
+    return source_fetcher.fetch(package_source_uri)
 
 
 @contextlib.contextmanager
