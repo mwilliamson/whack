@@ -103,7 +103,7 @@ When using `whack-run`, the following happens:
   `unshare` earlier, this mount is only visible to this process.
   
 3. `whack-run` drops its user and group privileges. `whack-run` is installed
-  with the `setuid` bit set so it call `unshare` and `mount`.
+  with the `setuid` bit set so it can call `unshare` and `mount`.
 
 4. `whack-run` calls `exec` with the arguments it was passed i.e.
   `exec ~/web-app/nginx/.sbin/nginx`
