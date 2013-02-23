@@ -102,6 +102,7 @@ class CreateSourceTarballCommand(object):
             args.package_source_dir,
             args.source_tarball_dir
         )
+        print source_tarball.full_name
         print source_tarball.path
 
 

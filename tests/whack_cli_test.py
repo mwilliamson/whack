@@ -63,7 +63,8 @@ class CliOperations(object):
             "create-source-tarball",
             source_dir, tarball_dir,
         )
-        return SourceTarball(output.strip())
+        full_name, path = output.strip().split("\n")
+        return SourceTarball(full_name, path)
     
     def _command(self, command_name, package_name, target_dir, params):
         params_args = [

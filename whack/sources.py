@@ -303,9 +303,10 @@ def create_source_tarball(source_dir, tarball_dir):
     filename = "{0}{1}".format(full_name, _whack_source_uri_suffix)
     path = os.path.join(tarball_dir, filename)
     create_tarball(path, source_dir)
-    return SourceTarball(path)
+    return SourceTarball(full_name, path)
 
 
 class SourceTarball(object):
-    def __init__(self, path):
+    def __init__(self, full_name, path):
+        self.full_name = full_name
         self.path = path

@@ -102,7 +102,7 @@ def can_fetch_package_source_using_url_from_html_index():
         def create_source(package_source_dir):
             source_tarball = create_source_tarball(package_source_dir, server.root)
             source_filename = os.path.relpath(source_tarball.path, server.root)
-            source_full_name = source_filename.split(".")[0]
+            source_full_name = source_tarball.full_name
             source_url = "http://localhost:{0}/static/{1}".format(
                 server.port,
                 source_filename,
