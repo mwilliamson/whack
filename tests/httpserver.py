@@ -1,7 +1,7 @@
 import threading
 
 import starboard
-from wsgiref.simple_server import make_server
+from cherrypy.wsgiserver import CherryPyWSGIServer
 from pyramid.config import Configurator
 
     
@@ -11,8 +11,8 @@ def start_static_http_server(root):
     config.add_static_view('static', root, cache_max_age=3600)
     app = config.make_wsgi_app()
     
-    server = make_server('0.0.0.0', port, app)
-    server_thread = threading.Thread(target=server.serve_forever)
+    server = CherryPyWSGIServer(('0.0.0.0', port), app)
+    server_thread = threading.Thread(target=server.start)
     server_thread.daemon = True
     server_thread.start()
     
@@ -33,5 +33,5 @@ class Server(object):
         return self
         
     def __exit__(self, *args):
-        self._server.shutdown()
+        self._server.stop()
         self._thread.join()
