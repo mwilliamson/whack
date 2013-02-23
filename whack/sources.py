@@ -84,7 +84,7 @@ class IndexFetcher(object):
         for link in html_document.find_all("a"):
             if link.get_text().strip() == "{0}{1}".format(package_name, _whack_source_uri_suffix):
                 source_url = link.get("href")
-                return HttpFetcher().fetch(source_url)
+                return WhackSourceUriFetcher().fetch(source_url)
         return None
     
 
