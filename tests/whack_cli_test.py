@@ -73,7 +73,7 @@ class CliOperations(object):
         self._whack(command_name, package_name, target_dir, *params_args)
         
     def _whack(self, *args):
-        return subprocess.check_output(["whack"] + list(args))
+        return subprocess.check_output(["whack"] + list(args) + ["--no-cache"])
         
 
 
