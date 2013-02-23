@@ -7,7 +7,7 @@ env_default = whack.args.env_default(prefix="WHACK")
 
 def main(argv, create_operations):
     args = parse_args(argv)
-    operations = create_operations(args.caching_enabled)
+    operations = create_operations(args.caching_enabled, args.indices)
     args.func(operations, args)
 
 
@@ -24,7 +24,7 @@ def parse_args(argv):
     
     for command in commands:
         subparser = subparsers.add_parser(command.name)
-        _add_caching_args(subparser)
+        _add_common_args(subparser)
         subparser.set_defaults(func=command.execute)
         command.create_parser(subparser)
 
@@ -106,6 +106,14 @@ class CreateSourceTarballCommand(object):
         print source_tarball.path
 
 
+def _add_common_args(parser):
+    _add_caching_args(parser)
+    _add_index_args(parser)
+
+
 def _add_caching_args(parser):
     parser.add_argument("--no-cache", action="store_false", dest="caching_enabled")
-    
+
+
+def _add_index_args(parser):
+    parser.add_argument("--add-index", action="append", default=[], dest="indices")

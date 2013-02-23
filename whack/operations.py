@@ -6,13 +6,13 @@ from .providers import CachingPackageProvider
 from .deployer import PackageDeployer
 
 
-def create(caching_enabled):
+def create(caching_enabled, indices=None):
     if not caching_enabled:
         cacher = NoCachingStrategy()
     else:
         cacher = xdg_directory_cacher("whack/builds")
     
-    package_source_fetcher = PackageSourceFetcher()
+    package_source_fetcher = PackageSourceFetcher(indices)
     package_provider = CachingPackageProvider(cacher)
     deployer = PackageDeployer()
     installer = Installer(package_source_fetcher, package_provider, deployer)

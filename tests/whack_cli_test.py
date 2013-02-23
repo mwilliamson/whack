@@ -46,6 +46,9 @@ def _test_install_arg_parse(argv, **expected_kwargs):
 
 
 class CliOperations(object):
+    def __init__(self, indices=None):
+        self._indices = indices
+    
     def install(self, package_name, install_dir, params):
         self._command("install", package_name, install_dir, params)
         
@@ -74,13 +77,17 @@ class CliOperations(object):
         self._whack(command_name, package_name, target_dir, *params_args)
         
     def _whack(self, *args):
-        return subprocess.check_output(["whack"] + list(args) + ["--no-cache"])
+        indices_args = [
+            "--add-index={0}".format(index)
+            for index in (self._indices or [])
+        ]
+        extra_args = ["--no-cache"] + indices_args
+        return subprocess.check_output(["whack"] + list(args) + extra_args)
         
 
 
 def _run_cli_operations_test(test_func):
-    ops = CliOperations()
-    test_func(ops)
+    test_func(CliOperations)
 
 
 WhackCliOperationsTest = whack_test.create(
