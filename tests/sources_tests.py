@@ -9,9 +9,10 @@ from whack.sources import \
     PackageSourceFetcher, PackageSourceNotFound, SourceHashMismatch, \
     PackageSource, create_source_tarball
 from whack.tempdir import create_temporary_dir
-from whack.files import read_file, write_file, write_files, plain_file
+from whack.files import read_file, write_files, plain_file
 from whack.tarballs import create_tarball
 from .httpserver import start_static_http_server
+from .indexserver import start_index_server
 
 
 @istest
@@ -93,23 +94,15 @@ def error_is_raised_if_hash_is_not_correct():
 
 @istest
 def can_fetch_package_source_using_url_from_html_index():
-    with _temporary_static_server() as server:
-        index_url = server.static_url("packages.html")
-        index_path = os.path.join(server.root, "packages.html")
+    with start_index_server() as index_server:
         
         def create_source(package_source_dir):
-            source_tarball = create_source_tarball(package_source_dir, server.root)
-            source_filename = os.path.relpath(source_tarball.path, server.root)
-            source_full_name = source_tarball.full_name
-            source_url = server.static_url(source_filename)
-            write_file(index_path, _html_for_index([
-                (source_filename, source_url)
-            ]))
-            return source_full_name
+            source_tarball = index_server.add_source(package_source_dir)
+            return source_tarball.full_name
             
         _assert_package_source_can_be_written_to_target_dir(
             create_source,
-            indices=[index_url]
+            indices=[index_server.index_url()]
         )
     
 
@@ -239,20 +232,3 @@ def _source_package_with_description(description):
             plain_file("whack/whack.json", json.dumps(description)),
         ])
         yield PackageSource(package_source_dir)
-
-
-def _html_for_index(packages):
-    links = [
-        '<a href="{0}">{1}</a>'.format(url, name)
-        for name, url in packages
-    ]
-    return """
-<!DOCTYPE html>
-<html>
-  <head>
-  </head>
-  <body>
-    {0}
-  </body>
-</html>
-    """.format("".join(links))

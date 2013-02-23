@@ -10,9 +10,8 @@ from whack.common import WHACK_ROOT
 import whack.operations
 import testing
 from whack.tempdir import create_temporary_dir
-from whack.files import write_file, sh_script_description, plain_file
-from whack.sources import create_source_tarball
-from .httpserver import start_static_http_server
+from whack.files import sh_script_description, plain_file
+from .indexserver import start_index_server
 
 
 test_set = TestSetBuilder()
@@ -136,53 +135,14 @@ def source_tarballs_created_by_whack_can_be_built(ops):
 @test
 def packages_can_be_installed_from_html_index(create_operations):
     with _package_source(testing.HelloWorld.BUILD) as package_source_dir:
-        with _temporary_static_server() as server:
-            index_url = server.static_url("packages.html")
-            index_path = os.path.join(server.root, "packages.html")
-            
-            source_tarball = create_source_tarball(
-                package_source_dir,
-                server.root
-            )
-            
-            source_filename = os.path.relpath(source_tarball.path, server.root)
-            source_full_name = source_tarball.full_name
-            source_url = server.static_url(source_filename)
-            write_file(index_path, _html_for_index([
-                (source_filename, source_url)
-            ]))
-                
+        with start_index_server() as index_server:
+            source = index_server.add_source(package_source_dir)
             with create_temporary_dir() as target_dir:
-                operations = create_operations(indices=[index_url])
-                operations.build(source_full_name, target_dir, params={})
+                operations = create_operations(indices=[index_server.index_url()])
+                operations.build(source.full_name, target_dir, params={})
             
                 output = subprocess.check_output([os.path.join(target_dir, "hello")])
                 assert_equal(testing.HelloWorld.EXPECTED_OUTPUT, output)
-
-
-@contextlib.contextmanager
-def _temporary_static_server():
-    with create_temporary_dir() as server_root:
-        with start_static_http_server(server_root) as server:
-            yield server
-
-
-# TODO: remove duplication with sources_test
-def _html_for_index(packages):
-    links = [
-        '<a href="{0}">{1}</a>'.format(url, name)
-        for name, url in packages
-    ]
-    return """
-<!DOCTYPE html>
-<html>
-  <head>
-  </head>
-  <body>
-    {0}
-  </body>
-</html>
-    """.format("".join(links))
     
 
 def test_install(ops, build, params, expected_output):
