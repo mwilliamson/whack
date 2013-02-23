@@ -162,8 +162,6 @@ def error_is_raised_if_build_step_is_disabled_and_pre_built_package_cannot_be_fo
 def can_install_package_when_build_step_is_disabled_if_pre_built_package_can_be_found(create_operations):
     with _package_source(testing.HelloWorld.BUILD) as package_source_dir:
         with start_index_server() as index_server:
-            indices = [index_server.index_url()]
-            
             source_tarball = index_server.add_source(package_source_dir)
             
             source_fetcher = PackageSourceFetcher()

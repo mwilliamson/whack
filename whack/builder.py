@@ -4,7 +4,7 @@ import subprocess
 from . import downloads
 from .tempdir import create_temporary_dir
 from .naming import name_package
-from .common import WHACK_ROOT, PackageNotAvailableError
+from .common import WHACK_ROOT
 from .files import mkdir_p, write_file
 
 

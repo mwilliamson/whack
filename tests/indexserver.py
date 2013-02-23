@@ -36,7 +36,7 @@ class IndexServer(object):
         package_name = read_file(os.path.join(package_dir, ".whack-package-name"))
         package_filename = "{0}.whack-package".format(package_name)
         package_tarball_path = os.path.join(self._root, package_filename)
-        package_tarball = create_tarball(
+        create_tarball(
             package_tarball_path,
             package_dir,
         )

@@ -8,7 +8,7 @@ def read_index(index_uri):
         # TODO: should we log and carry on? Definitely shouldn't swallow
         # silently
         raise Exception("Index {0} returned status code {1}".format(
-            index, index_response.status_code
+            index_uri, index_response.status_code
         ))
     html_document = BeautifulSoup(index_response.text)
     return Index([

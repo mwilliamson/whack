@@ -5,7 +5,6 @@ import tempfile
 import uuid
 import re
 
-from bs4 import BeautifulSoup
 import blah
 import requests
 

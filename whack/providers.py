@@ -1,15 +1,11 @@
 import os
-import subprocess
 import shutil
 
 import requests
-from bs4 import BeautifulSoup
 
-from . import downloads
 from .tempdir import create_temporary_dir
 from .naming import name_package
-from .common import WHACK_ROOT, PackageNotAvailableError
-from .files import mkdir_p
+from .common import PackageNotAvailableError
 from .builder import build
 from .tarballs import extract_tarball
 from .indices import read_index

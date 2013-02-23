@@ -1,5 +1,4 @@
 import os
-import subprocess
 import contextlib
 
 from nose.tools import istest, assert_equal
