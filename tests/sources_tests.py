@@ -74,7 +74,7 @@ def can_fetch_package_source_from_whack_source_uri():
             source_tarball = create_source_tarball(package_source_dir, server.root)
             return "http://localhost:{0}/static/{1}".format(
                 server.port,
-                source_tarball.path.split("/")[-1],
+                os.path.relpath(source_tarball.path, server.root),
             )
             
         _assert_package_source_can_be_written_to_target_dir(create_source)
@@ -101,7 +101,7 @@ def can_fetch_package_source_using_url_from_html_index():
         
         def create_source(package_source_dir):
             source_tarball = create_source_tarball(package_source_dir, server.root)
-            source_filename = source_tarball.path.split("/")[-1]
+            source_filename = os.path.relpath(source_tarball.path, server.root)
             source_full_name = source_filename.split(".")[0]
             source_url = "http://localhost:{0}/static/{1}".format(
                 server.port,
