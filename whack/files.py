@@ -1,6 +1,7 @@
 import subprocess
 import os
 import errno
+import shutil
 
 
 def read_file(path):
@@ -11,6 +12,9 @@ def read_file(path):
 def write_file(path, contents):
     with open(path, "w") as f:
         f.write(contents)
+
+
+copy_file = shutil.copyfile
 
 
 def copy_dir(source, destination):
@@ -25,6 +29,11 @@ def mkdir_p(path):
     except OSError as error:
         if not (error.errno == errno.EEXIST and os.path.isdir(path)):
             raise
+
+
+def delete_dir(path):
+    if os.path.exists(path):
+        shutil.rmtree(path)
 
 
 def write_files(root_dir, file_descriptions):

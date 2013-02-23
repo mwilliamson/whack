@@ -1,6 +1,5 @@
 import os
 import json
-import shutil
 import tempfile
 import uuid
 import re
@@ -8,7 +7,7 @@ import re
 import blah
 
 from .hashes import Hasher
-from .files import copy_dir, mkdir_p
+from .files import copy_dir, mkdir_p, copy_file, delete_dir
 from .tarballs import extract_tarball, create_tarball
 from .indices import read_index
 
@@ -182,8 +181,7 @@ class RemotePackageSource(object):
         
     def __exit__(self, *args):
         if self._package_source_dir is not None:
-            if os.path.exists(self._package_source_dir):
-                shutil.rmtree(self._package_source_dir)
+            delete_dir(self._package_source_dir)
 
 
 def _create_temporary_package_source(fetch_package_source_dir):
@@ -194,8 +192,7 @@ def _create_temporary_package_source(fetch_package_source_dir):
             temp_dir
         )
     except:
-        if os.path.exists(temp_dir):
-            shutil.rmtree(temp_dir)
+        delete_dir(temp_dir)
         raise
 
 
@@ -249,7 +246,7 @@ def _copy_dir_or_file(source, destination):
     if os.path.isdir(source):
         copy_dir(source, destination)
     else:
-        shutil.copyfile(source, destination)
+        copy_file(source, destination)
 
 
 class TemporaryPackageSource(object):
@@ -261,7 +258,7 @@ class TemporaryPackageSource(object):
         return PackageSource(self._path)
     
     def __exit__(self, *args):
-        shutil.rmtree(self._temp_dir)
+        delete_dir(self._temp_dir)
         
 
 def _read_package_description(package_src_dir):
