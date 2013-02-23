@@ -41,10 +41,17 @@ class PackageSourceFetcher(object):
             LocalPathFetcher(),
         ]
         for fetcher in fetchers:
-            if fetcher.can_fetch(package):
-                return fetcher.fetch(package)
+            package_source = self._fetch_with_fetcher(fetcher, package)
+            if package_source is not None:
+                return package_source
                 
         raise PackageSourceNotFound(package)
+        
+    def _fetch_with_fetcher(self, fetcher, package):
+        if fetcher.can_fetch(package):
+            return fetcher.fetch(package)
+        else:
+            return None
     
 
 class SourceControlFetcher(object):
