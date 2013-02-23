@@ -21,6 +21,7 @@ def parse_args(argv):
         InstallCommand("build"),
         DeployCommand(),
         CreateSourceTarballCommand(),
+        BuildPackageTarballCommand(),
     ]
     
     parser = argparse.ArgumentParser()
@@ -63,11 +64,7 @@ class InstallCommand(object):
     def create_parser(self, subparser):
         subparser.add_argument('package')
         subparser.add_argument('target_dir', metavar="target-dir")
-        subparser.add_argument(
-            "--add-parameter", "-p",
-            action=KeyValueAction,
-            dest="params",
-        )
+        _add_build_params_args(subparser)
     
     def execute(self, operations, args):
         if self.name == "install":
@@ -110,6 +107,23 @@ class CreateSourceTarballCommand(object):
         print source_tarball.path
 
 
+class BuildPackageTarballCommand(object):
+    name = "build-package-tarball"
+    
+    def create_parser(self, subparser):
+        subparser.add_argument("package")
+        subparser.add_argument("package_tarball_dir", metavar="package-tarball-dir")
+        _add_build_params_args(subparser)
+        
+    def execute(self, operations, args):
+        package_tarball = operations.build_package_tarball(
+            args.package,
+            args.package_tarball_dir,
+            params=args.params,
+        )
+        print package_tarball.path
+
+
 def _add_common_args(parser):
     _add_caching_args(parser)
     _add_index_args(parser)
@@ -126,3 +140,11 @@ def _add_index_args(parser):
 
 def _add_build_args(parser):
     parser.add_argument("--disable-build", action="store_false", dest="enable_build")
+
+
+def _add_build_params_args(parser):
+    parser.add_argument(
+        "--add-parameter", "-p",
+        action=KeyValueAction,
+        dest="params",
+    )

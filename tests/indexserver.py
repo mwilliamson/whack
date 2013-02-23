@@ -1,11 +1,11 @@
 import contextlib
 import os
+import shutil
 
 from .httpserver import start_static_http_server
 from whack.tempdir import create_temporary_dir
 from whack.sources import create_source_tarball
-from whack.files import write_file, read_file
-from whack.tarballs import create_tarball
+from whack.files import write_file
 
 
 @contextlib.contextmanager
@@ -20,6 +20,7 @@ class IndexServer(object):
         self._sources = []
         self._http_server = http_server
         self._root = http_server.root
+        self._generate_index()
     
     def index_url(self):
         return self._http_server.static_url("packages.html")
@@ -32,14 +33,10 @@ class IndexServer(object):
         self._generate_index()
         return source_tarball
         
-    def add_package(self, package_dir):
-        package_name = read_file(os.path.join(package_dir, ".whack-package-name"))
-        package_filename = "{0}.whack-package".format(package_name)
-        package_tarball_path = os.path.join(self._root, package_filename)
-        create_tarball(
-            package_tarball_path,
-            package_dir,
-        )
+    def add_package_tarball(self, package_tarball):
+        package_filename = os.path.basename(package_tarball.path)
+        server_path = os.path.join(self._root, package_filename)
+        shutil.copyfile(package_tarball.path, server_path)
         package_url = self._http_server.static_url(package_filename)
         self._sources.append((package_filename, package_url))
         self._generate_index()

@@ -8,6 +8,7 @@ from whack import cli
 from whack.sources import SourceTarball
 from whack.common import PackageNotAvailableError
 from . import whack_test
+from whack.operations import PackageTarball
 
 
 @istest
@@ -70,12 +71,16 @@ class CliOperations(object):
         ).output
         full_name, path = output.strip().split("\n")
         return SourceTarball(full_name, path)
+        
+    def build_package_tarball(self, package_name, tarball_dir, params=None):
+        output = self._whack(
+            "build-package-tarball", package_name, tarball_dir, 
+            *self._build_params_args(params)
+        ).output
+        return PackageTarball(output.strip())
     
     def _command(self, command_name, package_name, target_dir, params):
-        params_args = [
-            "-p{0}={1}".format(key, value)
-            for key, value in params.iteritems()
-        ]
+        params_args = self._build_params_args(params)
         try:
             self._whack(command_name, package_name, target_dir, *params_args)
         except spur.RunProcessError as process_error:
@@ -96,6 +101,13 @@ class CliOperations(object):
             extra_args.append("--disable-build")
             
         return local_shell.run(["whack"] + list(args) + extra_args)
+        
+    def _build_params_args(self, params):
+        return [
+            "-p{0}={1}".format(key, value)
+            for key, value in (params or {}).iteritems()
+        ]
+        
         
 
 
