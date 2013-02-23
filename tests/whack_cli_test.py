@@ -83,6 +83,8 @@ class CliOperations(object):
             # TODO: perhaps we can do something a little less crude?
             if PackageNotAvailableError.__name__ in process_error.stderr_output:
                 raise PackageNotAvailableError()
+            else:
+                raise
         
     def _whack(self, *args):
         local_shell = spur.LocalShell()
