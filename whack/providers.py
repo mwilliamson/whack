@@ -12,6 +12,7 @@ from .common import WHACK_ROOT, PackageNotAvailableError
 from .files import mkdir_p
 from .builder import build
 from .tarballs import extract_tarball
+from .indices import read_index
 
 
 def create_package_provider(cacher, enable_build=True, indices=None):
@@ -25,27 +26,19 @@ def create_package_provider(cacher, enable_build=True, indices=None):
 
 
 class IndexPackageProvider(object):
-    def __init__(self, index):
-        self._index = index
+    def __init__(self, index_uri):
+        self._index_uri = index_uri
         
     def provide_package(self, package_source, params, package_dir):
         # TODO: bundle up package_source and params into a PackageRequest
         package_name = name_package(package_source, params)
-        # TODO: remove duplication with sources.IndexFetcher
-        index_response = requests.get(self._index)
-        if index_response.status_code != 200:
-            # TODO: should we log and carry on? Definitely shouldn't swallow
-            # silently
-            raise Exception("Index {0} returned status code {1}".format(
-                index, index_response.status_code
-            ))
-        html_document = BeautifulSoup(index_response.text)
-        for link in html_document.find_all("a"):
-            if link.get_text().strip() == "{0}.whack-package".format(package_name):
-                url = link.get("href")
-                self._fetch_and_extract(url, package_dir)
-                return True
-        return None
+        index = read_index(self._index_uri)
+        package_entry = index.find_by_name("{0}.whack-package".format(package_name))
+        if package_entry is None:
+            return None
+        else:
+            self._fetch_and_extract(package_entry.url, package_dir)
+            return True
         
     def _fetch_and_extract(self, url, package_dir):
         # TODO: remove duplication with sources module

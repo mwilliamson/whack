@@ -12,6 +12,7 @@ import requests
 from .hashes import Hasher
 from .files import copy_dir, mkdir_p
 from .tarballs import extract_tarball, create_tarball
+from .indices import read_index
 
 
 _whack_source_uri_suffix = ".whack-source"
@@ -69,26 +70,20 @@ class IndexFetcher(object):
         return re.match(r"^[a-z0-9\-]+$", package)
         
     def fetch(self, package_name):
-        for index in self._indices:
-            source = self._fetch_from_index(index, package_name)
+        for index_uri in self._indices:
+            source = self._fetch_from_index(index_uri, package_name)
             if source is not None:
                 return source
         return None
         
-    def _fetch_from_index(self, index, package_name):
-        index_response = requests.get(index)
-        if index_response.status_code != 200:
-            # TODO: should we log and carry on? Definitely shouldn't swallow
-            # silently
-            raise Exception("Index {0} returned status code {1}".format(
-                index, index_response.status_code
-            ))
-        html_document = BeautifulSoup(index_response.text)
-        for link in html_document.find_all("a"):
-            if link.get_text().strip() == "{0}{1}".format(package_name, _whack_source_uri_suffix):
-                source_url = link.get("href")
-                return WhackSourceUriFetcher().fetch(source_url)
-        return None
+    def _fetch_from_index(self, index_uri, package_name):
+        index = read_index(index_uri)
+        package_source_filename = package_name + _whack_source_uri_suffix
+        package_source_entry = index.find_by_name(package_source_filename)
+        if package_source_entry is None:
+            return None
+        else:
+            return WhackSourceUriFetcher().fetch(package_source_entry.url)
     
 
 class SourceControlFetcher(object):
