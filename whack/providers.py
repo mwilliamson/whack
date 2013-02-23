@@ -37,18 +37,8 @@ class IndexPackageProvider(object):
             return True
         
     def _fetch_and_extract(self, url, package_dir):
-        # TODO: remove duplication with sources module
-        with create_temporary_dir() as temp_dir:
-            tarball_path = os.path.join(temp_dir, "package.tar.gz")
-            response = requests.get(url, stream=True)
-            if response.status_code != 200:
-                raise Exception("Status code was: {0}".format(response.status_code))
-            with open(tarball_path, "wb") as tarball_file:
-                shutil.copyfileobj(response.raw, tarball_file)
-            
-            # TODO: verify hash
-            extract_tarball(tarball_path, package_dir, strip_components=1)
-    
+        extract_tarball(url, package_dir, strip_components=1)
+        
 
 class BuildingPackageProvider(object):
     def provide_package(self, package_src, params, package_dir):

@@ -127,17 +127,8 @@ class HttpFetcher(object):
         
     def fetch(self, url):
         def fetch_directory(temp_dir):
-            mkdir_p(temp_dir)
-            tarball_path = os.path.join(temp_dir, "package-source.tar.gz")
-            response = requests.get(url, stream=True)
-            if response.status_code != 200:
-                raise Exception("Status code was: {0}".format(response.status_code))
-            with open(tarball_path, "wb") as tarball_file:
-                shutil.copyfileobj(response.raw, tarball_file)
-            
-            package_source_dir = os.path.join(temp_dir, "package-source")
-            extract_tarball(tarball_path, package_source_dir, strip_components=1)
-            return package_source_dir
+            extract_tarball(url, temp_dir, strip_components=1)
+            return temp_dir
             
         return _create_temporary_package_source(fetch_directory)
 
@@ -204,7 +195,8 @@ def _create_temporary_package_source(fetch_package_source_dir):
             temp_dir
         )
     except:
-        shutil.rmtree(temp_dir)
+        if os.path.exists(temp_dir):
+            shutil.rmtree(temp_dir)
         raise
 
 
