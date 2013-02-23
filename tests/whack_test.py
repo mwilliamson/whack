@@ -3,10 +3,10 @@ import subprocess
 import functools
 import contextlib
 
-from nose.tools import assert_equal
+from nose.tools import assert_equal, assert_raises
 from nose_test_sets import TestSetBuilder
 
-from whack.common import WHACK_ROOT
+from whack.common import WHACK_ROOT, PackageNotAvailableError
 import whack.operations
 import testing
 from whack.tempdir import create_temporary_dir
@@ -143,7 +143,18 @@ def packages_can_be_installed_from_html_index(create_operations):
             
                 output = subprocess.check_output([os.path.join(target_dir, "hello")])
                 assert_equal(testing.HelloWorld.EXPECTED_OUTPUT, output)
-    
+
+
+@test
+def error_is_raised_if_build_step_is_disabled_and_pre_built_package_cannot_be_found(create_operations):
+    operations = create_operations(enable_build=False)
+    with _package_source(testing.HelloWorld.BUILD) as package_source_dir:
+        with create_temporary_dir() as target_dir:
+            assert_raises(
+                PackageNotAvailableError,
+                lambda: operations.install(package_source_dir, target_dir)
+            )
+
 
 def test_install(ops, build, params, expected_output):
     with _package_source(build) as package_source_dir:

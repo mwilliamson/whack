@@ -11,7 +11,7 @@ from nose.tools import istest, assert_equal
 
 from whack.installer import Installer
 from whack.sources import PackageSource
-from whack.providers import CachingPackageProvider
+from whack.providers import create_package_provider
 from whack.deployer import PackageDeployer
 from catchy import DirectoryCacher
 import testing
@@ -63,7 +63,7 @@ class TestRunner(object):
         package_source_fetcher = InMemoryPackageSourceFetcher({
             package_name: package_dir
         })
-        package_provider = CachingPackageProvider(self._cacher)
+        package_provider = create_package_provider(cacher=self._cacher)
         deployer = PackageDeployer()
         installer = Installer(package_source_fetcher, package_provider, deployer)
         

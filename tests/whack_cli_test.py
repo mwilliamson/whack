@@ -3,9 +3,11 @@ import subprocess
 import contextlib
 
 from nose.tools import istest, assert_equal
+import spur
 
 from whack import cli
 from whack.sources import SourceTarball
+from whack.common import PackageNotAvailableError
 from . import whack_test
 
 
@@ -46,13 +48,14 @@ def _test_install_arg_parse(argv, **expected_kwargs):
 
 
 class CliOperations(object):
-    def __init__(self, indices=None):
+    def __init__(self, indices=None, enable_build=True):
         self._indices = indices
+        self._enable_build = enable_build
     
-    def install(self, package_name, install_dir, params):
+    def install(self, package_name, install_dir, params={}):
         self._command("install", package_name, install_dir, params)
         
-    def build(self, package_name, target_dir, params):
+    def build(self, package_name, target_dir, params={}):
         self._command("build", package_name, target_dir, params)
     
     def deploy(self, package_dir, target_dir=None):
@@ -65,7 +68,7 @@ class CliOperations(object):
         output = self._whack(
             "create-source-tarball",
             source_dir, tarball_dir,
-        )
+        ).output
         full_name, path = output.strip().split("\n")
         return SourceTarball(full_name, path)
     
@@ -74,15 +77,24 @@ class CliOperations(object):
             "-p{0}={1}".format(key, value)
             for key, value in params.iteritems()
         ]
-        self._whack(command_name, package_name, target_dir, *params_args)
+        try:
+            self._whack(command_name, package_name, target_dir, *params_args)
+        except spur.RunProcessError as process_error:
+            # TODO: perhaps we can do something a little less crude?
+            if PackageNotAvailableError.__name__ in process_error.stderr_output:
+                raise PackageNotAvailableError()
         
     def _whack(self, *args):
+        local_shell = spur.LocalShell()
         indices_args = [
             "--add-index={0}".format(index)
             for index in (self._indices or [])
         ]
         extra_args = ["--no-cache"] + indices_args
-        return subprocess.check_output(["whack"] + list(args) + extra_args)
+        if not self._enable_build:
+            extra_args.append("--disable-build")
+            
+        return local_shell.run(["whack"] + list(args) + extra_args)
         
 
 
