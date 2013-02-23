@@ -6,7 +6,6 @@ import uuid
 import re
 
 import blah
-import requests
 
 from .hashes import Hasher
 from .files import copy_dir, mkdir_p

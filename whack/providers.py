@@ -1,9 +1,3 @@
-import os
-import shutil
-
-import requests
-
-from .tempdir import create_temporary_dir
 from .naming import name_package
 from .common import PackageNotAvailableError
 from .builder import build
