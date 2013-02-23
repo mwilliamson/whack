@@ -117,7 +117,7 @@ def _add_common_args(parser):
 
 
 def _add_caching_args(parser):
-    parser.add_argument("--no-cache", action="store_false", dest="caching_enabled")
+    parser.add_argument("--disable-cache", action="store_false", dest="caching_enabled")
 
 
 def _add_index_args(parser):

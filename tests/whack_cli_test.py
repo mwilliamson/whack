@@ -90,7 +90,7 @@ class CliOperations(object):
             "--add-index={0}".format(index)
             for index in (self._indices or [])
         ]
-        extra_args = ["--no-cache"] + indices_args
+        extra_args = ["--disable-cache"] + indices_args
         if not self._enable_build:
             extra_args.append("--disable-build")
             
