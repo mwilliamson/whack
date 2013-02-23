@@ -6,7 +6,7 @@ import whack.operations
 import whack.cli
 
 def main():
-    return whack.cli.main(sys.argv, whack.operations)
+    return whack.cli.main(sys.argv, whack.operations.create)
 
 if __name__ == "__main__":
     main()

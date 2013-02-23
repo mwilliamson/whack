@@ -36,18 +36,3 @@ class Operations(object):
         
     def create_source_tarball(self, source_dir, tarball_dir):
         return create_source_tarball(source_dir, tarball_dir)
-
-
-def install(package, install_dir, caching_enabled, params):
-    operations = create(caching_enabled)
-    operations.install(package, install_dir, params)
-    
-
-def build(package, install_dir, caching_enabled, params):
-    operations = create(caching_enabled)
-    operations.build(package, install_dir, params)
-
-
-def deploy(caching_enabled, package_dir, target_dir):
-    operations = create(caching_enabled)
-    operations.deploy(package_dir, target_dir)

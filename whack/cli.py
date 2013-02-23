@@ -5,8 +5,9 @@ import whack.args
 env_default = whack.args.env_default(prefix="WHACK")
 
 
-def main(argv, operations):
+def main(argv, create_operations):
     args = parse_args(argv)
+    operations = create_operations(args.caching_enabled)
     args.func(operations, args)
 
 
@@ -72,12 +73,7 @@ class InstallCommand(object):
         else:
             raise Exception("Unrecognised operation")
             
-        operation(
-            package=args.package,
-            install_dir=args.target_dir,
-            caching_enabled=args.caching_enabled,
-            params=args.params
-        )
+        operation(args.package, args.target_dir, params=args.params)
 
 
 class DeployCommand(object):
@@ -91,7 +87,7 @@ class DeployCommand(object):
         target_group.add_argument("target_dir", metavar="target-dir", nargs="?")
 
     def execute(self, operations, args):
-        operations.deploy(args.caching_enabled, args.package_dir, args.target_dir)
+        operations.deploy(args.package_dir, args.target_dir)
 
 
 class CreateSourceTarballCommand(object):
