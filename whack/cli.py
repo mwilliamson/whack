@@ -108,7 +108,7 @@ class CreateSourceTarballCommand(object):
 
 
 class BuildPackageTarballCommand(object):
-    name = "build-package-tarball"
+    name = "get-package-tarball"
     
     def create_parser(self, subparser):
         subparser.add_argument("package")
@@ -116,7 +116,7 @@ class BuildPackageTarballCommand(object):
         _add_build_params_args(subparser)
         
     def execute(self, operations, args):
-        package_tarball = operations.build_package_tarball(
+        package_tarball = operations.get_package_tarball(
             args.package,
             args.package_tarball_dir,
             params=args.params,

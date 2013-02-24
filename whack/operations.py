@@ -46,7 +46,7 @@ class Operations(object):
     def create_source_tarball(self, source_dir, tarball_dir):
         return create_source_tarball(source_dir, tarball_dir)
         
-    def build_package_tarball(self, package_name, tarball_dir, params=None):
+    def get_package_tarball(self, package_name, tarball_dir, params=None):
         with create_temporary_dir() as package_dir:
             self.get_package(package_name, package_dir, params=params)
             package_name = read_file(os.path.join(package_dir, ".whack-package-name"))

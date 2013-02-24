@@ -72,9 +72,9 @@ class CliOperations(object):
         full_name, path = output.strip().split("\n")
         return SourceTarball(full_name, path)
         
-    def build_package_tarball(self, package_name, tarball_dir, params=None):
+    def get_package_tarball(self, package_name, tarball_dir, params=None):
         output = self._whack(
-            "build-package-tarball", package_name, tarball_dir, 
+            "get-package-tarball", package_name, tarball_dir, 
             *self._build_params_args(params)
         ).output
         return PackageTarball(output.strip())

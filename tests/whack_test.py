@@ -164,7 +164,7 @@ def can_install_package_when_build_step_is_disabled_if_pre_built_package_can_be_
             
             operations_for_build = create_operations(indices=indices)
             with create_temporary_dir() as temp_dir:
-                package_tarball = operations_for_build.build_package_tarball(
+                package_tarball = operations_for_build.get_package_tarball(
                     package_source_dir,
                     temp_dir
                 )
