@@ -135,7 +135,13 @@ def _add_caching_args(parser):
 
 
 def _add_index_args(parser):
-    parser.add_argument("--add-index", action="append", default=[], dest="indices")
+    parser.add_argument(
+        "--add-index",
+        action="append",
+        default=[],
+        dest="indices",
+        metavar="INDEX",
+    )
 
 
 def _add_build_args(parser):
