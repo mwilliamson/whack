@@ -58,10 +58,10 @@ chmod +x hello
 
 
 @test_with_operations
-def build_leaves_undeployed_build_in_target_directory(ops):
+def getting_package_leaves_undeployed_build_in_target_directory(ops):
     with _package_source(testing.HelloWorld.BUILD) as package_source_dir:
         with create_temporary_dir() as target_dir:
-            ops.build(package_source_dir, target_dir, params={})
+            ops.get_package(package_source_dir, target_dir, params={})
         
             output = subprocess.check_output([os.path.join(target_dir, "hello")])
             assert_equal(testing.HelloWorld.EXPECTED_OUTPUT, output)
@@ -69,7 +69,7 @@ def build_leaves_undeployed_build_in_target_directory(ops):
 
 
 @test_with_operations
-def params_are_passed_to_build_script_during_build(ops):
+def params_are_passed_to_build_script_during_get_package(ops):
     _TEST_BUILDER_BUILD = r"""#!/bin/sh
 set -e
 cd $1
@@ -80,7 +80,7 @@ chmod +x hello
     
     with _package_source(_TEST_BUILDER_BUILD) as package_source_dir:
         with create_temporary_dir() as target_dir:
-            ops.build(package_source_dir, target_dir, params={"version": "1"})
+            ops.get_package(package_source_dir, target_dir, params={"version": "1"})
         
             output = subprocess.check_output([os.path.join(target_dir, "hello")])
             assert_equal("1\n", output)
@@ -118,7 +118,7 @@ def directory_can_be_deployed_in_place(ops):
 
 
 @test_with_operations
-def source_tarballs_created_by_whack_can_be_built(ops):
+def source_tarballs_created_by_whack_can_be_installed(ops):
     with _package_source(testing.HelloWorld.BUILD) as package_source_dir:
         with create_temporary_dir() as tarball_dir:
             source_tarball = ops.create_source_tarball(
@@ -126,7 +126,7 @@ def source_tarballs_created_by_whack_can_be_built(ops):
                 tarball_dir
             )
             with create_temporary_dir() as target_dir:
-                ops.build(source_tarball.path, target_dir, params={})
+                ops.install(source_tarball.path, target_dir, params={})
             
                 output = subprocess.check_output([os.path.join(target_dir, "hello")])
                 assert_equal(testing.HelloWorld.EXPECTED_OUTPUT, output)
@@ -139,7 +139,7 @@ def packages_can_be_installed_from_html_index(create_operations):
             source = index_server.add_source(package_source_dir)
             with create_temporary_dir() as target_dir:
                 operations = create_operations(indices=[index_server.index_url()])
-                operations.build(source.full_name, target_dir, params={})
+                operations.install(source.full_name, target_dir, params={})
             
                 output = subprocess.check_output([os.path.join(target_dir, "hello")])
                 assert_equal(testing.HelloWorld.EXPECTED_OUTPUT, output)

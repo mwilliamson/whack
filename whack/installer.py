@@ -5,10 +5,10 @@ class Installer(object):
         self._deployer = deployer
 
     def install(self, package_name, install_dir, params=None):
-        self.build(package_name, install_dir, params)
+        self.get_package(package_name, install_dir, params)
         self._deployer.deploy(install_dir)
     
-    def build(self, package_name, target_dir, params=None):
+    def get_package(self, package_name, target_dir, params=None):
         if params is None:
             params = {}
             

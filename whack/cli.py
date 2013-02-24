@@ -18,7 +18,7 @@ def main(argv, create_operations):
 def parse_args(argv):
     commands = [
         InstallCommand("install"),
-        InstallCommand("build"),
+        InstallCommand("get-package"),
         DeployCommand(),
         CreateSourceTarballCommand(),
         BuildPackageTarballCommand(),
@@ -69,8 +69,8 @@ class InstallCommand(object):
     def execute(self, operations, args):
         if self.name == "install":
             operation = operations.install
-        elif self.name == "build":
-            operation = operations.build
+        elif self.name == "get-package":
+            operation = operations.get_package
         else:
             raise Exception("Unrecognised operation")
             

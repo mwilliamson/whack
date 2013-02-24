@@ -55,8 +55,8 @@ class CliOperations(object):
     def install(self, package_name, install_dir, params={}):
         self._command("install", package_name, install_dir, params)
         
-    def build(self, package_name, target_dir, params={}):
-        self._command("build", package_name, target_dir, params)
+    def get_package(self, package_name, target_dir, params={}):
+        self._command("get-package", package_name, target_dir, params)
     
     def deploy(self, package_dir, target_dir=None):
         if target_dir is None:
