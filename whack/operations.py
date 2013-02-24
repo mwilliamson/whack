@@ -2,7 +2,6 @@ import os
 
 from catchy import xdg_directory_cacher, NoCachingStrategy
 
-from .installer import Installer
 from .sources import PackageSourceFetcher, create_source_tarball
 from .providers import create_package_provider
 from .deployer import PackageDeployer
@@ -24,21 +23,30 @@ def create(caching_enabled, indices=None, enable_build=True):
         indices=indices,
     )
     deployer = PackageDeployer()
-    installer = Installer(package_source_fetcher, package_provider, deployer)
     
-    return Operations(installer, deployer)
+    return Operations(package_source_fetcher, package_provider, deployer)
 
 
 class Operations(object):
-    def __init__(self, installer, deployer):
-        self._installer = installer
+    def __init__(self, package_source_fetcher, package_provider, deployer):
+        self._package_source_fetcher = package_source_fetcher
+        self._package_provider = package_provider
         self._deployer = deployer
         
     def install(self, package_name, install_dir, params=None):
-        return self._installer.install(package_name, install_dir, params)
+        self.get_package(package_name, install_dir, params)
+        self.deploy(install_dir)
         
     def get_package(self, package_name, install_dir, params=None):
-        return self._installer.get_package(package_name, install_dir, params)
+        if params is None:
+            params = {}
+            
+        with self._package_source_fetcher.fetch(package_name) as package_source:    
+            self._package_provider.provide_package(
+                package_source,
+                params,
+                install_dir
+            )
         
     def deploy(self, package_dir, target_dir=None):
         return self._deployer.deploy(package_dir, target_dir)

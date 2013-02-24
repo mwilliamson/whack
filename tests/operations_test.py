@@ -9,7 +9,7 @@ import contextlib
 
 from nose.tools import istest, assert_equal
 
-from whack.installer import Installer
+from whack.operations import Operations
 from whack.sources import PackageSource
 from whack.providers import create_package_provider
 from whack.deployer import PackageDeployer
@@ -65,9 +65,9 @@ class TestRunner(object):
         })
         package_provider = create_package_provider(cacher=self._cacher)
         deployer = PackageDeployer()
-        installer = Installer(package_source_fetcher, package_provider, deployer)
+        operations = Operations(package_source_fetcher, package_provider, deployer)
         
-        installer.install(package_name, install_dir, params=params)
+        operations.install(package_name, install_dir, params=params)
         return install_dir
         
         
