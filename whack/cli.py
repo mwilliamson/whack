@@ -147,4 +147,5 @@ def _add_build_params_args(parser):
         "--add-parameter", "-p",
         action=KeyValueAction,
         dest="params",
+        metavar="KEY=VALUE",
     )
