@@ -2,6 +2,8 @@ import os
 import os.path
 import subprocess
 
+from whack.files import write_file
+
 
 class HelloWorld(object):
     BUILD = r"""#!/bin/sh
@@ -25,12 +27,8 @@ def write_package_source(package_dir, scripts):
         _write_script(os.path.join(whack_dir, name), contents)
 
 def _write_script(path, contents):
-    _write_file(path, contents)
+    write_file(path, contents)
     _make_executable(path)
 
 def _make_executable(path):
     subprocess.check_call(["chmod", "u+x", path])
-
-def _write_file(path, contents):
-    open(path, "w").write(contents)
-
