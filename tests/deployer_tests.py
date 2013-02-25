@@ -9,7 +9,7 @@ from whack.common import WHACK_ROOT
 from whack.deployer import PackageDeployer
 from whack.files import \
     write_files, sh_script_description, directory_description, plain_file, \
-    symlink
+    symlink, read_file, write_file
 
 
 @istest
@@ -111,13 +111,30 @@ def working_symlinks_in_dot_bin_to_files_under_whack_root_are_created_in_bin():
 
 
 @istest
-def whack_root_is_not_remounted_if_already_in_same_whack_root():
+def whack_root_is_not_remounted_if_executing_scripts_under_whack_root():
     deployed_package = _deploy_package([
         sh_script_description(".bin/hello", "echo Hello there"),
         sh_script_description(".bin/hello2", "{0}/bin/hello".format(WHACK_ROOT)),
     ])
     with deployed_package:
         _add_echo_to_run_command(deployed_package)
+        command = [deployed_package.path("bin/hello2")]
+        _assert_output(command, "Run!\nHello there\n")
+
+
+@istest
+def whack_root_is_not_remounted_if_already_in_same_whack_root():
+    deployed_package = _deploy_package([
+        sh_script_description(".bin/hello", "echo Hello there"),
+        sh_script_description(".bin/hello2", "{0}/bin/hello"),
+    ])
+    with deployed_package:
+        _add_echo_to_run_command(deployed_package)
+        hello2_path = deployed_package.path(".bin/hello2")
+        write_file(
+            hello2_path,
+            read_file(hello2_path).format(deployed_package.path(""))
+        )
         command = [deployed_package.path("bin/hello2")]
         _assert_output(command, "Run!\nHello there\n")
 
