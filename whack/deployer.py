@@ -47,12 +47,15 @@ def _create_directly_executable_dir(install_dir, bin_dir_name, whack_root_id):
                     '#!/usr/bin/env sh\n\n' +
                     'ACTIVE_ROOT_ID_FILE=\'{0}\'/.whack-root-id\n'.format(WHACK_ROOT) +
                     'MY_ROOT_ID=\'{0}\'\n'.format(whack_root_id) +
+                    'MY_ROOT=`readlink --canonicalize-missing "$(dirname $0)/.."`\n' +
                     'ACTIVE_ROOT_ID=`cat "$ACTIVE_ROOT_ID_FILE" 2>/dev/null`\n' +
                     'TARGET="{0}/.{1}/{2}"\n'.format(WHACK_ROOT, bin_dir_name, bin_filename) +
-                    'if [ -f "$ACTIVE_ROOT_ID_FILE" ] && [ "$MY_ROOT_ID" = "$ACTIVE_ROOT_ID" ]; then\n' +
+                    'if [ -f "$ACTIVE_ROOT_ID_FILE" ] && [ "$MY_ROOT_ID" = "$ACTIVE_ROOT_ID" ] && ' + 
+                        '( [ "$MY_ROOT" = "$WHACK_ACTIVE_ROOT" ] || [ "$MY_ROOT" = "{0}" ] ); then\n'.format(WHACK_ROOT) +
                     'exec "$TARGET" "$@"\n' +
                     'else\n' +
-                    'exec "$(dirname $0)/../run" "$TARGET" "$@"\n' +
+                    'export WHACK_ACTIVE_ROOT="$MY_ROOT"\n' +
+                    'exec "$MY_ROOT/run" "$TARGET" "$@"\n' +
                     'fi\n'
                 )
             os.chmod(bin_file_path, 0755)
