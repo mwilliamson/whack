@@ -59,11 +59,6 @@ int main(int argc, char **argv) {
         return 1;
     }
     
-    if (chown(apps_dest_dir, getuid(), getgid()) != 0) {
-        printf("ERROR: Could not chown %s\n", apps_dest_dir);
-        return 1;
-    }
-    
     if (setgid(getgid()) != 0) {
         printf("ERROR: Could not drop group privileges");
         return 1;
