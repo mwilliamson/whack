@@ -123,41 +123,6 @@ def whack_root_is_not_remounted_if_executing_scripts_under_whack_root():
 
 
 @istest
-def whack_root_is_not_remounted_if_already_in_same_whack_root():
-    deployed_package = _deploy_package([
-        sh_script_description(".bin/hello", "echo Hello there"),
-        sh_script_description(".bin/hello2", "{0}/bin/hello"),
-    ])
-    with deployed_package:
-        _add_echo_to_run_command(deployed_package)
-        hello2_path = deployed_package.path(".bin/hello2")
-        write_file(
-            hello2_path,
-            read_file(hello2_path).format(deployed_package.path(""))
-        )
-        command = [deployed_package.path("bin/hello2")]
-        _assert_output(command, "Run!\nHello there\n")
-
-
-@istest
-def whack_root_is_remounted_if_using_different_whack_root_with_same_id():
-    first_deployed_package = _deploy_package([
-        plain_file("message", "Hello there"),
-        sh_script_description(".bin/hello", "cat {0}/message".format(WHACK_ROOT)),
-    ])
-    with first_deployed_package:
-        hello_path = first_deployed_package.path("bin/hello")
-        second_deployed_package = _deploy_package([
-            sh_script_description(".bin/hello2", "{0}".format(hello_path)),
-        ])
-        with second_deployed_package:
-            _add_echo_to_run_command(first_deployed_package)
-            _add_echo_to_run_command(second_deployed_package)
-            command = [second_deployed_package.path("bin/hello2")]
-            _assert_output(command, "Run!\nRun!\nHello there")
-
-
-@istest
 def whack_root_is_remounted_if_in_different_whack_root():
     first_deployed_package = _deploy_package([
         plain_file("message", "Hello there"),

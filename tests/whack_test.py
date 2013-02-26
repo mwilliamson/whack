@@ -210,7 +210,7 @@ def _run_test(test_func, caching_enabled):
 
 
 def _is_deployed(package_dir):
-    return os.path.exists(os.path.join(package_dir, ".whack-root-id"))
+    return os.path.exists(os.path.join(package_dir, "run"))
 
 
 def _package_source(build):

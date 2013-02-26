@@ -23,15 +23,11 @@ class PackageDeployer(object):
             )
         subprocess.check_call(["chmod", "+x", os.path.join(install_dir, "run")])
         
-        whack_root_id = str(uuid.uuid4())
+        _create_directly_executable_dir(install_dir, "bin")
+        _create_directly_executable_dir(install_dir, "sbin")
         
-        _create_directly_executable_dir(install_dir, "bin", whack_root_id)
-        _create_directly_executable_dir(install_dir, "sbin", whack_root_id)
-        
-        with open(os.path.join(install_dir, ".whack-root-id"), "w") as root_id_file:
-            root_id_file.write(whack_root_id)
 
-def _create_directly_executable_dir(install_dir, bin_dir_name, whack_root_id):
+def _create_directly_executable_dir(install_dir, bin_dir_name):
     def install_path(path):
         return os.path.join(install_dir, path)
     
@@ -45,16 +41,11 @@ def _create_directly_executable_dir(install_dir, bin_dir_name, whack_root_id):
             with open(bin_file_path, "w") as bin_file:
                 bin_file.write(
                     '#!/usr/bin/env sh\n\n' +
-                    'ACTIVE_ROOT_ID_FILE=\'{0}\'/.whack-root-id\n'.format(WHACK_ROOT) +
-                    'MY_ROOT_ID=\'{0}\'\n'.format(whack_root_id) +
                     'MY_ROOT=`readlink --canonicalize-missing "$(dirname $0)/.."`\n' +
-                    'ACTIVE_ROOT_ID=`cat "$ACTIVE_ROOT_ID_FILE" 2>/dev/null`\n' +
                     'TARGET="{0}/.{1}/{2}"\n'.format(WHACK_ROOT, bin_dir_name, bin_filename) +
-                    'if [ -f "$ACTIVE_ROOT_ID_FILE" ] && [ "$MY_ROOT_ID" = "$ACTIVE_ROOT_ID" ] && ' + 
-                        '( [ "$MY_ROOT" = "$WHACK_ACTIVE_ROOT" ] || [ "$MY_ROOT" = "{0}" ] ); then\n'.format(WHACK_ROOT) +
+                    'if [ "$MY_ROOT" = "{0}" ]; then\n'.format(WHACK_ROOT) +
                     'exec "$TARGET" "$@"\n' +
                     'else\n' +
-                    'export WHACK_ACTIVE_ROOT="$MY_ROOT"\n' +
                     'exec "$MY_ROOT/run" "$TARGET" "$@"\n' +
                     'fi\n'
                 )
