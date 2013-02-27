@@ -21,7 +21,7 @@ def parse_args(argv):
         InstallCommand("get-package"),
         DeployCommand(),
         CreateSourceTarballCommand(),
-        BuildPackageTarballCommand(),
+        GetPackageTarballCommand(),
     ]
     
     parser = argparse.ArgumentParser()
@@ -107,7 +107,7 @@ class CreateSourceTarballCommand(object):
         print source_tarball.path
 
 
-class BuildPackageTarballCommand(object):
+class GetPackageTarballCommand(object):
     name = "get-package-tarball"
     
     def create_parser(self, subparser):
