@@ -62,7 +62,7 @@ class InstallCommand(object):
         self.name = name
     
     def create_parser(self, subparser):
-        subparser.add_argument('package')
+        subparser.add_argument('package_source', metavar="package-source")
         subparser.add_argument('target_dir', metavar="target-dir")
         _add_build_params_args(subparser)
     
@@ -74,7 +74,7 @@ class InstallCommand(object):
         else:
             raise Exception("Unrecognised operation")
             
-        operation(args.package, args.target_dir, params=args.params)
+        operation(args.package_source, args.target_dir, params=args.params)
 
 
 class DeployCommand(object):

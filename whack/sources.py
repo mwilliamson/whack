@@ -16,8 +16,8 @@ _whack_source_uri_suffix = ".whack-source"
 
 
 class PackageSourceNotFound(Exception):
-    def __init__(self, package_name):
-        message = "Could not find source for package: {0}".format(package_name)
+    def __init__(self, source_name):
+        message = "Could not find package source: {0}".format(source_name)
         Exception.__init__(self, message)
         
         
@@ -37,7 +37,7 @@ class PackageSourceFetcher(object):
         else:
             self._indices = indices
     
-    def fetch(self, package, lazy=True):
+    def fetch(self, source_name, lazy=True):
         fetchers = [IndexFetcher(self._indices), SourceControlFetcher()]
         if lazy:
             fetchers.append(WhackSourceUriFetcher())
@@ -46,15 +46,15 @@ class PackageSourceFetcher(object):
             LocalPathFetcher(),
         ]
         for fetcher in fetchers:
-            package_source = self._fetch_with_fetcher(fetcher, package)
+            package_source = self._fetch_with_fetcher(fetcher, source_name)
             if package_source is not None:
                 return package_source
                 
-        raise PackageSourceNotFound(package)
+        raise PackageSourceNotFound(source_name)
         
-    def _fetch_with_fetcher(self, fetcher, package):
-        if fetcher.can_fetch(package):
-            return fetcher.fetch(package)
+    def _fetch_with_fetcher(self, fetcher, source_name):
+        if fetcher.can_fetch(source_name):
+            return fetcher.fetch(source_name)
         else:
             return None
 
@@ -63,19 +63,19 @@ class IndexFetcher(object):
     def __init__(self, indices):
         self._indices = indices
     
-    def can_fetch(self, package):
-        return re.match(r"^[a-z0-9\-]+$", package)
+    def can_fetch(self, source_name):
+        return re.match(r"^[a-z0-9\-]+$", source_name)
         
-    def fetch(self, package_name):
+    def fetch(self, source_name):
         for index_uri in self._indices:
-            source = self._fetch_from_index(index_uri, package_name)
+            source = self._fetch_from_index(index_uri, source_name)
             if source is not None:
                 return source
         return None
         
-    def _fetch_from_index(self, index_uri, package_name):
+    def _fetch_from_index(self, index_uri, source_name):
         index = read_index(index_uri)
-        package_source_filename = package_name + _whack_source_uri_suffix
+        package_source_filename = source_name + _whack_source_uri_suffix
         package_source_entry = index.find_by_name(package_source_filename)
         if package_source_entry is None:
             return None
@@ -84,32 +84,32 @@ class IndexFetcher(object):
     
 
 class SourceControlFetcher(object):
-    def can_fetch(self, package):
-        return blah.is_source_control_uri(package)
+    def can_fetch(self, source_name):
+        return blah.is_source_control_uri(source_name)
         
-    def fetch(self, source_control_uri):
+    def fetch(self, source_name):
         def fetch_archive(destination_dir):
-            blah.archive(source_control_uri, destination_dir)
+            blah.archive(source_name, destination_dir)
             return destination_dir
         
         return _create_temporary_package_source(fetch_archive)
         
         
 class LocalPathFetcher(object):
-    def can_fetch(self, package):
+    def can_fetch(self, source_name):
         return (
-            package.startswith("/") or
-            package.startswith("./") or
-            package.startswith("../") or 
-            package == "." or
-            package == ".."
+            source_name.startswith("/") or
+            source_name.startswith("./") or
+            source_name.startswith("../") or 
+            source_name == "." or
+            source_name == ".."
         )
         
-    def fetch(self, path):
-        if os.path.isfile(path):
-            return self._fetch_package_from_tarball(path)
+    def fetch(self, source_name):
+        if os.path.isfile(source_name):
+            return self._fetch_package_from_tarball(source_name)
         else:
-            return PackageSource(path)
+            return PackageSource(source_name)
     
     def _fetch_package_from_tarball(self, tarball_path):
         def fetch_directory(destination_dir):
@@ -120,26 +120,26 @@ class LocalPathFetcher(object):
         
 
 class HttpFetcher(object):
-    def can_fetch(self, package):
-        return package.startswith("http://")
+    def can_fetch(self, source_name):
+        return source_name.startswith("http://")
         
-    def fetch(self, url):
+    def fetch(self, source_name):
         def fetch_directory(temp_dir):
-            extract_tarball(url, temp_dir, strip_components=1)
+            extract_tarball(source_name, temp_dir, strip_components=1)
             return temp_dir
             
         return _create_temporary_package_source(fetch_directory)
 
 
 class WhackSourceUriFetcher(object):
-    def can_fetch(self, package):
-        return package.endswith(_whack_source_uri_suffix)
+    def can_fetch(self, source_name):
+        return source_name.endswith(_whack_source_uri_suffix)
         
-    def fetch(self, uri):
-        result = re.search(r"/(?:([^./]*)-)?([^./]*)\..*$", uri)
+    def fetch(self, source_name):
+        result = re.search(r"/(?:([^./]*)-)?([^./]*)\..*$", source_name)
         name = result.group(1)
         source_hash = result.group(2)
-        return RemotePackageSource(name, source_hash, uri)
+        return RemotePackageSource(name, source_hash, source_name)
 
 
 class RemotePackageSource(object):
