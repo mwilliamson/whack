@@ -14,12 +14,13 @@ class PackageNamer(object):
         self._generate_install_id = generate_install_id
         
     def name_package(self, package_source, params):
-        install_id = self._generate_install_id(package_source, params)
         name = package_source.name()
-        if name is None:
-            return install_id
-        else:
-            return "{0}-{1}".format(name, install_id)
+        param_slug = package_source.description().param_slug()
+        install_id = self._generate_install_id(package_source, params)
+        
+        name_elements = [name, param_slug, install_id]
+        
+        return "-".join(element for element in name_elements if element)
 
 
 def _generate_install_id_using_hash(package_source, params):

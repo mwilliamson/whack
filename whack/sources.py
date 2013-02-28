@@ -152,6 +152,9 @@ class RemotePackageSource(object):
     def name(self):
         return self._name
     
+    def description(self):
+        return self._fetch_package_source().description()
+    
     def source_hash(self):
         return self._source_hash
     
@@ -211,7 +214,7 @@ class PackageSource(object):
     
     def name(self):
         return self._description.name()
-        
+    
     def full_name(self):
         name = self.name()
         source_hash = self.source_hash()
@@ -231,6 +234,9 @@ class PackageSource(object):
         for source_dir in self._source_paths():
             target_sub_dir = os.path.join(target_dir, source_dir)
             _copy_dir_or_file(os.path.join(self._path, source_dir), target_sub_dir)
+    
+    def description(self):
+        return self._description
     
     def _source_paths(self):
         return ["whack"] + self._description.source_paths()
@@ -277,6 +283,9 @@ class DictBackedPackageDescription(object):
         
     def name(self):
         return self._values.get("name", None)
+        
+    def param_slug(self):
+        return self._values.get("paramSlug", None)
         
     def source_paths(self):
         return self._values.get("sourcePaths", [])

@@ -191,12 +191,10 @@ def name_of_package_source_is_none_if_whack_json_does_not_exist():
     
 
 @istest
-def full_name_of_package_source_includes_name_if_not_none():
-    with _source_package_with_description({"name": "nginx"}) as package_source:
-        assert_equal(
-            "nginx-{0}".format(package_source.source_hash()),
-            package_source.full_name()
-        )
+def description_of_package_source_contains_param_slug():
+    description = {"name": "nginx", "paramSlug": "$nginx_version"}
+    with _source_package_with_description(description) as package_source:
+        assert_equal("$nginx_version", package_source.description().param_slug())
     
 
 @istest
