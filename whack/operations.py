@@ -8,6 +8,7 @@ from .deployer import PackageDeployer
 from .tempdir import create_temporary_dir
 from .files import read_file
 from .tarballs import create_tarball
+from .packagerequests import PackageRequest
 
 
 def create(caching_enabled, indices=None, enable_build=True):
@@ -38,15 +39,9 @@ class Operations(object):
         self.deploy(install_dir)
         
     def get_package(self, source_name, install_dir, params=None):
-        if params is None:
-            params = {}
-            
-        with self._package_source_fetcher.fetch(source_name) as package_source:    
-            self._package_provider.provide_package(
-                package_source,
-                params,
-                install_dir
-            )
+        with self._package_source_fetcher.fetch(source_name) as package_source:
+            request = PackageRequest(package_source, params)
+            self._package_provider.provide_package(request, install_dir)
         
     def deploy(self, package_dir, target_dir=None):
         return self._deployer.deploy(package_dir, target_dir)

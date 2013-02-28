@@ -10,6 +10,7 @@ from whack.providers import create_package_provider
 from catchy import DirectoryCacher
 import testing
 from whack.files import read_file, delete_dir
+from whack.packagerequests import PackageRequest
 
 
 @istest
@@ -58,7 +59,8 @@ class CachingProviderTests(object):
         target_dir = os.path.join(self._test_dir, str(uuid.uuid4()))
         package_provider = create_package_provider(cacher=self._cacher)
         package_source = PackageSource(self._package_source_dir)
-        package_provider.provide_package(package_source, params, target_dir)
+        request = PackageRequest(package_source, params)
+        package_provider.provide_package(request, target_dir)
         
     def _read_build_log(self):
         return read_file(self._build_log_path)

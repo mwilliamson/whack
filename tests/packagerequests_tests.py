@@ -1,6 +1,6 @@
 from nose.tools import istest, assert_equal
 
-from whack.naming import PackageNamer
+from whack.packagerequests import PackageRequest
 from whack.sources import DictBackedPackageDescription
 
 
@@ -54,8 +54,8 @@ def default_params_are_used_in_param_slug_if_param_not_explicitly_set():
 
 
 def _name_package(package_source, params):
-    package_namer = PackageNamer(_generate_install_id)
-    return package_namer.name_package(package_source, params)
+    request = PackageRequest(package_source, params, _generate_install_id)
+    return request.name()
 
 
 def _generate_install_id(package_source, params):

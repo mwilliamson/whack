@@ -8,13 +8,14 @@ from whack.tempdir import create_temporary_dir
 from whack.files import sh_script_description, plain_file, read_file
 from whack.sources import PackageSource
 from whack.builder import build
+from whack.packagerequests import PackageRequest
     
 
 @istest
 def build_uses_params_as_environment_variables_in_build():
     with _package_source("echo $VERSION > $1/version", {}) as package_source:
         with create_temporary_dir() as target_dir:
-            build(package_source, {"version": "42"}, target_dir)
+            build(PackageRequest(package_source, {"version": "42"}), target_dir)
             assert_equal("42\n", read_file(os.path.join(target_dir, "version")))
 
 
@@ -23,7 +24,7 @@ def build_uses_default_value_for_param_if_param_not_explicitly_set():
     description = {"defaultParams": {"version": "42"}}
     with _package_source("echo $VERSION > $1/version", description) as package_source:
         with create_temporary_dir() as target_dir:
-            build(package_source, {}, target_dir)
+            build(PackageRequest(package_source, {}), target_dir)
             assert_equal("42\n", read_file(os.path.join(target_dir, "version")))
 
 
@@ -32,7 +33,7 @@ def explicit_params_override_default_params():
     description = {"defaultParams": {"version": "42"}}
     with _package_source("echo $VERSION > $1/version", description) as package_source:
         with create_temporary_dir() as target_dir:
-            build(package_source, {"version": "43"}, target_dir)
+            build(PackageRequest(package_source, {"version": "43"}), target_dir)
             assert_equal("43\n", read_file(os.path.join(target_dir, "version")))
 
 
