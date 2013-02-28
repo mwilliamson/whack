@@ -32,7 +32,7 @@ def param_slug_is_included_if_present_in_description():
 
 
 @istest
-def dollar_values_are_expanded_in_param_slug():
+def format_string_is_expanded_in_param_slug():
     package_source = PackageSource("/tmp/nginx-src", "nginx", "{nginx_version}")
     package_name = _name_package(package_source, {"nginx_version": "1.2"})
     _assert_startswith(package_name, "nginx-1.2-install-id")
