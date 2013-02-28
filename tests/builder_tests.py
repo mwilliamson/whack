@@ -18,6 +18,24 @@ def build_uses_params_as_environment_variables_in_build():
             assert_equal("42\n", read_file(os.path.join(target_dir, "version")))
 
 
+@istest
+def build_uses_default_value_for_param_if_param_not_explicitly_set():
+    description = {"defaultParams": {"version": "42"}}
+    with _package_source("echo $VERSION > $1/version", description) as package_source:
+        with create_temporary_dir() as target_dir:
+            build(package_source, {}, target_dir)
+            assert_equal("42\n", read_file(os.path.join(target_dir, "version")))
+
+
+@istest
+def explicit_params_override_default_params():
+    description = {"defaultParams": {"version": "42"}}
+    with _package_source("echo $VERSION > $1/version", description) as package_source:
+        with create_temporary_dir() as target_dir:
+            build(package_source, {"version": "43"}, target_dir)
+            assert_equal("43\n", read_file(os.path.join(target_dir, "version")))
+
+
 @contextlib.contextmanager
 def _package_source(build_script, description):
     files = [

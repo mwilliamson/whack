@@ -195,7 +195,7 @@ def description_of_package_source_contains_param_slug():
     description = {"name": "nginx", "paramSlug": "$nginx_version"}
     with _source_package_with_description(description) as package_source:
         assert_equal("$nginx_version", package_source.description().param_slug())
-    
+
 
 @istest
 def full_name_of_package_source_is_source_hash_if_name_is_none():

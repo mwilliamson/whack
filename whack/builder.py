@@ -13,7 +13,10 @@ def build(package_src, params, package_dir):
         _build_in_dir(package_src, build_dir, package_dir, params)
 
 
-def _build_in_dir(package_src, build_dir, package_dir, params):
+def _build_in_dir(package_src, build_dir, package_dir, explicit_params):
+    default_params = package_src.description().default_params()
+    params = default_params.copy()
+    params.update(explicit_params)
     package_src.write_to(build_dir)
         
     build_env = _params_to_build_env(params)

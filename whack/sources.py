@@ -289,6 +289,9 @@ class DictBackedPackageDescription(object):
         
     def source_paths(self):
         return self._values.get("sourcePaths", [])
+        
+    def default_params(self):
+        return self._values.get("defaultParams", {})
 
 
 def create_source_tarball(source_dir, tarball_dir):
