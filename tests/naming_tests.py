@@ -8,6 +8,13 @@ def package_with_unnamed_source_has_name_equal_to_install_identifier():
     package_source = PackageSource("/tmp/nginx-src", None, None)
     package_name = _name_package(package_source, {})
     assert_equal("install-id(/tmp/nginx-src, {})", package_name)
+
+
+@istest
+def params_are_passed_to_install_id_generator():
+    package_source = PackageSource("/tmp/nginx-src", None, None)
+    package_name = _name_package(package_source, {"version": "1.2"})
+    assert_equal("install-id(/tmp/nginx-src, {'version': '1.2'})", package_name)
     
 
 @istest
@@ -24,13 +31,25 @@ def param_slug_is_included_if_present_in_description():
     assert_equal("nginx-1.2-install-id(/tmp/nginx-src, {})", package_name)
 
 
+@istest
+def dollar_values_are_expanded_in_param_slug():
+    package_source = PackageSource("/tmp/nginx-src", "nginx", "{nginx_version}")
+    package_name = _name_package(package_source, {"nginx_version": "1.2"})
+    _assert_startswith(package_name, "nginx-1.2-install-id")
+
+
 def _name_package(package_source, params):
     package_namer = PackageNamer(_generate_install_id)
-    return package_namer.name_package(package_source, {})
+    return package_namer.name_package(package_source, params)
 
 
 def _generate_install_id(package_source, params):
     return "install-id({0}, {1})".format(package_source.path, params)
+
+
+def _assert_startswith(string, prefix):
+    if not string.startswith(prefix):
+        raise AssertionError("{0} did not start with {1}".format(string, prefix))
 
 
 class PackageSource(object):

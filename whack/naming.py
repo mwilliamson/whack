@@ -16,11 +16,18 @@ class PackageNamer(object):
     def name_package(self, package_source, params):
         name = package_source.name()
         param_slug = package_source.description().param_slug()
+        param_part = self._generate_param_part(param_slug, params)
         install_id = self._generate_install_id(package_source, params)
         
-        name_elements = [name, param_slug, install_id]
+        name_parts = [name, param_part, install_id]
         
-        return "-".join(element for element in name_elements if element)
+        return "-".join(part for part in name_parts if part)
+        
+    def _generate_param_part(self, slug, params):
+        if slug is None:
+            return None
+        else:
+            return slug.format(**params)
 
 
 def _generate_install_id_using_hash(package_source, params):
