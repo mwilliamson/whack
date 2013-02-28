@@ -2,6 +2,7 @@ import subprocess
 import json
 
 from .hashes import Hasher
+from .packagerequests import PackageRequest
 
 
 def name_package(package_source, params):
@@ -14,6 +15,8 @@ class PackageNamer(object):
         self._generate_install_id = generate_install_id
         
     def name_package(self, package_source, params):
+        request = PackageRequest(package_source, params)
+        params = request.params()
         name = package_source.name()
         param_slug = package_source.description().param_slug()
         param_part = self._generate_param_part(param_slug, params)

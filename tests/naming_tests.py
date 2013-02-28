@@ -41,6 +41,18 @@ def format_string_is_expanded_in_param_slug():
     _assert_startswith(package_name, "nginx-1.2-install-id")
 
 
+@istest
+def default_params_are_used_in_param_slug_if_param_not_explicitly_set():
+    description = {
+        "name": "nginx",
+        "paramSlug": "{nginx_version}",
+        "defaultParams": {"nginx_version": "1.2"},
+    }
+    package_source = PackageSource("/tmp/nginx-src", description)
+    package_name = _name_package(package_source, {})
+    _assert_startswith(package_name, "nginx-1.2-install-id")
+
+
 def _name_package(package_source, params):
     package_namer = PackageNamer(_generate_install_id)
     return package_namer.name_package(package_source, params)
