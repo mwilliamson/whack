@@ -6,6 +6,7 @@ from .tempdir import create_temporary_dir
 from .naming import name_package
 from .common import WHACK_ROOT
 from .files import mkdir_p, write_file
+from .packagerequests import PackageRequest
 
 
 def build(package_src, params, package_dir):
@@ -14,11 +15,11 @@ def build(package_src, params, package_dir):
 
 
 def _build_in_dir(package_src, build_dir, package_dir, explicit_params):
-    default_params = package_src.description().default_params()
-    params = default_params.copy()
-    params.update(explicit_params)
+    request = PackageRequest(package_src, explicit_params)
+    params = request.params()
+    
     package_src.write_to(build_dir)
-        
+    
     build_env = _params_to_build_env(params)
     _fetch_downloads(build_dir, build_env)
         
