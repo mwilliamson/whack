@@ -1,5 +1,3 @@
-import re
-
 import requests
 from bs4 import BeautifulSoup
 
@@ -25,12 +23,6 @@ class Index(object):
     def find_by_name(self, name):
         for entry in self._entries:
             if entry.name == name:
-                return entry
-        return None
-        
-    def find_package_by_hash(self, package_hash):
-        for entry in self._entries:
-            if re.search("(^|-){0}.whack-package$".format(re.escape(package_hash)), entry.name):
                 return entry
         return None
 

@@ -1,4 +1,4 @@
-from .naming import generate_package_hash
+from .naming import name_package
 from .common import PackageNotAvailableError
 from .builder import build
 from .tarballs import extract_tarball
@@ -21,9 +21,9 @@ class IndexPackageProvider(object):
         
     def provide_package(self, package_source, params, package_dir):
         # TODO: bundle up package_source and params into a PackageRequest
-        package_hash = generate_package_hash(package_source, params)
+        package_name = name_package(package_source, params)
         index = read_index(self._index_uri)
-        package_entry = index.find_package_by_hash(package_hash)
+        package_entry = index.find_by_name("{0}.whack-package".format(package_name))
         if package_entry is None:
             return None
         else:
@@ -46,12 +46,12 @@ class CachingPackageProvider(object):
         self._underlying_providers = underlying_providers
     
     def provide_package(self, package_source, params, package_dir):
-        package_hash = generate_package_hash(package_source, params)
-        result = self._cacher.fetch(package_hash, package_dir)
+        package_name = name_package(package_source, params)
+        result = self._cacher.fetch(package_name, package_dir)
         
         if not result.cache_hit:
             self._provide_package_without_cache(package_source, params, package_dir)
-            self._cacher.put(package_hash, package_dir)
+            self._cacher.put(package_name, package_dir)
             
     def _provide_package_without_cache(self, package_source, params, package_dir):
         for underlying_provider in self._underlying_providers:
