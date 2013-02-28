@@ -9,7 +9,7 @@ from whack.common import WHACK_ROOT
 from whack.deployer import PackageDeployer
 from whack.files import \
     write_files, sh_script_description, directory_description, plain_file, \
-    symlink, read_file, write_file
+    symlink
 
 
 @istest

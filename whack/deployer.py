@@ -1,5 +1,4 @@
 import os
-import uuid
 import subprocess
 import stat
 
