@@ -1,10 +1,9 @@
 # whack: build and install binaries with a single command
 
 Whack allows binaries such as nginx and node.js to be installed with a single
-command. For instance, to install nginx 1.2.6 to `~/apps/nginx`:
+command. For instance, to install nginx to `~/apps/nginx`:
 
-    whack install git+https://github.com/mwilliamson/whack-package-nginx.git \
-        -p nginx_version=1.2.6 ~/apps/nginx
+    whack install git+https://github.com/mwilliamson/whack-package-nginx.git ~/apps/nginx
 
 On the first installation, the application is compiled and copied to the target
 directory. On subsequent installations, a cached version of the application is
