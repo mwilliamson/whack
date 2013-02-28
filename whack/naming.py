@@ -5,9 +5,18 @@ from .hashes import Hasher
 
 
 def name_package(package_source, params):
-    package_namer = PackageNamer(_generate_install_id_using_hash)
+    package_namer = PackageNamer(generate_package_hash)
     return package_namer.name_package(package_source, params)
 
+
+def generate_package_hash(package_source, params):
+    hasher = Hasher()
+    hasher.update(_uname("--kernel-name"))
+    hasher.update(_uname("--machine"))
+    hasher.update(package_source.source_hash())
+    hasher.update(json.dumps(params, sort_keys=True))
+    return hasher.ascii_digest()
+    
 
 class PackageNamer(object):
     def __init__(self, generate_install_id):
@@ -28,15 +37,6 @@ class PackageNamer(object):
             return None
         else:
             return slug.format(**params)
-
-
-def _generate_install_id_using_hash(package_source, params):
-    hasher = Hasher()
-    hasher.update(_uname("--kernel-name"))
-    hasher.update(_uname("--machine"))
-    hasher.update(package_source.source_hash())
-    hasher.update(json.dumps(params, sort_keys=True))
-    return hasher.ascii_digest()
 
 
 def _uname(arg):
