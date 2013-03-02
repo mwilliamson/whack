@@ -1,4 +1,5 @@
 import argparse
+import sys
 
 import whack.args
 from whack.errors import WhackUserError
@@ -16,7 +17,7 @@ def main(argv, create_operations):
     try:
         args.func(operations, args)
     except WhackUserError as error:
-        print "{0}: {1}".format(type(error).__name__, error.message)
+        sys.stderr.write("{0}: {1}\n".format(type(error).__name__, error.message))
         exit(1)
 
 
