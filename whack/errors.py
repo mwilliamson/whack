@@ -6,3 +6,5 @@ class FileNotFoundError(WhackUserError):
     pass
 
 
+class PackageNotAvailableError(WhackUserError):
+    pass

@@ -1,4 +1,4 @@
-from .common import PackageNotAvailableError
+from .errors import PackageNotAvailableError
 from .builder import build
 from .tarballs import extract_tarball
 from .indices import read_index

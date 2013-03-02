@@ -6,7 +6,7 @@ import spur
 
 from whack import cli
 from whack.sources import SourceTarball
-from whack.common import PackageNotAvailableError
+from whack.errors import PackageNotAvailableError
 from . import whack_test
 from whack.operations import PackageTarball
 
@@ -84,8 +84,10 @@ class CliOperations(object):
         try:
             self._whack(command_name, package_name, target_dir, *params_args)
         except spur.RunProcessError as process_error:
-            # TODO: perhaps we can do something a little less crude?
-            if PackageNotAvailableError.__name__ in process_error.stderr_output:
+            package_not_available_prefix = "{0}:".format(
+                PackageNotAvailableError.__name__
+            )
+            if process_error.stderr_output.startswith(package_not_available_prefix):
                 raise PackageNotAvailableError()
             else:
                 raise

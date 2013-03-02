@@ -6,7 +6,8 @@ import contextlib
 from nose.tools import assert_equal, assert_raises
 from nose_test_sets import TestSetBuilder
 
-from whack.common import WHACK_ROOT, PackageNotAvailableError
+from whack.common import WHACK_ROOT
+from whack.errors import PackageNotAvailableError
 import whack.operations
 from whack.tempdir import create_temporary_dir
 from whack.files import sh_script_description, plain_file
