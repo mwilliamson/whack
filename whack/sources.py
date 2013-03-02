@@ -40,8 +40,8 @@ class PackageSourceFetcher(object):
             self._indices = indices
     
     def fetch(self, source_name):
-        fetchers = [
-            IndexFetcher(self._indices),
+        index_fetchers = map(IndexFetcher, self._indices)
+        fetchers = index_fetchers + [
             SourceControlFetcher(),
             HttpFetcher(),
             LocalPathFetcher(),
@@ -75,21 +75,14 @@ class PackageSourceFetcher(object):
 
 
 class IndexFetcher(object):
-    def __init__(self, indices):
-        self._indices = indices
+    def __init__(self, index_uri):
+        self._index_uri = index_uri
     
     def can_fetch(self, source_name):
         return re.match(r"^[a-z0-9\-]+$", source_name)
         
     def fetch(self, source_name):
-        for index_uri in self._indices:
-            source = self._fetch_from_index(index_uri, source_name)
-            if source is not None:
-                return source
-        return None
-        
-    def _fetch_from_index(self, index_uri, source_name):
-        index = read_index(index_uri)
+        index = read_index(self._index_uri)
         package_source_filename = source_name + _whack_source_uri_suffix
         package_source_entry = index.find_by_name(package_source_filename)
         if package_source_entry is None:
