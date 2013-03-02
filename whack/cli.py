@@ -1,6 +1,7 @@
 import argparse
 
 import whack.args
+from whack.errors import WhackUserError
 
 env_default = whack.args.env_default(prefix="WHACK")
 
@@ -12,7 +13,11 @@ def main(argv, create_operations):
         indices=args.indices,
         enable_build=args.enable_build,
     )
-    args.func(operations, args)
+    try:
+        args.func(operations, args)
+    except WhackUserError as error:
+        print "{0}: {1}".format(type(error).__name__, error.message)
+        exit(1)
 
 
 def parse_args(argv):

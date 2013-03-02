@@ -1,2 +1,8 @@
-class FileNotFoundError(Exception):
+class WhackUserError(Exception):
     pass
+
+
+class FileNotFoundError(WhackUserError):
+    pass
+
+
