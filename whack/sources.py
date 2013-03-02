@@ -8,7 +8,7 @@ import errno
 import blah
 
 from .hashes import Hasher
-from .files import copy_dir, mkdir_p, copy_file, delete_dir
+from .files import copy_dir, copy_file, delete_dir
 from .tarballs import extract_tarball, create_tarball
 from .indices import read_index
 from .errors import FileNotFoundError
@@ -39,19 +39,22 @@ class PackageSourceFetcher(object):
         else:
             self._indices = indices
     
-    def fetch(self, source_name, lazy=True):
-        fetchers = [IndexFetcher(self._indices), SourceControlFetcher()]
-        if lazy:
-            fetchers.append(WhackSourceUriFetcher())
-        fetchers += [
+    def fetch(self, source_name):
+        fetchers = [
+            IndexFetcher(self._indices),
+            SourceControlFetcher(),
             HttpFetcher(),
             LocalPathFetcher(),
         ]
         for fetcher in fetchers:
             package_source = self._fetch_with_fetcher(fetcher, source_name)
             if package_source is not None:
-                return package_source
-                
+                try:
+                    self._verify(source_name, package_source)
+                    return package_source
+                except:
+                    package_source.__exit__()
+                    raise
         raise PackageSourceNotFound(source_name)
         
     def _fetch_with_fetcher(self, fetcher, source_name):
@@ -59,6 +62,16 @@ class PackageSourceFetcher(object):
             return fetcher.fetch(source_name)
         else:
             return None
+            
+    def _verify(self, source_name, package_source):
+        whack_source_uri_regex = \
+            r"(?:^|/|-)([^./-]*){0}$".format(re.escape(_whack_source_uri_suffix))
+        result = re.search(whack_source_uri_regex, source_name)
+        if result:
+            expected_hash = result.group(1)
+            actual_hash = package_source.source_hash()
+            if expected_hash != actual_hash:
+                raise SourceHashMismatch(expected_hash, actual_hash)
 
 
 class IndexFetcher(object):
@@ -82,7 +95,7 @@ class IndexFetcher(object):
         if package_source_entry is None:
             return None
         else:
-            return WhackSourceUriFetcher().fetch(package_source_entry.url)
+            return HttpFetcher().fetch(package_source_entry.url)
     
 
 class SourceControlFetcher(object):
@@ -92,7 +105,6 @@ class SourceControlFetcher(object):
     def fetch(self, source_name):
         def fetch_archive(destination_dir):
             blah.archive(source_name, destination_dir)
-            return destination_dir
         
         return _create_temporary_package_source(fetch_archive)
         
@@ -128,74 +140,15 @@ class HttpFetcher(object):
     def fetch(self, source_name):
         def fetch_directory(temp_dir):
             extract_tarball(source_name, temp_dir, strip_components=1)
-            return temp_dir
             
         return _create_temporary_package_source(fetch_directory)
-
-
-class WhackSourceUriFetcher(object):
-    def can_fetch(self, source_name):
-        return source_name.endswith(_whack_source_uri_suffix)
-        
-    def fetch(self, source_name):
-        result = re.search(r"/(?:([^./]*)-)?([^./]*)\..*$", source_name)
-        name = result.group(1)
-        source_hash = result.group(2)
-        return RemotePackageSource(name, source_hash, source_name)
-
-
-class RemotePackageSource(object):
-    def __init__(self, name, source_hash, uri):
-        self._name = name
-        self._source_hash = source_hash
-        self._uri = uri
-        self._package_source_dir = None
-    
-    def name(self):
-        return self._name
-    
-    def description(self):
-        return self._fetch_package_source().description()
-    
-    def source_hash(self):
-        return self._source_hash
-    
-    def write_to(self, target_dir):
-        self._fetch_package_source().write_to(target_dir)
-    
-    def _fetch_package_source(self):
-        if self._package_source_dir is None:
-            self._package_source_dir = _temporary_path()
-            mkdir_p(self._package_source_dir)
-            fetcher = PackageSourceFetcher()
-            with fetcher.fetch(self._uri, lazy=False) as package_source:
-                self._verify_hash(package_source)
-                
-                package_source.write_to(self._package_source_dir)
-            
-        return PackageSource(self._package_source_dir)
-    
-    def _verify_hash(self, package_source):
-        expected_hash = self._source_hash
-        actual_hash = package_source.source_hash()
-        if expected_hash != actual_hash:
-            raise SourceHashMismatch(expected_hash, actual_hash)
-    
-    def __enter__(self):
-        return self
-        
-    def __exit__(self, *args):
-        if self._package_source_dir is not None:
-            delete_dir(self._package_source_dir)
 
 
 def _create_temporary_package_source(fetch_package_source_dir):
     temp_dir = _temporary_path()
     try:
-        return TemporaryPackageSource(
-            fetch_package_source_dir(temp_dir),
-            temp_dir
-        )
+        fetch_package_source_dir(temp_dir)
+        return PackageSource(temp_dir, is_temp=True)
     except:
         delete_dir(temp_dir)
         raise
@@ -210,9 +163,10 @@ def _is_tarball(path):
 
 
 class PackageSource(object):
-    def __init__(self, path):
+    def __init__(self, path, is_temp=False):
         self._path = path
         self._description = _read_package_description(path)
+        self._is_temp = is_temp
     
     def name(self):
         return self._description.name()
@@ -256,7 +210,8 @@ class PackageSource(object):
         return self
         
     def __exit__(self, *args):
-        pass
+        if self._is_temp:
+            delete_dir(self._path)
 
 
 def _copy_dir_or_file(source, destination):
@@ -264,18 +219,6 @@ def _copy_dir_or_file(source, destination):
         copy_dir(source, destination)
     else:
         copy_file(source, destination)
-
-
-class TemporaryPackageSource(object):
-    def __init__(self, path, temp_dir):
-        self._path = path
-        self._temp_dir = temp_dir
-    
-    def __enter__(self):
-        return PackageSource(self._path)
-    
-    def __exit__(self, *args):
-        delete_dir(self._temp_dir)
         
 
 def _read_package_description(package_src_dir):
