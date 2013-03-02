@@ -9,6 +9,7 @@ from whack.files import sh_script_description, plain_file, read_file
 from whack.sources import PackageSource
 from whack.builder import build
 from whack.packagerequests import PackageRequest
+from whack.errors import FileNotFoundError
     
 
 @istest
@@ -37,6 +38,21 @@ def explicit_params_override_default_params():
             assert_equal("43\n", read_file(os.path.join(target_dir, "version")))
 
 
+@istest
+def error_is_raised_if_build_script_is_missing():
+    files = [
+        plain_file("whack/whack.json", json.dumps({})),
+    ]
+    with create_temporary_dir(files) as package_source_dir:
+        package_source = PackageSource(package_source_dir)
+        request = PackageRequest(package_source, {})
+        with create_temporary_dir() as target_dir:
+            assert_raises(
+                FileNotFoundError,
+                ("whack/build script not found in package source", ),
+                lambda: build(request, target_dir),
+            )
+
 @contextlib.contextmanager
 def _package_source(build_script, description):
     files = [
@@ -46,3 +62,10 @@ def _package_source(build_script, description):
     with create_temporary_dir(files) as package_source_dir:
         yield PackageSource(package_source_dir)
         
+
+def assert_raises(error_class, args, func):
+    try:
+        func()
+        raise AssertionError("Expected exception {0}".format(error.__name__))
+    except error_class as error:
+        assert_equal(error.args, args)

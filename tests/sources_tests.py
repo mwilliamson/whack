@@ -11,6 +11,7 @@ from whack.sources import \
 from whack.tempdir import create_temporary_dir
 from whack.files import read_file, write_files, plain_file
 from whack.tarballs import create_tarball
+from whack.errors import FileNotFoundError
 from .httpserver import start_static_http_server
 from .indexserver import start_index_server
 
@@ -163,6 +164,24 @@ def writing_package_source_includes_directories_specified_in_description():
                 assert_equal(
                     "Bob",
                     read_file(os.path.join(target_dir, "names/bob"))
+                )
+
+
+@istest
+def writing_source_raises_error_if_file_is_missing():
+    with create_temporary_dir() as package_source_dir:
+        whack_description = {
+            "sourcePaths": ["name"]
+        }
+        write_files(package_source_dir, [
+            plain_file("whack/whack.json", json.dumps(whack_description)),
+        ])
+        
+        with _fetch_source(package_source_dir) as package_source:
+            with create_temporary_dir() as target_dir:
+                assert_raises(
+                    FileNotFoundError,
+                    lambda: package_source.write_to(target_dir)
                 )
 
 

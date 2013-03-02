@@ -3,6 +3,7 @@ import json
 import tempfile
 import uuid
 import re
+import errno
 
 import blah
 
@@ -10,6 +11,7 @@ from .hashes import Hasher
 from .files import copy_dir, mkdir_p, copy_file, delete_dir
 from .tarballs import extract_tarball, create_tarball
 from .indices import read_index
+from .errors import FileNotFoundError
 
 
 _whack_source_uri_suffix = ".whack-source"
@@ -233,7 +235,16 @@ class PackageSource(object):
     def write_to(self, target_dir):
         for source_dir in self._source_paths():
             target_sub_dir = os.path.join(target_dir, source_dir)
-            _copy_dir_or_file(os.path.join(self._path, source_dir), target_sub_dir)
+            try:
+                _copy_dir_or_file(
+                    os.path.join(self._path, source_dir),
+                    target_sub_dir
+                )
+            except IOError as error:
+                if error.errno == errno.ENOENT:
+                    raise FileNotFoundError()
+                else:
+                    raise error
     
     def description(self):
         return self._description

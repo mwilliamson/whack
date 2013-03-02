@@ -5,6 +5,7 @@ from . import downloads
 from .tempdir import create_temporary_dir
 from .common import WHACK_ROOT
 from .files import mkdir_p, write_file
+from .errors import FileNotFoundError
 
 
 def build(package_request, package_dir):
@@ -17,10 +18,12 @@ def _build_in_dir(package_request, build_dir, package_dir):
     
     package_request.write_source_to(build_dir)
     
+    build_script = os.path.join(build_dir, "whack/build")
+    if not os.path.exists(build_script):
+        raise FileNotFoundError("whack/build script not found in package source")
+    
     build_env = _params_to_build_env(params)
     _fetch_downloads(build_dir, build_env)
-        
-    build_script = os.path.join(build_dir, "whack/build")
     mkdir_p(package_dir)
     build_command = [
         "whack-run",
