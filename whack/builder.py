@@ -18,10 +18,11 @@ def _build_in_dir(package_request, build_dir, package_dir):
     
     package_request.write_source_to(build_dir)
     
-    build_script = os.path.join(build_dir, "whack/build")
-    if not os.path.exists(build_script):
-        message = "whack/build script not found in package source {0}".format(
-            package_request.source_uri
+    build_script = "whack/build"
+    build_script_path = os.path.join(build_dir, build_script)
+    if not os.path.exists(build_script_path):
+        message = "{0} script not found in package source {1}".format(
+            build_script, package_request.source_uri
         )
         raise FileNotFoundError(message)
     
@@ -31,7 +32,7 @@ def _build_in_dir(package_request, build_dir, package_dir):
     build_command = [
         "whack-run",
         os.path.abspath(package_dir), # package_dir is mounted at WHACK_ROOT
-        build_script, # build_script is executed
+        build_script_path, # build_script is executed
         WHACK_ROOT # WHACK_ROOT is passed as the first argument to build_script
     ]
     subprocess.check_call(build_command, cwd=build_dir, env=build_env)
