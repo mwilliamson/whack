@@ -108,9 +108,8 @@ def _temporary_install(build, params=None):
 
 
 class SimplePackageSourceFetcher(object):
-    @contextlib.contextmanager
     def fetch(self, package_name):
-        yield PackageSource(package_name)
+        return PackageSource.local(package_name)
 
 
 class Installation(object):

@@ -106,7 +106,7 @@ class SourceControlFetcher(object):
         def fetch_archive(destination_dir):
             blah.archive(source_name, destination_dir)
         
-        return _create_temporary_package_source(fetch_archive)
+        return _create_temporary_package_source(source_name, fetch_archive)
         
         
 class LocalPathFetcher(object):
@@ -123,14 +123,14 @@ class LocalPathFetcher(object):
         if os.path.isfile(source_name):
             return self._fetch_package_from_tarball(source_name)
         else:
-            return PackageSource(source_name)
+            return PackageSource.local(source_name)
     
     def _fetch_package_from_tarball(self, tarball_path):
         def fetch_directory(destination_dir):
             extract_tarball(tarball_path, destination_dir, strip_components=1)
             return destination_dir
         
-        return _create_temporary_package_source(fetch_directory)
+        return _create_temporary_package_source(tarball_path, fetch_directory)
         
 
 class HttpFetcher(object):
@@ -141,14 +141,14 @@ class HttpFetcher(object):
         def fetch_directory(temp_dir):
             extract_tarball(source_name, temp_dir, strip_components=1)
             
-        return _create_temporary_package_source(fetch_directory)
+        return _create_temporary_package_source(source_name, fetch_directory)
 
 
-def _create_temporary_package_source(fetch_package_source_dir):
+def _create_temporary_package_source(uri, fetch_package_source_dir):
     temp_dir = _temporary_path()
     try:
         fetch_package_source_dir(temp_dir)
-        return PackageSource(temp_dir, is_temp=True)
+        return PackageSource(temp_dir, uri, is_temp=True)
     except:
         delete_dir(temp_dir)
         raise
@@ -163,8 +163,13 @@ def _is_tarball(path):
 
 
 class PackageSource(object):
-    def __init__(self, path, is_temp=False):
+    @staticmethod
+    def local(path):
+        return PackageSource(path, path, is_temp=False)
+    
+    def __init__(self, path, uri, is_temp):
         self._path = path
+        self.uri = uri
         self._description = _read_package_description(path)
         self._is_temp = is_temp
     
@@ -249,7 +254,7 @@ class DictBackedPackageDescription(object):
 
 
 def create_source_tarball(source_dir, tarball_dir):
-    package_source = PackageSource(source_dir)
+    package_source = PackageSource.local(source_dir)
     full_name = package_source.full_name()
     filename = "{0}{1}".format(full_name, _whack_source_uri_suffix)
     path = os.path.join(tarball_dir, filename)

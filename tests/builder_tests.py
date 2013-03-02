@@ -44,12 +44,12 @@ def error_is_raised_if_build_script_is_missing():
         plain_file("whack/whack.json", json.dumps({})),
     ]
     with create_temporary_dir(files) as package_source_dir:
-        package_source = PackageSource(package_source_dir)
+        package_source = PackageSource.local(package_source_dir)
         request = PackageRequest(package_source, {})
         with create_temporary_dir() as target_dir:
             assert_raises(
                 FileNotFoundError,
-                ("whack/build script not found in package source", ),
+                ("whack/build script not found in package source {0}".format(package_source_dir), ),
                 lambda: build(request, target_dir),
             )
 
@@ -60,7 +60,7 @@ def _package_source(build_script, description):
         sh_script_description("whack/build", build_script),
     ]
     with create_temporary_dir(files) as package_source_dir:
-        yield PackageSource(package_source_dir)
+        yield PackageSource.local(package_source_dir)
         
 
 def assert_raises(error_class, args, func):

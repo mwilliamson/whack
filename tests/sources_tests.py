@@ -192,7 +192,7 @@ def name_of_package_source_is_none_if_not_specified_in_whack_json():
 @istest
 def name_of_package_source_is_none_if_whack_json_does_not_exist():
     with create_temporary_dir() as package_source_dir:
-        package_source = PackageSource(package_source_dir)
+        package_source = PackageSource.local(package_source_dir)
         assert_equal(None, package_source.name())
     
 
@@ -235,4 +235,4 @@ def _source_package_with_description(description):
         write_files(package_source_dir, [
             plain_file("whack/whack.json", json.dumps(description)),
         ])
-        yield PackageSource(package_source_dir)
+        yield PackageSource.local(package_source_dir)

@@ -15,6 +15,10 @@ class PackageRequest(object):
         self._params = params
         self._generate_package_hash = generate_package_hash
     
+    @property
+    def source_uri(self):
+        return self._package_source.uri
+    
     def write_source_to(self, *args, **kwargs):
         return self._package_source.write_to(*args, **kwargs)
     
