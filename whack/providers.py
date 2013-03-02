@@ -56,4 +56,5 @@ class CachingPackageProvider(object):
             package = underlying_provider.provide_package(package_request, package_dir)
             if package is not None:
                 return package
+        
         raise PackageNotAvailableError()

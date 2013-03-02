@@ -11,19 +11,19 @@ from .hashes import Hasher
 from .files import copy_dir, copy_file, delete_dir
 from .tarballs import extract_tarball, create_tarball
 from .indices import read_index
-from .errors import FileNotFoundError
+from .errors import FileNotFoundError, WhackUserError
 
 
 _whack_source_uri_suffix = ".whack-source"
 
 
-class PackageSourceNotFound(Exception):
+class PackageSourceNotFound(WhackUserError):
     def __init__(self, source_name):
         message = "Could not find package source: {0}".format(source_name)
         Exception.__init__(self, message)
         
         
-class SourceHashMismatch(Exception):
+class SourceHashMismatch(WhackUserError):
     def __init__(self, expected_hash, actual_hash):
         message = "Expected hash {0} but was {1}".format(
             expected_hash,
