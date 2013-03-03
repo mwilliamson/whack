@@ -68,7 +68,7 @@ def _package_source(build_script, description):
 def assert_raises(error_class, args, func):
     try:
         func()
-        raise AssertionError("Expected exception {0}".format(error.__name__))
+        raise AssertionError("Expected exception {0}".format(error_class.__name__))
     except error_class as error:
         assert_equal(error.args, args)
 

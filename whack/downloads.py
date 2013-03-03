@@ -5,8 +5,6 @@ import urlparse
 import re
 import urllib
 
-import blah
-
 from .tempdir import create_temporary_dir
 from .files import mkdir_p, copy_file
 
