@@ -6,13 +6,11 @@ import uuid
 from nose.tools import istest, assert_equal
 
 from whack.sources import PackageSource
-from whack.providers import CachingPackageProvider, BuildingPackageProvider
+from whack.providers import CachingPackageProvider
 from catchy import DirectoryCacher
-import testing
-from whack.files import read_file, delete_dir
+from whack.files import delete_dir
 from whack.packagerequests import PackageRequest
-from whack.builder import Builder
-from whack.downloads import Downloader
+from whack.files import mkdir_p
 
 
 @istest
@@ -20,18 +18,7 @@ class CachingProviderTests(object):
     def __init__(self):
         self._test_dir = tempfile.mkdtemp()
         self._cacher = DirectoryCacher(os.path.join(self._test_dir, "cache"))
-        
-        self._build_log_path = os.path.join(self._test_dir, "build.log")
-        build_script = (
-            "#!/bin/sh\n" +
-            "echo building >> {0}".format(self._build_log_path)
-        )
-        
-        self._package_source_dir = os.path.join(self._test_dir, "package-source")
-        testing.write_package_source(
-            self._package_source_dir,
-            {"build": build_script}
-        )
+        self._underlying_provider = FakeProvider()
         
     def teardown(self):
         delete_dir(self._test_dir)
@@ -41,32 +28,41 @@ class CachingProviderTests(object):
         self._get_package(params={})
         self._get_package(params={})
     
-        assert_equal("building\n", self._read_build_log())
+        assert_equal(1, self._number_of_builds())
         
     @istest
     def result_of_build_command_is_reused_when_params_are_the_same(self):
         self._get_package(params={"VERSION": "2.4"})
         self._get_package(params={"VERSION": "2.4"})
     
-        assert_equal("building\n", self._read_build_log())
+        assert_equal(1, self._number_of_builds())
         
     @istest
     def result_of_build_command_is_not_reused_when_params_are_not_the_same(self):
         self._get_package(params={"VERSION": "2.4"})
         self._get_package(params={"VERSION": "2.5"})
     
-        assert_equal("building\nbuilding\n", self._read_build_log())
+        assert_equal(2, self._number_of_builds())
     
     def _get_package(self, params):
         target_dir = os.path.join(self._test_dir, str(uuid.uuid4()))
-        builder = Builder(downloader=Downloader(None))
+        package_source_dir = os.path.join(self._test_dir, str(uuid.uuid4()))
         package_provider = CachingPackageProvider(
             cacher=self._cacher,
-            underlying_providers=[BuildingPackageProvider(builder)],
+            underlying_providers=[self._underlying_provider],
         )
-        package_source = PackageSource.local(self._package_source_dir)
-        request = PackageRequest(package_source, params)
+        request = PackageRequest(PackageSource.local(package_source_dir), params)
         package_provider.provide_package(request, target_dir)
-        
-    def _read_build_log(self):
-        return read_file(self._build_log_path)
+
+    def _number_of_builds(self):
+        return len(self._underlying_provider.requests)
+
+
+class FakeProvider(object):
+    def __init__(self):
+        self.requests = []
+    
+    def provide_package(self, package_request, package_dir):
+        mkdir_p(package_dir)
+        self.requests.append(package_request)
+        return True
