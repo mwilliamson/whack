@@ -9,7 +9,6 @@ from whack.operations import Operations
 from whack.sources import PackageSource
 from whack.providers import create_package_provider
 from whack.deployer import PackageDeployer
-from catchy import NoCachingStrategy
 import testing
 from whack.tempdir import create_temporary_dir
 from whack.caching import NoCacheCachingFactory
