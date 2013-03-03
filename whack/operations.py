@@ -15,7 +15,7 @@ def create(caching_enabled, indices=None, enable_build=True):
     
     package_source_fetcher = PackageSourceFetcher(indices)
     package_provider = create_package_provider(
-        cacher_factory.create("packages"),
+        cacher_factory,
         enable_build=enable_build,
         indices=indices,
     )

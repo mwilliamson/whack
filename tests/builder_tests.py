@@ -3,13 +3,15 @@ import json
 import os
 
 from nose.tools import istest, assert_equal
+from catchy import NoCachingStrategy
 
 from whack.tempdir import create_temporary_dir
 from whack.files import sh_script_description, plain_file, read_file
 from whack.sources import PackageSource
-from whack.builder import build
+from whack.builder import Builder
 from whack.packagerequests import PackageRequest
 from whack.errors import FileNotFoundError
+from whack.downloads import Downloader
     
 
 @istest
@@ -69,3 +71,9 @@ def assert_raises(error_class, args, func):
         raise AssertionError("Expected exception {0}".format(error.__name__))
     except error_class as error:
         assert_equal(error.args, args)
+
+
+def build(*args, **kwargs):
+    cacher = NoCachingStrategy()
+    builder = Builder(Downloader(cacher))
+    return builder.build(*args, **kwargs)

@@ -6,11 +6,13 @@ import uuid
 from nose.tools import istest, assert_equal
 
 from whack.sources import PackageSource
-from whack.providers import create_package_provider
+from whack.providers import CachingPackageProvider, BuildingPackageProvider
 from catchy import DirectoryCacher
 import testing
 from whack.files import read_file, delete_dir
 from whack.packagerequests import PackageRequest
+from whack.builder import Builder
+from whack.downloads import Downloader
 
 
 @istest
@@ -57,7 +59,11 @@ class CachingProviderTests(object):
     
     def _get_package(self, params):
         target_dir = os.path.join(self._test_dir, str(uuid.uuid4()))
-        package_provider = create_package_provider(cacher=self._cacher)
+        builder = Builder(downloader=Downloader(None))
+        package_provider = CachingPackageProvider(
+            cacher=self._cacher,
+            underlying_providers=[BuildingPackageProvider(builder)],
+        )
         package_source = PackageSource.local(self._package_source_dir)
         request = PackageRequest(package_source, params)
         package_provider.provide_package(request, target_dir)

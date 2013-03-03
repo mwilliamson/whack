@@ -7,8 +7,38 @@ import re
 import urllib
 
 import blah
-import locket
 
+from .tempdir import create_temporary_dir
+
+
+class Downloader(object):
+    def __init__(self, cacher):
+        self._cacher = cacher
+    
+    def fetch_downloads(self, downloads_file_path, build_env, target_dir):
+        downloads_file = _read_downloads_file(downloads_file_path, build_env)
+        for download_line in downloads_file:
+            self.download(
+                download_line.url,
+                os.path.join(target_dir, download_line.filename)
+            )
+
+    def download(self, url, destination):
+        url_hash = hashlib.sha1(url).hexdigest()
+        subprocess.check_call(["mkdir", "-p", os.path.dirname(destination)])
+        cache_result = self._cacher.fetch(url_hash, destination)
+        if cache_result.cache_hit:
+            return
+        else:
+            # TODO: writing directly to the cache would be quicker
+            # Don't write directly to the destination to avoid any possible
+            # modification
+            with create_temporary_dir() as temp_dir:
+                temp_file_path = os.path.join(temp_dir, url_hash)
+                urllib.urlretrieve(url, temp_file_path)
+                shutil.copyfile(temp_file_path, destination)
+                self._cacher.put(url_hash, temp_file_path)
+        
 
 class Download(object):
     def __init__(self, url, filename=None):
@@ -23,15 +53,6 @@ class Download(object):
         
     def __repr__(self):
         return "Download({0!r}, {1!r})".format(self.url, self.filename)
-
-        
-def fetch_downloads(downloads_file_path, build_env, target_dir):
-    downloads_file = _read_downloads_file(downloads_file_path, build_env)
-    for download_line in downloads_file:
-        download(
-            download_line.url,
-            os.path.join(target_dir, download_line.filename)
-        )
 
 
 def _read_downloads_file(path, build_env):
@@ -64,31 +85,6 @@ def _read_download_line(line):
     else:
         return Download(line)
     
-
-def download(url, destination):
-    cache_file = _download_to_cache(url)
-    subprocess.check_call(["mkdir", "-p", os.path.dirname(destination)])
-    shutil.copyfile(cache_file, destination)
-
-def _download_to_cache(url):
-    cache_dir = _whack_cache_dir("downloads/")
-    url_hash = hashlib.sha1(url).hexdigest()
-    cache_file = os.path.join(cache_dir, url_hash)
-    subprocess.check_call(["mkdir", "-p", cache_dir])
-    with locket.lock_file("{0}.lock".format(cache_file)):
-        if not os.path.exists(cache_file):
-            urllib.urlretrieve(url, cache_file)
-    return cache_file
-
-def fetch_source_control_uri(uri):
-    cache_dir = _whack_cache_dir("repos/")
-    repo_hash = hashlib.sha1(uri).hexdigest()
-    repo_cache_dir = os.path.join(cache_dir, repo_hash)
-    blah.fetch(uri, repo_cache_dir)
-    return repo_cache_dir
-
-def _whack_cache_dir(path):
-    return os.path.join(os.path.expanduser("~/.cache/whack"), path)
 
 def _filename_from_url(url):
     return urlparse.urlparse(url).path.rpartition("/")[2]

@@ -12,6 +12,7 @@ from whack.deployer import PackageDeployer
 from catchy import NoCachingStrategy
 import testing
 from whack.tempdir import create_temporary_dir
+from whack.caching import NoCacheCachingFactory
 
 
 test = istest
@@ -129,7 +130,7 @@ def _temporary_package_source(build):
 
 def _install(*args, **kwargs):
     package_source_fetcher = SimplePackageSourceFetcher()
-    package_provider = create_package_provider(cacher=NoCachingStrategy())
+    package_provider = create_package_provider(NoCacheCachingFactory())
     deployer = PackageDeployer()
     operations = Operations(package_source_fetcher, package_provider, deployer)
     return operations.install(*args, **kwargs)

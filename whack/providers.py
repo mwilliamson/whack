@@ -1,17 +1,22 @@
 from .errors import PackageNotAvailableError
-from .builder import build
+from .builder import Builder
 from .tarballs import extract_tarball
 from .indices import read_index
+from .downloads import Downloader
 
 
-def create_package_provider(cacher, enable_build=True, indices=None):
+def create_package_provider(cacher_factory, enable_build=True, indices=None):
     if indices is None:
         indices = []
     
     underlying_providers = map(IndexPackageProvider, indices)
     if enable_build:
-        underlying_providers.append(BuildingPackageProvider())
-    return CachingPackageProvider(cacher, underlying_providers)
+        downloader = Downloader(cacher_factory.create("downloads"))
+        underlying_providers.append(BuildingPackageProvider(Builder(downloader)))
+    return CachingPackageProvider(
+        cacher_factory.create("packages"),
+        underlying_providers
+    )
 
 
 class IndexPackageProvider(object):
@@ -33,8 +38,11 @@ class IndexPackageProvider(object):
         
 
 class BuildingPackageProvider(object):
+    def __init__(self, builder):
+        self._builder = builder
+    
     def provide_package(self, package_request, package_dir):
-        build(package_request, package_dir)
+        self._builder.build(package_request, package_dir)
         return True
 
 
