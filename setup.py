@@ -18,7 +18,7 @@ setup(
     install_requires=[
         'blah>=0.1.10,<0.2',
         'requests>=1,<2',
-        "catchy>=0.1.3,<0.2",
+        "catchy>=0.2.0,<0.3",
         "locket>=0.1.1,<0.2",
         "beautifulsoup4>=4.1.3,<5",
     ],
