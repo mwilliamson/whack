@@ -1,7 +1,5 @@
 import os
 
-from catchy import xdg_directory_cacher, NoCachingStrategy
-
 from .sources import PackageSourceFetcher, create_source_tarball
 from .providers import create_package_provider
 from .deployer import PackageDeployer
@@ -9,17 +7,15 @@ from .tempdir import create_temporary_dir
 from .files import read_file
 from .tarballs import create_tarball
 from .packagerequests import PackageRequest
+from .caching import create_cacher_factory
 
 
 def create(caching_enabled, indices=None, enable_build=True):
-    if not caching_enabled:
-        cacher = NoCachingStrategy()
-    else:
-        cacher = xdg_directory_cacher("whack/builds")
+    cacher_factory = create_cacher_factory(caching_enabled=caching_enabled)
     
     package_source_fetcher = PackageSourceFetcher(indices)
     package_provider = create_package_provider(
-        cacher,
+        cacher_factory.create("builds"),
         enable_build=enable_build,
         indices=indices,
     )
