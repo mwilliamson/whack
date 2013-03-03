@@ -1,6 +1,5 @@
 import os.path
 import hashlib
-import shutil
 import subprocess
 import urlparse
 import re
@@ -9,6 +8,7 @@ import urllib
 import blah
 
 from .tempdir import create_temporary_dir
+from .files import mkdir_p, copy_file
 
 
 class Downloader(object):
@@ -25,7 +25,7 @@ class Downloader(object):
 
     def download(self, url, destination):
         url_hash = hashlib.sha1(url).hexdigest()
-        subprocess.check_call(["mkdir", "-p", os.path.dirname(destination)])
+        mkdir_p(os.path.dirname(destination))
         cache_result = self._cacher.fetch(url_hash, destination)
         if cache_result.cache_hit:
             return
@@ -36,7 +36,7 @@ class Downloader(object):
             with create_temporary_dir() as temp_dir:
                 temp_file_path = os.path.join(temp_dir, url_hash)
                 urllib.urlretrieve(url, temp_file_path)
-                shutil.copyfile(temp_file_path, destination)
+                copy_file(temp_file_path, destination)
                 self._cacher.put(url_hash, temp_file_path)
         
 
