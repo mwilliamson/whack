@@ -12,6 +12,7 @@ from .files import copy_dir, copy_file, delete_dir
 from .tarballs import extract_tarball, create_tarball
 from .indices import read_index
 from .errors import FileNotFoundError, WhackUserError
+from .tempdir import create_temporary_dir
 
 
 _whack_source_uri_suffix = ".whack-source"
@@ -246,13 +247,14 @@ class DictBackedPackageDescription(object):
         return self._values.get("defaultParams", {})
 
 
-def create_source_tarball(source_dir, tarball_dir):
-    package_source = PackageSource.local(source_dir)
-    full_name = package_source.full_name()
-    filename = "{0}{1}".format(full_name, _whack_source_uri_suffix)
-    path = os.path.join(tarball_dir, filename)
-    create_tarball(path, source_dir)
-    return SourceTarball(full_name, path)
+def create_source_tarball(package_source, tarball_dir):
+    with create_temporary_dir() as source_dir:
+        package_source.write_to(source_dir)
+        full_name = package_source.full_name()
+        filename = "{0}{1}".format(full_name, _whack_source_uri_suffix)
+        path = os.path.join(tarball_dir, filename)
+        create_tarball(path, source_dir)
+        return SourceTarball(full_name, path)
 
 
 class SourceTarball(object):

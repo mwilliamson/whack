@@ -101,12 +101,12 @@ class CreateSourceTarballCommand(object):
     name = "create-source-tarball"
     
     def create_parser(self, subparser):
-        subparser.add_argument("package_source_dir", metavar="package-source-dir")
+        subparser.add_argument('package_source', metavar="package-source")
         subparser.add_argument("source_tarball_dir", metavar="source-tarball-dir")
         
     def execute(self, operations, args):
         source_tarball = operations.create_source_tarball(
-            args.package_source_dir,
+            args.package_source,
             args.source_tarball_dir
         )
         print source_tarball.full_name

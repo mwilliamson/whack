@@ -42,8 +42,9 @@ class Operations(object):
     def deploy(self, package_dir, target_dir=None):
         return self._deployer.deploy(package_dir, target_dir)
         
-    def create_source_tarball(self, source_dir, tarball_dir):
-        return create_source_tarball(source_dir, tarball_dir)
+    def create_source_tarball(self, source_name, tarball_dir):
+        with self._package_source_fetcher.fetch(source_name) as package_source:
+            return create_source_tarball(package_source, tarball_dir)
         
     def get_package_tarball(self, package_name, tarball_dir, params=None):
         with create_temporary_dir() as package_dir:

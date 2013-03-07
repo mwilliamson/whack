@@ -59,7 +59,8 @@ def can_fetch_package_source_from_tarball_on_http_server():
 def can_fetch_package_source_from_whack_source_uri():
     with _temporary_static_server() as server:
         def create_source(package_source_dir):
-            source_tarball = create_source_tarball(package_source_dir, server.root)
+            package_source = PackageSource.local(package_source_dir)
+            source_tarball = create_source_tarball(package_source, server.root)
             filename = os.path.relpath(source_tarball.path, server.root)
             return server.static_url(filename)
             

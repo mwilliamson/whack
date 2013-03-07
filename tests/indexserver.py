@@ -4,7 +4,7 @@ import shutil
 
 from .httpserver import start_static_http_server
 from whack.tempdir import create_temporary_dir
-from whack.sources import create_source_tarball
+from whack.sources import create_source_tarball, PackageSource
 from whack.files import write_file
 
 
@@ -26,7 +26,8 @@ class IndexServer(object):
         return self._http_server.static_url("packages.html")
         
     def add_source(self, source_dir):
-        source_tarball = create_source_tarball(source_dir, self._root)
+        package_source = PackageSource.local(source_dir)
+        source_tarball = create_source_tarball(package_source, self._root)
         source_filename = os.path.relpath(source_tarball.path, self._root)
         source_url = self._http_server.static_url(source_filename)
         self._sources.append((source_filename, source_url))
