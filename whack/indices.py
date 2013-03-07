@@ -1,3 +1,5 @@
+import urlparse
+
 import requests
 from bs4 import BeautifulSoup
 
@@ -10,15 +12,18 @@ def read_index(index_uri):
         raise Exception("Index {0} returned status code {1}".format(
             index_uri, index_response.status_code
         ))
-    return read_index_string(index_response.text)
+    return read_index_string(index_uri, index_response.text)
     
     
-def read_index_string(index_string):
+def read_index_string(index_url, index_string):
     html_document = BeautifulSoup(index_string)
-    return Index([
-        IndexEntry(link.get_text().strip(), link.get("href"))
-        for link in html_document.find_all("a")
-    ])
+    
+    def link_to_index_entry(link):
+        url = urlparse.urljoin(index_url, link.get("href"))
+        link_text = link.get_text().strip()
+        return IndexEntry(link_text, url)
+    
+    return Index(map(link_to_index_entry, html_document.find_all("a")))
     
 
 class Index(object):
