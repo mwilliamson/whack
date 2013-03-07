@@ -29,6 +29,10 @@ class Index(object):
         for entry in self._entries:
             if entry.name == name:
                 return entry
+        for entry in self._entries:
+            url_parts = entry.url.rsplit("/", 1)
+            if url_parts[-1] == name:
+                return entry
         return None
 
 
