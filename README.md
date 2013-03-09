@@ -12,18 +12,20 @@ copied to the target directory.
 ## Installation
 
 Before you can use Whack, you need to install a utility called `whack-run`. You
-can download Whack from [GitHub][github] or [PyPI][pypi]. Then, from within
-Whack's source directory:
+can download [whack-run][] from GitHub:
 
 ```
-cd whack-run
-make
+$ curl -L https://github.com/mwilliamson/whack-run/archive/1.0.0.tar.gz > whack-run-1.0.0.tar.gz
+$ tar xzf whack-run-1.0.0.tar.gz
+$ cd whack-run-1.0.0
+$ make
+
 ```
 
 And as root:
 
 ```
-make install
+# make install
 ```
 
 This installs the binary `whack-run` to `/usr/local/bin`. Once `whack-run` has
@@ -33,8 +35,7 @@ been installed, you can install Whack as an ordinary Python package:
 pip install whack
 ```
 
-[github]: https://github.com/mwilliamson/whack
-[pypi]: https://pypi.python.org/pypi/whack
+[whack-run]: https://github.com/mwilliamson/whack-run
 
 ## How does Whack work?
 
