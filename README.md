@@ -19,7 +19,6 @@ $ curl -L https://github.com/mwilliamson/whack-run/archive/1.0.0.tar.gz > whack-
 $ tar xzf whack-run-1.0.0.tar.gz
 $ cd whack-run-1.0.0
 $ make
-
 ```
 
 And as root:
