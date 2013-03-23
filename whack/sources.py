@@ -5,7 +5,7 @@ import uuid
 import re
 import errno
 
-import blah
+import mayo
 
 from .hashes import Hasher
 from .files import copy_dir, copy_file, delete_dir
@@ -94,11 +94,11 @@ class IndexFetcher(object):
 
 class SourceControlFetcher(object):
     def can_fetch(self, source_name):
-        return blah.is_source_control_uri(source_name)
+        return mayo.is_source_control_uri(source_name)
         
     def fetch(self, source_name):
         def fetch_archive(destination_dir):
-            blah.archive(source_name, destination_dir)
+            mayo.archive(source_name, destination_dir)
         
         return _create_temporary_package_source(source_name, fetch_archive)
         

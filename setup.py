@@ -16,7 +16,7 @@ setup(
     scripts=["scripts/whack"],
     packages=['whack'],
     install_requires=[
-        'blah>=0.1.10,<0.2',
+        'mayo>=0.2.1,<0.3',
         'requests>=1,<2',
         "catchy>=0.2.0,<0.3",
         "beautifulsoup4>=4.1.3,<5",
