@@ -227,6 +227,22 @@ def test_command_is_run_in_root_of_source_dir(operations):
     with create_temporary_dir(source_files) as package_source_dir:
         test_result = operations.test(package_source_dir)
         assert_equal(True, test_result.passed)
+                
+
+@test_with_operations
+def parameters_are_passed_to_test_command_as_environment_variables(operations):
+    source_files = [
+        plain_file("whack/whack.json", json.dumps({
+            "test": '[ "$VERSION" = "1" ]',
+        })),
+        plain_file("zero", "0"),
+    ]
+    with create_temporary_dir(source_files) as package_source_dir:
+        test_result = operations.test(
+            package_source_dir,
+            params={"version": "1"}
+        )
+        assert_equal(True, test_result.passed)
         
 
 def test_install(ops, build, params, expected_output):

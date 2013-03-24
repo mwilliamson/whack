@@ -80,9 +80,9 @@ class CliOperations(object):
         ).output
         return PackageTarball(output.strip())
         
-    def test(self, source_name):
+    def test(self, source_name, params=None):
         try:
-            self._whack("test", source_name)
+            self._whack("test", source_name, *self._build_params_args(params))
             return TestResult(passed=True)
         except spur.RunProcessError as process_error:
             return TestResult(passed=False)

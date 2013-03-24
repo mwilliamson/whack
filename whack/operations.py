@@ -10,6 +10,7 @@ from .tarballs import create_tarball
 from .packagerequests import PackageRequest
 from .caching import create_cacher_factory
 from .testing import TestResult
+from .env import params_to_env
 
 
 def create(caching_enabled, indices=None, enable_build=True):
@@ -57,7 +58,7 @@ class Operations(object):
             create_tarball(package_tarball_path, package_dir, rename_dir=package_name)
             return PackageTarball(package_tarball_path)
             
-    def test(self, source_name):
+    def test(self, source_name, params=None):
         with self._package_source_fetcher.fetch(source_name) as package_source:
             description = package_source.description()
             test_command = description.test_command()
@@ -70,6 +71,7 @@ class Operations(object):
                         test_command,
                         shell=True,
                         cwd=package_source_dir,
+                        env=params_to_env(params),
                     )
                     passed = return_code == 0
                     return TestResult(passed=passed)

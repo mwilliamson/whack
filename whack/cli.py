@@ -136,9 +136,10 @@ class TestCommand(object):
     
     def create_parser(self, subparser):
         subparser.add_argument('package_source', metavar="package-source")
+        _add_build_params_args(subparser)
         
     def execute(self, operations, args):
-        test_result = operations.test(args.package_source)
+        test_result = operations.test(args.package_source, params=args.params)
         if test_result.passed:
             return 0
         else:

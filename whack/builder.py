@@ -5,6 +5,7 @@ from .tempdir import create_temporary_dir
 from .common import WHACK_ROOT
 from .files import mkdir_p, write_file
 from .errors import FileNotFoundError
+from .env import params_to_env
 
 
 class Builder(object):
@@ -29,7 +30,7 @@ class Builder(object):
             )
             raise FileNotFoundError(message)
         
-        build_env = _params_to_build_env(params)
+        build_env = params_to_env(params)
         self._fetch_downloads(build_dir, build_env)
         mkdir_p(package_dir)
         build_command = [
@@ -48,10 +49,3 @@ class Builder(object):
     def _fetch_downloads(self, build_dir, build_env):
         downloads_file_path = os.path.join(build_dir, "whack/downloads")
         self._downloader.fetch_downloads(downloads_file_path, build_env, build_dir)
-
-
-def _params_to_build_env(params):
-    build_env = os.environ.copy()
-    for name, value in (params or {}).iteritems():
-        build_env[name.upper()] = str(value)
-    return build_env
