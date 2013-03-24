@@ -162,7 +162,7 @@ class PackageSource(object):
         return PackageSource(path, path, is_temp=False)
     
     def __init__(self, path, uri, is_temp):
-        self._path = path
+        self.path = path
         self.uri = uri
         self._description = _read_package_description(path)
         self._is_temp = is_temp
@@ -181,7 +181,7 @@ class PackageSource(object):
     def source_hash(self):
         hasher = Hasher()
         for source_path in self._source_paths():
-            absolute_source_path = os.path.join(self._path, source_path)
+            absolute_source_path = os.path.join(self.path, source_path)
             hasher.update_with_dir(absolute_source_path)
         return hasher.ascii_digest()
     
@@ -190,7 +190,7 @@ class PackageSource(object):
             target_sub_dir = os.path.join(target_dir, source_dir)
             try:
                 _copy_dir_or_file(
-                    os.path.join(self._path, source_dir),
+                    os.path.join(self.path, source_dir),
                     target_sub_dir
                 )
             except IOError as error:
@@ -210,7 +210,7 @@ class PackageSource(object):
         
     def __exit__(self, *args):
         if self._is_temp:
-            delete_dir(self._path)
+            delete_dir(self.path)
 
 
 def _copy_dir_or_file(source, destination):

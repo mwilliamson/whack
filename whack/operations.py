@@ -65,16 +65,14 @@ class Operations(object):
             if test_command is None:
                 return TestResult(passed=False)
             else:
-                with create_temporary_dir() as package_source_dir:
-                    package_source.write_to(package_source_dir)
-                    return_code = subprocess.call(
-                        test_command,
-                        shell=True,
-                        cwd=package_source_dir,
-                        env=params_to_env(params),
-                    )
-                    passed = return_code == 0
-                    return TestResult(passed=passed)
+                return_code = subprocess.call(
+                    test_command,
+                    shell=True,
+                    cwd=package_source.path,
+                    env=params_to_env(params),
+                )
+                passed = return_code == 0
+                return TestResult(passed=passed)
 
 
 class PackageTarball(object):
