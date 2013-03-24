@@ -245,6 +245,9 @@ class DictBackedPackageDescription(object):
         
     def default_params(self):
         return self._values.get("defaultParams", {})
+        
+    def test_command(self):
+        return self._values.get("test", None)
 
 
 def create_source_tarball(package_source, tarball_dir):

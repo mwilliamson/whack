@@ -9,6 +9,7 @@ from whack.sources import SourceTarball
 from whack.errors import PackageNotAvailableError
 from . import whack_test
 from whack.operations import PackageTarball
+from whack.testing import TestResult
 
 
 @istest
@@ -78,6 +79,13 @@ class CliOperations(object):
             *self._build_params_args(params)
         ).output
         return PackageTarball(output.strip())
+        
+    def test(self, source_name):
+        try:
+            self._whack("test", source_name)
+            return TestResult(passed=True)
+        except spur.RunProcessError as process_error:
+            return TestResult(passed=False)
     
     def _command(self, command_name, package_name, target_dir, params):
         params_args = self._build_params_args(params)

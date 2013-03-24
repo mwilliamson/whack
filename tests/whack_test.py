@@ -2,6 +2,7 @@ import os
 import subprocess
 import functools
 import contextlib
+import json
 
 from nose.tools import assert_equal, assert_raises
 from nose_test_sets import TestSetBuilder
@@ -184,6 +185,35 @@ def can_install_package_when_build_step_is_disabled_if_pre_built_package_can_be_
                     assert_equal(testing.HelloWorld.EXPECTED_OUTPUT, output)
                 
 
+@test_with_operations
+def whack_test_fails_if_test_is_not_set_in_whack_json(operations):
+    source_files = [
+        plain_file("whack/whack.json", json.dumps({})),
+    ]
+    with create_temporary_dir(source_files) as package_source_dir:
+        test_result = operations.test(package_source_dir)
+        assert_equal(False, test_result.passed)
+                
+
+@test_with_operations
+def whack_test_fails_if_test_command_has_non_zero_return_code(operations):
+    source_files = [
+        plain_file("whack/whack.json", json.dumps({"test": "false"})),
+    ]
+    with create_temporary_dir(source_files) as package_source_dir:
+        test_result = operations.test(package_source_dir)
+        assert_equal(False, test_result.passed)
+                
+
+@test_with_operations
+def whack_test_passes_if_test_command_has_zero_return_code(operations):
+    source_files = [
+        plain_file("whack/whack.json", json.dumps({"test": "true"})),
+    ]
+    with create_temporary_dir(source_files) as package_source_dir:
+        test_result = operations.test(package_source_dir)
+        assert_equal(True, test_result.passed)
+        
 
 def test_install(ops, build, params, expected_output):
     with _package_source(build) as package_source_dir:

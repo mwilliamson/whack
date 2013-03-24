@@ -15,7 +15,7 @@ def main(argv, create_operations):
         enable_build=args.enable_build,
     )
     try:
-        args.func(operations, args)
+        exit(args.func(operations, args))
     except WhackUserError as error:
         sys.stderr.write("{0}: {1}\n".format(type(error).__name__, error.message))
         exit(1)
@@ -28,6 +28,7 @@ def parse_args(argv):
         DeployCommand(),
         CreateSourceTarballCommand(),
         GetPackageTarballCommand(),
+        TestCommand(),
     ]
     
     parser = argparse.ArgumentParser()
@@ -128,6 +129,20 @@ class GetPackageTarballCommand(object):
             params=args.params,
         )
         print package_tarball.path
+
+
+class TestCommand(object):
+    name = "test"
+    
+    def create_parser(self, subparser):
+        subparser.add_argument('package_source', metavar="package-source")
+        
+    def execute(self, operations, args):
+        test_result = operations.test(args.package_source)
+        if test_result.passed:
+            return 0
+        else:
+            return 1
 
 
 def _add_common_args(parser):
