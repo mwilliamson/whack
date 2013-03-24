@@ -11,7 +11,7 @@ from whack.common import WHACK_ROOT
 from whack.errors import PackageNotAvailableError
 import whack.operations
 from whack.tempdir import create_temporary_dir
-from whack.files import sh_script_description, plain_file
+from whack.files import sh_script_description, plain_file, write_files
 import testing
 from .indexserver import start_index_server
 
@@ -209,6 +209,20 @@ def whack_test_fails_if_test_command_has_non_zero_return_code(operations):
 def whack_test_passes_if_test_command_has_zero_return_code(operations):
     source_files = [
         plain_file("whack/whack.json", json.dumps({"test": "true"})),
+    ]
+    with create_temporary_dir(source_files) as package_source_dir:
+        test_result = operations.test(package_source_dir)
+        assert_equal(True, test_result.passed)
+                
+
+@test_with_operations
+def test_command_is_run_in_root_of_source_dir(operations):
+    source_files = [
+        plain_file("whack/whack.json", json.dumps({
+            "test": "exit `cat zero || echo 1`",
+            "sourcePaths": ["whack", "zero"],
+        })),
+        plain_file("zero", "0"),
     ]
     with create_temporary_dir(source_files) as package_source_dir:
         test_result = operations.test(package_source_dir)
