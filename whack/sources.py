@@ -203,7 +203,7 @@ class PackageSource(object):
         return self._description
     
     def _source_paths(self):
-        return ["whack"] + self._description.source_paths()
+        return self._description.source_paths()
     
     def __enter__(self):
         return self
@@ -241,7 +241,7 @@ class DictBackedPackageDescription(object):
         return self._values.get("paramSlug", None)
         
     def source_paths(self):
-        return self._values.get("sourcePaths", [])
+        return self._values.get("sourcePaths", ["whack"])
         
     def default_params(self):
         return self._values.get("defaultParams", {})
