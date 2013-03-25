@@ -1,6 +1,6 @@
 import os.path
 import hashlib
-import subprocess
+from . import subprocess27 as subprocess
 import urlparse
 import re
 import urllib

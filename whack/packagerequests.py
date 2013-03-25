@@ -1,4 +1,4 @@
-import subprocess
+from . import subprocess27 as subprocess
 import json
 
 from .hashes import Hasher
