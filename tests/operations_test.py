@@ -1,6 +1,6 @@
 import os
 import os.path
-import subprocess
+from whack import subprocess27 as subprocess
 import contextlib
 
 from nose.tools import istest, assert_equal

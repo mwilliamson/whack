@@ -1,5 +1,5 @@
 import os
-import subprocess
+from whack import subprocess27 as subprocess
 import functools
 import contextlib
 import json
