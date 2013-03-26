@@ -4,7 +4,7 @@ import functools
 import contextlib
 import json
 
-from nose.tools import assert_equal, assert_raises
+from nose.tools import assert_equal, assert_raises, nottest
 from nose_test_sets import TestSetBuilder
 
 from whack.common import WHACK_ROOT
@@ -21,6 +21,7 @@ create = test_set.create
 test = test_set.add_test
 
 
+@nottest
 def test_with_operations(test_func):
     @test
     @functools.wraps(test_func)
@@ -245,6 +246,7 @@ def parameters_are_passed_to_test_command_as_environment_variables(operations):
         assert_equal(True, test_result.passed)
         
 
+@nottest
 def test_install(ops, build, params, expected_output):
     with _package_source(build) as package_source_dir:
         with create_temporary_dir() as install_dir:
