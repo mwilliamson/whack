@@ -1,5 +1,7 @@
 class WhackUserError(Exception):
-    pass
+    def __init__(self, message=None):
+        Exception.__init__(self, message)
+        self.message = message
 
 
 class FileNotFoundError(WhackUserError):
