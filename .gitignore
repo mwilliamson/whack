@@ -2,3 +2,6 @@
 _virtualenv
 whack.egg-info
 /whack-run/whack-run
+/README
+/.tox
+/MANIFEST
