@@ -3,4 +3,4 @@ mock==1.0.1
 nose-test-sets>=0.2.0,<0.3
 starboard>=0.1.2,<0.2
 pyramid>=1.4,<1.5
-spur>=0.3.2,<0.4
+spur.local>=0.3.2,<0.4
