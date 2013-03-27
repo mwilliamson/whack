@@ -1,5 +1,4 @@
 import os
-from whack import subprocess27 as subprocess
 import tempfile
 import shutil
 
@@ -10,6 +9,7 @@ from whack.deployer import PackageDeployer
 from whack.files import \
     write_files, sh_script_description, directory_description, plain_file, \
     symlink
+from whack import local
 
 
 @istest
@@ -164,7 +164,7 @@ def _deploy_package(file_descriptions):
 
 
 def _assert_output(command, expected_output):
-    output = subprocess.check_output(command)
+    output = local.run(command).output
     assert_equal(expected_output, output)
 
 

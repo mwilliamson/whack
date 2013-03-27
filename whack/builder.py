@@ -1,11 +1,11 @@
 import os
-import subprocess
 
 from .tempdir import create_temporary_dir
 from .common import WHACK_ROOT
 from .files import mkdir_p, write_file
 from .errors import FileNotFoundError
 from .env import params_to_env
+from . import local
 
 
 class Builder(object):
@@ -39,7 +39,7 @@ class Builder(object):
             build_script_path, # build_script is executed
             WHACK_ROOT # WHACK_ROOT is passed as the first argument to build_script
         ]
-        subprocess.check_call(build_command, cwd=build_dir, env=build_env)
+        local.run(build_command, cwd=build_dir, update_env=build_env)
         write_file(
             os.path.join(package_dir, ".whack-package-name"),
             package_request.name()

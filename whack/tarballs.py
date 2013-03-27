@@ -1,4 +1,3 @@
-import subprocess
 import os
 import shutil
 
@@ -6,6 +5,7 @@ import requests
 
 from .files import mkdir_p
 from .tempdir import create_temporary_dir
+from . import local
 
 
 def extract_tarball(tarball_uri, destination_dir, strip_components):
@@ -15,7 +15,7 @@ def extract_tarball(tarball_uri, destination_dir, strip_components):
             extract_tarball(tarball_path, destination_dir, strip_components)
     else:
         mkdir_p(destination_dir)
-        subprocess.check_call([
+        local.run([
             "tar", "xzf", tarball_uri,
             "--directory", destination_dir,
             "--strip-components", str(strip_components)
@@ -43,5 +43,5 @@ def create_tarball(tarball_path, source, rename_dir=None):
             "--transform",
             "s/^{0}/{1}/".format(os.path.basename(source), rename_dir),
         ]
-    subprocess.check_call(args)
+    local.run(args)
     return tarball_path

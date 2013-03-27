@@ -1,5 +1,4 @@
 import os
-from whack import subprocess27 as subprocess
 import functools
 import contextlib
 import json
@@ -14,6 +13,7 @@ from whack.tempdir import create_temporary_dir
 from whack.files import sh_script_description, plain_file, write_files
 import testing
 from .indexserver import start_index_server
+from whack import local
 
 
 test_set = TestSetBuilder()
@@ -66,7 +66,7 @@ def getting_package_leaves_undeployed_build_in_target_directory(ops):
         with create_temporary_dir() as target_dir:
             ops.get_package(package_source_dir, target_dir, params={})
         
-            output = subprocess.check_output([os.path.join(target_dir, "hello")])
+            output = _check_output([os.path.join(target_dir, "hello")])
             assert_equal(testing.HelloWorld.EXPECTED_OUTPUT, output)
             assert not _is_deployed(target_dir)
 
@@ -85,7 +85,7 @@ chmod +x hello
         with create_temporary_dir() as target_dir:
             ops.get_package(package_source_dir, target_dir, params={"version": "1"})
         
-            output = subprocess.check_output([os.path.join(target_dir, "hello")])
+            output = _check_output([os.path.join(target_dir, "hello")])
             assert_equal("1\n", output)
 
 
@@ -99,7 +99,7 @@ def built_package_can_be_deployed_to_different_directory(ops):
     with create_temporary_dir(package_files) as package_dir:
         with create_temporary_dir() as install_dir:
             ops.deploy(package_dir, install_dir)
-            output = subprocess.check_output([os.path.join(install_dir, "bin/hello")])
+            output = _check_output([os.path.join(install_dir, "bin/hello")])
             assert_equal("Hello there", output)
             assert _is_deployed(install_dir)
             assert not _is_deployed(package_dir)
@@ -115,7 +115,7 @@ def directory_can_be_deployed_in_place(ops):
     
     with create_temporary_dir(package_files) as package_dir:
         ops.deploy(package_dir)
-        output = subprocess.check_output([os.path.join(package_dir, "bin/hello")])
+        output = _check_output([os.path.join(package_dir, "bin/hello")])
         assert_equal("Hello there", output)
         assert _is_deployed(package_dir)
 
@@ -131,7 +131,7 @@ def source_tarballs_created_by_whack_can_be_installed(ops):
             with create_temporary_dir() as target_dir:
                 ops.install(source_tarball.path, target_dir, params={})
             
-                output = subprocess.check_output([os.path.join(target_dir, "hello")])
+                output = _check_output([os.path.join(target_dir, "hello")])
                 assert_equal(testing.HelloWorld.EXPECTED_OUTPUT, output)
 
 
@@ -144,7 +144,7 @@ def packages_can_be_installed_from_html_index(create_operations):
                 operations = create_operations(indices=[index_server.index_url()])
                 operations.install(source.full_name, target_dir, params={})
             
-                output = subprocess.check_output([os.path.join(target_dir, "hello")])
+                output = _check_output([os.path.join(target_dir, "hello")])
                 assert_equal(testing.HelloWorld.EXPECTED_OUTPUT, output)
 
 
@@ -180,7 +180,7 @@ def can_install_package_when_build_step_is_disabled_if_pre_built_package_can_be_
                     )
                     operations.install(package_source_dir, install_dir)
                 
-                    output = subprocess.check_output([
+                    output = _check_output([
                         os.path.join(install_dir, "hello")
                     ])
                     assert_equal(testing.HelloWorld.EXPECTED_OUTPUT, output)
@@ -256,7 +256,7 @@ def test_install(ops, build, params, expected_output):
                 params=params,
             )
             
-            output = subprocess.check_output([
+            output = _check_output([
                 os.path.join(install_dir, "hello")
             ])
             assert_equal(expected_output, output)
@@ -280,6 +280,10 @@ def _package_source(build):
     return create_temporary_dir([
         sh_script_description("whack/build", build),
     ])
+    
+
+def _check_output(*args, **kwargs):
+    return local.run(*args, **kwargs).output
 
 
 @contextlib.contextmanager

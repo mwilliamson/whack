@@ -1,7 +1,8 @@
-import subprocess
 import os
 import errno
 import shutil
+
+from . import local
 
 
 def read_file(path):
@@ -20,7 +21,7 @@ copy_file = shutil.copyfile
 def copy_dir(source, destination):
     # TODO: should be pure Python, but there isn't a stdlib function
     # that allows the destination to already exist
-    subprocess.check_call(["cp", "-rT", source, destination])
+    local.run(["cp", "-rT", source, destination])
 
 
 def mkdir_p(path):

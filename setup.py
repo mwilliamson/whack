@@ -20,5 +20,6 @@ setup(
         'requests>=1,<2',
         "catchy>=0.2.0,<0.3",
         "beautifulsoup4>=4.1.3,<5",
+        "spur.local>=0.3.2,<0.4",
     ],
 )

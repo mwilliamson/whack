@@ -1,6 +1,5 @@
 import os
 import os.path
-from whack import subprocess27 as subprocess
 import contextlib
 
 from nose.tools import istest, assert_equal
@@ -12,6 +11,7 @@ from whack.deployer import PackageDeployer
 import testing
 from whack.tempdir import create_temporary_dir
 from whack.caching import NoCacheCachingFactory
+from whack import local
 
 
 test = istest
@@ -31,7 +31,7 @@ EOF
 chmod +x $INSTALL_DIR/bin/hello
 """
     with _temporary_install(_BUILD) as installation:
-        output = subprocess.check_output(installation.install_path("bin/hello"))
+        output = _check_output(installation.install_path("bin/hello"))
         assert_equal("Hello there\n", output)
 
 
@@ -54,7 +54,7 @@ chmod +x $INSTALL_DIR/bin/hello
             with _change_dir(install_dir):
                 _install(package_source_dir, ".")
     
-            output = subprocess.check_output(os.path.join(install_dir, "bin/hello"))
+            output = _check_output(os.path.join(install_dir, "bin/hello"))
             assert_equal("Hello there\n", output)
     
 
@@ -72,7 +72,7 @@ EOF
 chmod +x $INSTALL_DIR/bin/hello
 """
     with _temporary_install(_BUILD, params={"hello_version": 42}) as installation:
-        output = subprocess.check_output(installation.install_path("bin/hello"))
+        output = _check_output(installation.install_path("bin/hello"))
     assert_equal("hello 42\n", output)
 
 
@@ -92,7 +92,7 @@ chmod +x $INSTALL_DIR/bin/hello
 """
 
     with _temporary_install(_BUILD) as installation:
-        output = subprocess.check_output([
+        output = _check_output([
             installation.install_path("run"),
             installation.install_path("bin/hello"),
         ])
@@ -143,3 +143,7 @@ def _change_dir(new_dir):
         yield
     finally:
         os.chdir(original_dir)
+
+
+def _check_output(*args, **kwargs):
+    return local.run(*args, **kwargs).output

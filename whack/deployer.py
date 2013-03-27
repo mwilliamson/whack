@@ -1,9 +1,9 @@
 import os
-import subprocess
 import stat
 
 from .common import WHACK_ROOT
 from .files import copy_dir
+from . import local
 
 
 class PackageDeployer(object):
@@ -20,7 +20,7 @@ class PackageDeployer(object):
                 'PATH=$(dirname $0)/sbin:$(dirname $0)/bin:$PATH\n' +
                 'exec whack-run "$(dirname $0)" "$@"'
             )
-        subprocess.check_call(["chmod", "+x", os.path.join(install_dir, "run")])
+        local.run(["chmod", "+x", os.path.join(install_dir, "run")])
         
         _create_directly_executable_dir(install_dir, "bin")
         _create_directly_executable_dir(install_dir, "sbin")

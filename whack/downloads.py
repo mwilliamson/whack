@@ -1,12 +1,12 @@
 import os.path
 import hashlib
-from . import subprocess27 as subprocess
 import urlparse
 import re
 import urllib
 
 from .tempdir import create_temporary_dir
 from .files import mkdir_p, copy_file
+from . import local
 
 
 class Downloader(object):
@@ -57,10 +57,7 @@ def _read_downloads_file(path, build_env):
     if os.path.exists(path):
         first_line = open(path).readline()
         if first_line.startswith("#!"):
-            downloads_string = subprocess.check_output(
-                [path],
-                env=build_env
-            )
+            downloads_string = local.run([path], update_env=build_env).output
         else:
             downloads_string = open(path).read()
             

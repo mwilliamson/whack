@@ -1,7 +1,7 @@
-from . import subprocess27 as subprocess
 import json
 
 from .hashes import Hasher
+from . import local
 
 
 class PackageRequest(object):
@@ -56,4 +56,4 @@ def _generate_install_id_using_hash(package_source, params):
 
 
 def _uname(arg):
-    return subprocess.check_output(["uname", arg])
+    return local.run(["uname", arg]).output

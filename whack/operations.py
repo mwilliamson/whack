@@ -1,5 +1,4 @@
 import os
-import subprocess
 
 from .sources import PackageSourceFetcher, create_source_tarball
 from .providers import create_package_provider
@@ -11,6 +10,7 @@ from .packagerequests import PackageRequest
 from .caching import create_cacher_factory
 from .testing import TestResult
 from .env import params_to_env
+from . import local
 
 
 def create(caching_enabled, indices=None, enable_build=True):
@@ -65,12 +65,12 @@ class Operations(object):
             if test_command is None:
                 return TestResult(passed=False)
             else:
-                return_code = subprocess.call(
-                    test_command,
-                    shell=True,
+                return_code = local.run(
+                    ["sh", "-c", test_command],
                     cwd=package_source.path,
-                    env=params_to_env(params),
-                )
+                    update_env=params_to_env(params),
+                    allow_error=True,
+                ).return_code
                 passed = return_code == 0
                 return TestResult(passed=passed)
 
