@@ -51,7 +51,7 @@ def write_files(root_dir, file_descriptions):
 
 
 def sh_script_description(path, contents):
-    return FileDescription(path, "#!/bin/sh\n{0}".format(contents), 0755, "file")
+    return FileDescription(path, "#!/bin/sh\n{0}".format(contents), 0o755, "file")
 
 
 def directory_description(path):
@@ -59,7 +59,7 @@ def directory_description(path):
 
 
 def plain_file(path, contents):
-    return FileDescription(path, contents, permissions=0644, file_type="file")
+    return FileDescription(path, contents, permissions=0o644, file_type="file")
 
 
 def symlink(path, actual_path):
