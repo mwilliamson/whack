@@ -1,7 +1,13 @@
 #!/usr/bin/env python
 
 import os
-from distutils.core import setup
+import sys
+from setuptools import setup
+
+extra = {}
+if sys.version_info >= (3, 0):
+    extra["use_2to3"] = True
+
 
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
@@ -22,4 +28,5 @@ setup(
         "beautifulsoup4>=4.1.3,<5",
         "spur.local>=0.3.2,<0.4",
     ],
+    **extra
 )
