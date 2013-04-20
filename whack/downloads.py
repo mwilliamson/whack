@@ -33,7 +33,7 @@ class Downloader(object):
             # modification
             with create_temporary_dir() as temp_dir:
                 temp_file_path = os.path.join(temp_dir, url_hash)
-                urllib.urlretrieve(url, temp_file_path)
+                local.run(["curl", url, "--output", temp_file_path, "--location"])
                 copy_file(temp_file_path, destination)
                 self._cacher.put(url_hash, temp_file_path)
         
