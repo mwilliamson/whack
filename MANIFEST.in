@@ -1,4 +1,2 @@
 include README
 include README.md
-include whack-run/makefile
-include whack-run/whack-run.c
