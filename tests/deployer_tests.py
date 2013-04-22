@@ -180,7 +180,7 @@ def _add_echo_to_run_command(deployed_package):
     run_command_path = deployed_package.path("run")
     with open(run_command_path) as run_command_file:
         run_contents = run_command_file.read()
-    run_contents = run_contents.replace("\n", "\necho Run!\n", 1)
+    run_contents = run_contents.replace("exec whack-run", "echo Run!; exec whack-run", 1)
     with open(run_command_path, "w") as run_command_file:
         run_command_file.write(run_contents)
     

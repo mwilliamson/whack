@@ -16,9 +16,14 @@ class PackageDeployer(object):
         
         with open(os.path.join(install_dir, "run"), "w") as run_file:
             run_file.write(
-                '#!/usr/bin/env sh\n' +
-                'PATH=$(dirname $0)/sbin:$(dirname $0)/bin:$PATH\n' +
-                'exec whack-run "$(dirname $0)" "$@"'
+                '#!/usr/bin/env sh\n\n' +
+                'MY_ROOT=`readlink --canonicalize-missing "$(dirname $0)"`\n' +
+                'if [ "$MY_ROOT" = "{0}" ]; then\n'.format(WHACK_ROOT) +
+                '   exec "$@"\n' +
+                'else\n' +
+                '   PATH=$(dirname $0)/sbin:$(dirname $0)/bin:$PATH\n' +
+                '   exec whack-run "$MY_ROOT" "$@"\n' +
+                'fi\n'
             )
         local.run(["chmod", "+x", os.path.join(install_dir, "run")])
         
@@ -43,11 +48,7 @@ def _create_directly_executable_dir(install_dir, bin_dir_name):
                     '#!/usr/bin/env sh\n\n' +
                     'MY_ROOT=`readlink --canonicalize-missing "$(dirname $0)/.."`\n' +
                     'TARGET="{0}/.{1}/{2}"\n'.format(WHACK_ROOT, bin_dir_name, bin_filename) +
-                    'if [ "$MY_ROOT" = "{0}" ]; then\n'.format(WHACK_ROOT) +
-                    'exec "$TARGET" "$@"\n' +
-                    'else\n' +
-                    'exec "$MY_ROOT/run" "$TARGET" "$@"\n' +
-                    'fi\n'
+                    'exec "$MY_ROOT/run" "$TARGET" "$@"\n'
                 )
             os.chmod(bin_file_path, 0755)
 
