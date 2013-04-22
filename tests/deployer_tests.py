@@ -123,6 +123,17 @@ def relative_symlinks_in_dot_bin_are_created_in_bin():
 
 
 @istest
+def broken_symlinked_dot_bin_is_ignored():
+    deployed_package = _deploy_package([
+        sh_script_description("bin/hello", "echo Hello there"),
+        symlink(".bin", "sub/binn"),
+    ])
+    with deployed_package:
+        command = [deployed_package.path("bin/hello")]
+        _assert_output(command, "Hello there\n")
+
+
+@istest
 def placing_executables_under_symlinked_dot_bin_creates_directly_executable_files_under_bin():
     deployed_package = _deploy_package([
         plain_file("message", "Hello there"),

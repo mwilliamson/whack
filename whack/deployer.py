@@ -33,7 +33,7 @@ def _create_directly_executable_dir(install_dir, bin_dir_name):
     dot_bin_dir = install_path(".{0}".format(bin_dir_name))
     dot_bin_dir = _follow_symlinks_in_whack_root(install_dir, dot_bin_dir)
     bin_dir = install_path(bin_dir_name)
-    if os.path.exists(dot_bin_dir):
+    if dot_bin_dir is not None and os.path.exists(dot_bin_dir):
         if not os.path.exists(bin_dir):
             os.mkdir(bin_dir)
         for bin_filename in _list_missing_executable_files(install_dir, dot_bin_dir, bin_dir):
