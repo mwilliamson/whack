@@ -108,6 +108,18 @@ def working_symlinks_in_dot_bin_to_files_under_whack_root_are_created_in_bin():
         command = [deployed_package.path("bin/hello-sym")]
         _assert_output(command, "Hello there\n")
         assert not os.path.exists(deployed_package.path("bin/hello-borked"))
+    
+    
+@istest
+def relative_symlinks_in_dot_bin_are_created_in_bin():
+    deployed_package = _deploy_package([
+        plain_file("message", "Hello there"),
+        sh_script_description("sub/bin/hello", "cat {0}/message".format(WHACK_ROOT)),
+        symlink(".bin", "sub/bin"),
+    ])
+    with deployed_package:
+        command = [deployed_package.path("bin/hello")]
+        _assert_output(command, "Hello there")
 
 
 @istest

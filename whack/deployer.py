@@ -77,7 +77,7 @@ def _is_executable_file_in_whack_root(root_dir, path):
 
 def _follow_symlinks_in_whack_root(root_dir, path):
     while os.path.islink(path):
-        link_target = os.readlink(path)
+        link_target = os.path.join(os.path.dirname(path), os.readlink(path))
         if os.path.exists(link_target):
             # Valid symlink
             path = link_target
