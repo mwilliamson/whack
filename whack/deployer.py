@@ -31,6 +31,7 @@ def _create_directly_executable_dir(install_dir, bin_dir_name):
         return os.path.join(install_dir, path)
     
     dot_bin_dir = install_path(".{0}".format(bin_dir_name))
+    dot_bin_dir = _follow_symlinks_in_whack_root(install_dir, dot_bin_dir)
     bin_dir = install_path(bin_dir_name)
     if os.path.exists(dot_bin_dir):
         if not os.path.exists(bin_dir):
@@ -55,25 +56,36 @@ def _list_missing_executable_files(root_dir, dot_bin_dir, bin_dir):
         return not os.path.exists(os.path.join(bin_dir, filename))
     return filter(is_missing, _list_executable_files(root_dir, dot_bin_dir))
 
+
 def _list_executable_files(root_dir, dir_path):
     def is_executable_file(filename):
         path = os.path.join(dir_path, filename)
-        while os.path.islink(path):
-            link_target = os.readlink(path)
-            if os.path.exists(link_target):
-                # Valid symlink
-                path = link_target
-            elif link_target.startswith("{0}/".format(WHACK_ROOT)):
-                # Valid symlink, but whack root isn't mounted
-                path = os.path.join(root_dir, link_target[len(WHACK_ROOT) + 1:])
-            else:
-                # Broken symlink
-                return False
-        
-        if os.path.exists(path):
-            is_executable = stat.S_IXUSR & os.stat(path)[stat.ST_MODE]
-            return not os.path.isdir(path) and is_executable
-        else:
-            return False
+        return _is_executable_file_in_whack_root(root_dir, path)
             
     return filter(is_executable_file, os.listdir(dir_path))
+
+
+def _is_executable_file_in_whack_root(root_dir, path):
+    path = _follow_symlinks_in_whack_root(root_dir, path)
+    
+    if path is not None and os.path.exists(path):
+        is_executable = stat.S_IXUSR & os.stat(path)[stat.ST_MODE]
+        return not os.path.isdir(path) and is_executable
+    else:
+        return False
+
+
+def _follow_symlinks_in_whack_root(root_dir, path):
+    while os.path.islink(path):
+        link_target = os.readlink(path)
+        if os.path.exists(link_target):
+            # Valid symlink
+            path = link_target
+        elif link_target.startswith("{0}/".format(WHACK_ROOT)):
+            # Valid symlink, but whack root isn't mounted
+            path = os.path.join(root_dir, link_target[len(WHACK_ROOT) + 1:])
+        else:
+            # Broken symlink
+            return None
+            
+    return path

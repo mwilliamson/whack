@@ -111,6 +111,18 @@ def working_symlinks_in_dot_bin_to_files_under_whack_root_are_created_in_bin():
 
 
 @istest
+def placing_executables_under_symlinked_dot_bin_creates_directly_executable_files_under_bin():
+    deployed_package = _deploy_package([
+        plain_file("message", "Hello there"),
+        sh_script_description("sub/bin/hello", "cat {0}/message".format(WHACK_ROOT)),
+        symlink(".bin", os.path.join(WHACK_ROOT, "sub/bin")),
+    ])
+    with deployed_package:
+        command = [deployed_package.path("bin/hello")]
+        _assert_output(command, "Hello there")
+
+
+@istest
 def whack_root_is_not_remounted_if_executing_scripts_under_whack_root():
     deployed_package = _deploy_package([
         sh_script_description(".bin/hello", "echo Hello there"),
