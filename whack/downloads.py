@@ -9,6 +9,10 @@ from .files import mkdir_p, copy_file
 from . import local
 
 
+class DownloadError(Exception):
+    pass
+
+
 class Downloader(object):
     def __init__(self, cacher):
         self._cacher = cacher
@@ -33,7 +37,14 @@ class Downloader(object):
             # modification
             with create_temporary_dir() as temp_dir:
                 temp_file_path = os.path.join(temp_dir, url_hash)
-                local.run(["curl", url, "--output", temp_file_path, "--location"])
+                try:
+                    local.run(["curl", url, "--output", temp_file_path, "--location", "--fail"])
+                except local.RunProcessError as error:
+                    if error.return_code == 22: # 404
+                        raise DownloadError("File not found: {0}".format(url))
+                    else:
+                        raise
+                    
                 copy_file(temp_file_path, destination)
                 self._cacher.put(url_hash, temp_file_path)
         

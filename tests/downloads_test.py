@@ -3,7 +3,7 @@ import os
 from nose.tools import istest, assert_equal
 from catchy import NoCachingStrategy
 
-from whack.downloads import read_downloads_string, Download, Downloader
+from whack.downloads import read_downloads_string, Download, Downloader, DownloadError
 from whack import files
 from whack.tempdir import create_temporary_dir
 from . import httpserver
@@ -49,3 +49,19 @@ def downloader_can_download_files_over_http():
                 url = http_server.static_url("hello")
                 downloader.download(url, download_path)
                 assert_equal("Hello there!", files.read_file(download_path))
+
+
+@istest
+def download_fails_if_http_request_returns_404():
+    downloader = Downloader(NoCachingStrategy())
+    
+    with create_temporary_dir() as server_root:
+        with httpserver.start_static_http_server(server_root) as http_server:
+            with create_temporary_dir() as download_dir:
+                download_path = os.path.join(download_dir, "file")
+                url = http_server.static_url("hello")
+                try:
+                    downloader.download(url, download_path)
+                    assert False
+                except DownloadError as error:
+                    pass
