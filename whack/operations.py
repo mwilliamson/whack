@@ -1,4 +1,5 @@
 import os
+import sys
 
 from .sources import PackageSourceFetcher, create_source_tarball
 from .providers import create_package_provider
@@ -70,6 +71,8 @@ class Operations(object):
                     cwd=package_source.path,
                     update_env=params_to_env(params),
                     allow_error=True,
+                    stdout=sys.stderr,
+                    stderr=sys.stderr,
                 ).return_code
                 passed = return_code == 0
                 return TestResult(passed=passed)
