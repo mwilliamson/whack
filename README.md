@@ -94,6 +94,13 @@ There are normally at least three files in each package source:
   the paths in the source package that are required to build the package.
   Defaults to `["whack"]`.
 
+### Build parameters
+
+When executing `whack/downloads` and `whack/build`,
+any build parameters are passed as environment variables.
+The name of each build parameter is converted to uppercase in the environment.
+For instance, the build parameter "version" is available as the environment variable "VERSION".
+
 ### whack/downloads
 
 Before building the package,
