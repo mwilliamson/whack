@@ -122,6 +122,14 @@ The following steps are executed to build a package:
   * The build parameters are set as environment variables
   * The current working directory is set to the build directory
   * The target directory for the package is passed as a command line argument
+  
+When the package is built,
+any executable files should be placed in either `.bin` or `.sbin` directories,
+instead of `bin` and `sbin`.
+When the package is installed by Whack,
+`bin` and `sbin` will contain thin wrappers that set up the filesystem correctly,
+and then delegate to the equivalent executables in `.bin` and `.sbin`.
+See the section "How does Whack work?" for more details.
 
 Examples of package sources:
 
