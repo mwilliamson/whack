@@ -167,7 +167,7 @@ then mount the directory that the application was installed in onto
 For instance, say we've installed nginx to `~/web-app/nginx` by running
 
     whack install git+https://github.com/mwilliamson/whack-package-nginx.git \
-        -p nginx_version=1.2.6 ~/web-app/nginx
+        ~/web-app/nginx
 
 The actual nginx binary can be found in `~/web-app/nginx/.sbin` (note that the
 binary is in a directory called `.sbin`, not `sbin`). If we try to
