@@ -93,11 +93,16 @@ There are normally at least three files in each package source:
 * `sourcePaths` (optional):
   the paths in the source package that are required to build the package.
   Defaults to `["whack"]`.
+* `defaultParameters` (optional):
+  an object containing the default build parameters for the package.
 
 ### Build parameters
 
 When executing `whack/downloads` and `whack/build`,
 any build parameters are passed as environment variables.
+Build parameters are set according to the defaults in `whack/whack.json`.
+The build parameters explicitly passed by the user are then added,
+overriding any default parameters.
 The name of each build parameter is converted to uppercase in the environment.
 For instance, the build parameter "version" is available as the environment variable "VERSION".
 
