@@ -79,6 +79,10 @@ If a build parameter isn't set, a package will usually have a sensible default.
 A package source describes how to go from nothing to an installed instance of a given program.
 The output directory containing the installed program is referred to as a package.
 
+The below gives a fairly thorough description of how a package is built,
+but it will probably more sense once you take a look at a concrete example.
+The [nginx source package](https://github.com/mwilliamson/whack-package-nginx) is a good example since it's relatively straightforward.
+
 There are normally at least three files in each package source:
 
 * `whack/whack.json`: a JSON file describing the package source
