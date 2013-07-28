@@ -70,9 +70,9 @@ The output directory containing the installed program is referred to as a packag
 
 There are normally at least three files in each package source:
 
-`whack/whack.json`: a JSON file describing the package source
-`whack/downloads`: an executable file that outputs required downloads to stdout
-`whack/build`: an executable file that is executed to build the package
+* `whack/whack.json`: a JSON file describing the package source
+* `whack/downloads`: an executable file that outputs required downloads to stdout
+* `whack/build`: an executable file that is executed to build the package
 
 ### whack/whack.json
 
