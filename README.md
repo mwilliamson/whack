@@ -1,13 +1,18 @@
-# whack: build and install binaries with a single command
+# whack: compile and run relocatable Linux programs
 
-Whack allows binaries such as nginx and node.js to be installed with a single
-command. For instance, to install nginx to `~/apps/nginx`:
+Whack allows Linux programs such as nginx and the Apache HTTP Server to be installed with a single command.
+For instance, to install nginx to `~/apps/nginx`:
 
     whack install git+https://github.com/mwilliamson/whack-package-nginx.git ~/apps/nginx
 
-On the first installation, the application is compiled and copied to the target
-directory. On subsequent installations, a cached version of the application is
-copied to the target directory.
+Most Linux binaries aren't relocatable,
+meaning that they're compiled for a specific path on your filesystem.
+This means that if you want to install exactly the same program to a different path,
+you'll need to recompile the entire program.
+By using Whack, you make these programs relocatable.
+On the first installation, the program is compiled and copied to the target directory.
+On subsequent installations,
+a cached version of the application is copied to the target directory.
 
 ## Installation
 
