@@ -41,6 +41,28 @@ pip install whack
 
 [whack-run]: https://github.com/mwilliamson/whack-run
 
+## Usage
+
+```
+whack install PACKAGE_SOURCE DESTINATION
+```
+
+For instance, to install nginx under `~/apps/nginx`:
+
+```
+whack install git+https://github.com/mwilliamson/whack-package-nginx.git ~/apps/nginx
+```
+
+nginx can then be run with the command:
+
+```
+~/apps/sbin/nginx
+```
+
+Package sources can be git or hg repositories (prefix the repository URL with `git+` and `hg+` respectively),
+tarballs fetched over HTTP (detected by the `http://` prefix),
+or local paths (detected by one of the prefixes `/`, `./`, or `../`).
+
 ## How does Whack work?
 
 Many Linux applications can be compiled and installed by running the following
