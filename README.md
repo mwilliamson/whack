@@ -63,6 +63,17 @@ Package sources can be git or hg repositories (prefix the repository URL with `g
 tarballs fetched over HTTP (detected by the `http://` prefix),
 or local paths (detected by one of the prefixes `/`, `./`, or `../`).
 
+You can pass build parameters using the argument `--add-parameter KEY=VALUE`, or with its short alias "-p KEY=VALUE".
+The build parameters that can be set depend on the package.
+For instance, to install a specific version of nginx:
+
+```
+whack install git+https://github.com/mwilliamson/whack-package-nginx.git ~/apps/nginx \
+    -p nginx_version=1.2.7
+```
+
+If a build parameter isn't set, a package will usually have a sensible default.
+
 ## Creating package sources
 
 A package source describes how to go from nothing to an installed instance of a given program.
