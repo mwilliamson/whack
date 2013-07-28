@@ -63,6 +63,61 @@ Package sources can be git or hg repositories (prefix the repository URL with `g
 tarballs fetched over HTTP (detected by the `http://` prefix),
 or local paths (detected by one of the prefixes `/`, `./`, or `../`).
 
+## Creating package sources
+
+A package source describes how to go from nothing to an installed instance of a given program.
+The output directory containing the installed program is referred to as a package.
+
+There are normally at least three files in each package source:
+
+`whack/whack.json`: a JSON file describing the package source
+`whack/downloads`: an executable file that outputs required downloads to stdout
+`whack/build`: an executable file that is executed to build the package
+
+### whack/whack.json
+
+`whack/whack.json` should be a JSON object containing the following properties:
+
+* `name`: the name of the package, such as `nginx`
+* `sourcePaths` (optional):
+  the paths in the source package that are required to build the package.
+  Defaults to `["whack"]`.
+
+### whack/downloads
+
+Before building the package,
+`whack/downloads` is executed with the output to stdout being captured.
+The output should be a list of URLs that are required to build the package,
+separated by new lines.
+Downloads are cached,
+so if you have an URL where the contents might change
+(for instance, the latest tarball for a program),
+you can either:
+
+* Try to find a URL for that specific version
+* Download the file manually in the build step
+
+### Building the package
+
+The following steps are executed to build a package:
+
+* Read `whack/whack.json` to get a package description.
+* Set the values of the build parameters based on the defaults set in `whack/whack.json` and the user-provided parameters.
+* Create a temporary directory, called the build directory.
+* Copy the directories and files in the source package specified by `sourcePaths` into the build directory.
+* Execute `whack/downloads` with the build parameters set as environment variables,
+  and download the files into the build directory.
+* Execute `whack/build`:
+  * The build parameters are set as environment variables
+  * The current working directory is set to the build directory
+  * The target directory for the package is passed as a command line argument
+
+Examples of package sources:
+
+* [nginx](https://github.com/mwilliamson/whack-package-nginx)
+* [Apache HTTP server](https://github.com/mwilliamson/whack-package-apache2)
+* [Apache HTTP server with PHP5](https://github.com/mwilliamson/whack-package-apache2-mod-php5)
+
 ## How does Whack work?
 
 Many Linux applications can be compiled and installed by running the following
