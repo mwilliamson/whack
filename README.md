@@ -9,7 +9,7 @@ Most Linux binaries aren't relocatable,
 meaning that they're compiled for a specific path on your filesystem.
 This means that if you want to install exactly the same program to a different path,
 you'll need to recompile the entire program.
-By using Whack, you make these programs relocatable.
+Whack allows you to create relocatable versions of these programs.
 On the first installation, the program is compiled and copied to the target directory.
 On subsequent installations,
 a cached version of the application is copied to the target directory.
