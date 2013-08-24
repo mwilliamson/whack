@@ -13,7 +13,7 @@ from .tarballs import extract_tarball, create_tarball
 from .indices import read_index
 from .errors import FileNotFoundError, WhackUserError
 from .tempdir import create_temporary_dir
-from .uris import is_local_path
+from .uris import is_local_path, is_http_uri
 
 
 _whack_source_uri_suffix = ".whack-source"
@@ -124,7 +124,7 @@ class LocalPathFetcher(object):
 
 class HttpFetcher(object):
     def can_fetch(self, source_name):
-        return source_name.startswith("http://")
+        return is_http_uri(source_name)
         
     def fetch(self, source_name):
         def fetch_directory(temp_dir):

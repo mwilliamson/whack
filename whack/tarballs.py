@@ -6,10 +6,11 @@ import requests
 from .files import mkdir_p
 from .tempdir import create_temporary_dir
 from . import local
+from .uris import is_http_uri
 
 
 def extract_tarball(tarball_uri, destination_dir, strip_components):
-    if tarball_uri.startswith("http://") or tarball_uri.startswith("https://"):
+    if is_http_uri(tarball_uri):
         with create_temporary_dir() as temp_dir:
             tarball_path = _download_tarball(tarball_uri, temp_dir)
             extract_tarball(tarball_path, destination_dir, strip_components)

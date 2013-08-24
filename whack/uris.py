@@ -6,3 +6,7 @@ def is_local_path(path):
         path == "." or
         path == ".."
     )
+
+
+def is_http_uri(uri):
+    return uri.startswith("http://") or uri.startswith("https://")
