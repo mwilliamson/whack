@@ -13,6 +13,7 @@ from .tarballs import extract_tarball, create_tarball
 from .indices import read_index
 from .errors import FileNotFoundError, WhackUserError
 from .tempdir import create_temporary_dir
+from .uris import is_local_path
 
 
 _whack_source_uri_suffix = ".whack-source"
@@ -105,13 +106,7 @@ class SourceControlFetcher(object):
         
 class LocalPathFetcher(object):
     def can_fetch(self, source_name):
-        return (
-            source_name.startswith("/") or
-            source_name.startswith("./") or
-            source_name.startswith("../") or 
-            source_name == "." or
-            source_name == ".."
-        )
+        return is_local_path(source_name)
         
     def fetch(self, source_name):
         if os.path.isfile(source_name):
