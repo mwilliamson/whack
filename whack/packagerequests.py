@@ -2,6 +2,7 @@ import json
 
 from .hashes import Hasher
 from . import local
+from .platform import generate_platform
 
 
 class PackageRequest(object):
@@ -48,8 +49,11 @@ class PackageRequest(object):
 
 def _generate_install_id_using_hash(package_source, params):
     hasher = Hasher()
-    hasher.update(_uname("--kernel-name"))
-    hasher.update(_uname("--machine"))
+    
+    platform = generate_platform()
+    for value in platform:
+        hasher.update(value)
+        
     hasher.update(package_source.source_hash())
     hasher.update(json.dumps(params, sort_keys=True))
     return hasher.ascii_digest()
