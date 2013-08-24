@@ -1,4 +1,4 @@
-import collections
+import dodge
 
 from .local import local_shell
 
@@ -26,6 +26,6 @@ class PlatformGenerator(object):
         return output.strip().lower().replace("_", "-").replace(" ", "-")
 
 
-Platform = collections.namedtuple("Platform", ["os_name", "architecture", "libc"])
+Platform = dodge.data_class("Platform", ["os_name", "architecture", "libc"])
 
     

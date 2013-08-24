@@ -4,7 +4,7 @@ import dodge
 
 from .hashes import Hasher
 from . import local
-from .platform import generate_platform
+from .platform import generate_platform, Platform
 
 
 class PackageRequest(object):
@@ -44,7 +44,7 @@ class PackageRequest(object):
         
         return filter(
             lambda part: part,
-            [source_name, param_part] + list(platform) + [install_id],
+            [source_name, param_part] + dodge.obj_to_dict(platform).values() + [install_id],
         )
     
     def name(self):
@@ -70,7 +70,7 @@ def _generate_install_id_using_hash(package_source, params):
     hasher = Hasher()
     
     platform = generate_platform()
-    for value in platform:
+    for value in dodge.obj_to_dict(platform).values():
         hasher.update(value)
         
     hasher.update(package_source.source_hash())
@@ -87,5 +87,5 @@ PackageDescription = dodge.data_class("PackageDescription", [
     "source_name",
     "source_hash",
     "params",
-    "platform",
+    dodge.field("platform", type=Platform),
 ])
