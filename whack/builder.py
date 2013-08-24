@@ -1,4 +1,5 @@
 import os
+import dodge
 
 from .tempdir import create_temporary_dir
 from .common import WHACK_ROOT
@@ -41,8 +42,8 @@ class Builder(object):
         ]
         local.run(build_command, cwd=build_dir, update_env=build_env)
         write_file(
-            os.path.join(package_dir, ".whack-package-name"),
-            package_request.name()
+            os.path.join(package_dir, ".whack-package.json"),
+            dodge.dumps(package_request.describe())
         )
 
 

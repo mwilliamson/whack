@@ -1,13 +1,15 @@
 import os
 import sys
 
+import dodge
+
 from .sources import PackageSourceFetcher, create_source_tarball
 from .providers import create_package_provider
 from .deployer import PackageDeployer
 from .tempdir import create_temporary_dir
 from .files import read_file
 from .tarballs import create_tarball
-from .packagerequests import PackageRequest
+from .packagerequests import PackageRequest, PackageDescription
 from .caching import create_cacher_factory
 from .testing import TestResult
 from .env import params_to_env
@@ -55,7 +57,11 @@ class Operations(object):
     def get_package_tarball(self, package_name, tarball_dir, params=None):
         with create_temporary_dir() as package_dir:
             self.get_package(package_name, package_dir, params=params)
-            package_name = read_file(os.path.join(package_dir, ".whack-package-name"))
+            package_description = dodge.loads(
+                read_file(os.path.join(package_dir, ".whack-package.json")),
+                PackageDescription
+            )
+            package_name = package_description.name
             package_filename = "{0}.whack-package".format(package_name)
             package_tarball_path = os.path.join(tarball_dir, package_filename)
             create_tarball(package_tarball_path, package_dir, rename_dir=package_name)

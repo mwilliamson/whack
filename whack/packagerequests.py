@@ -1,5 +1,7 @@
 import json
 
+import dodge
+
 from .hashes import Hasher
 from . import local
 from .platform import generate_platform
@@ -48,6 +50,15 @@ class PackageRequest(object):
     def name(self):
         return "-".join(part for part in self.name_parts())
         
+    def describe(self):
+        return PackageDescription(
+            name=self.name(),
+            source_name=self._package_source.name(),
+            source_hash=self._package_source.source_hash(),
+            params=self.params(),
+            platform=generate_platform(),
+        )
+        
     def _generate_param_part(self, slug, params):
         if slug is None:
             return None
@@ -69,3 +80,12 @@ def _generate_install_id_using_hash(package_source, params):
 
 def _uname(arg):
     return local.run(["uname", arg]).output
+
+
+PackageDescription = dodge.data_class("PackageDescription", [
+    "name",
+    "source_name",
+    "source_hash",
+    "params",
+    "platform",
+])
