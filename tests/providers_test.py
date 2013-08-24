@@ -49,7 +49,7 @@ class CachingProviderTests(object):
         package_source_dir = os.path.join(self._test_dir, str(uuid.uuid4()))
         package_provider = CachingPackageProvider(
             cacher=self._cacher,
-            underlying_providers=[self._underlying_provider],
+            underlying_provider=self._underlying_provider,
         )
         request = PackageRequest(PackageSource.local(package_source_dir), params)
         package_provider.provide_package(request, target_dir)

@@ -12,6 +12,7 @@ from .caching import create_cacher_factory
 from .testing import TestResult
 from .env import params_to_env
 from . import local
+from .errors import PackageNotAvailableError
 
 
 def create(caching_enabled, indices=None, enable_build=True):
@@ -41,7 +42,8 @@ class Operations(object):
     def get_package(self, source_name, install_dir, params=None):
         with self._package_source_fetcher.fetch(source_name) as package_source:
             request = PackageRequest(package_source, params)
-            self._package_provider.provide_package(request, install_dir)
+            if not self._package_provider.provide_package(request, install_dir):
+                raise PackageNotAvailableError()
         
     def deploy(self, package_dir, target_dir=None):
         return self._deployer.deploy(package_dir, target_dir)

@@ -1,4 +1,3 @@
-from .errors import PackageNotAvailableError
 from .builder import Builder
 from .tarballs import extract_tarball
 from .indices import read_index
@@ -15,7 +14,7 @@ def create_package_provider(cacher_factory, enable_build=True, indices=None):
         underlying_providers.append(BuildingPackageProvider(Builder(downloader)))
     return CachingPackageProvider(
         cacher_factory.create("packages"),
-        underlying_providers
+        MultiplePackageProviders(underlying_providers),
     )
 
 
@@ -36,6 +35,19 @@ class IndexPackageProvider(object):
     def _fetch_and_extract(self, url, package_dir):
         extract_tarball(url, package_dir, strip_components=1)
         
+        
+class MultiplePackageProviders(object):
+    def __init__(self, providers):
+        self._providers = providers
+        
+    def provide_package(self, package_request, package_dir):
+        for underlying_provider in self._providers:
+            package = underlying_provider.provide_package(package_request, package_dir)
+            if package:
+                return package
+        
+        return None
+        
 
 class BuildingPackageProvider(object):
     def __init__(self, builder):
@@ -47,22 +59,18 @@ class BuildingPackageProvider(object):
 
 
 class CachingPackageProvider(object):
-    def __init__(self, cacher, underlying_providers):
+    def __init__(self, cacher, underlying_provider):
         self._cacher = cacher
-        self._underlying_providers = underlying_providers
+        self._underlying_provider = underlying_provider
     
     def provide_package(self, package_request, package_dir):
         package_name = package_request.name()
         result = self._cacher.fetch(package_name, package_dir)
         
-        if not result.cache_hit:
-            self._provide_package_without_cache(package_request, package_dir)
-            self._cacher.put(package_name, package_dir)
-            
-    def _provide_package_without_cache(self, package_request, package_dir):
-        for underlying_provider in self._underlying_providers:
-            package = underlying_provider.provide_package(package_request, package_dir)
-            if package is not None:
-                return package
-        
-        raise PackageNotAvailableError()
+        if result.cache_hit:
+            return True
+        else:
+            package = self._underlying_provider.provide_package(package_request, package_dir)
+            if package:
+                self._cacher.put(package_name, package_dir)
+            return package
