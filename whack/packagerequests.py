@@ -29,16 +29,24 @@ class PackageRequest(object):
         params.update(self._params)
         return params
     
-    def name(self):
+    def name_parts(self):
         params = self.params()
         source_name = self._package_source.name()
+        
         param_slug = self._package_source.description().param_slug()
         param_part = self._generate_param_part(param_slug, params)
+        
+        platform = generate_platform()
+        
         install_id = self._generate_package_hash(self._package_source, params)
         
-        name_parts = [source_name, param_part, install_id]
-        
-        return "-".join(part for part in name_parts if part)
+        return filter(
+            lambda part: part,
+            [source_name, param_part] + list(platform) + [install_id],
+        )
+    
+    def name(self):
+        return "-".join(part for part in self.name_parts())
         
     def _generate_param_part(self, slug, params):
         if slug is None:
