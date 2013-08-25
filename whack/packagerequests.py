@@ -35,6 +35,12 @@ class PackageRequest(object):
         params = default_params.copy()
         params.update(self._params)
         return params
+        
+    def params_hash(self):
+        return self._generate_package_hash(self._package_source, self.params())
+    
+    def platform(self):
+        return generate_platform()
     
     def _name_parts(self):
         params = self.params()
@@ -43,9 +49,9 @@ class PackageRequest(object):
         param_slug = self._package_source.description().param_slug()
         param_part = self._generate_param_part(param_slug, params) or ""
         
-        platform = generate_platform()
+        platform = self.platform()
         
-        install_id = self._generate_package_hash(self._package_source, params)
+        install_id = self.params_hash()
         
         return [source_name, param_part] + dodge.obj_to_dict(platform).values() + [install_id]
     

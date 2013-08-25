@@ -2,8 +2,10 @@ import urlparse
 
 import requests
 from bs4 import BeautifulSoup
+import dodge
 
-from .common import SOURCE_URI_SUFFIX
+from .common import SOURCE_URI_SUFFIX, PACKAGE_URI_SUFFIX
+from . import slugs
 
 
 def read_index(index_uri):
@@ -36,18 +38,33 @@ class Index(object):
         package_source_filename = name + SOURCE_URI_SUFFIX
         return self._find_by_name(package_source_filename)
         
-    def find_package(self, package_request):
-        name = package_request.name()
-        return self._find_by_name("{0}.whack-package".format(name))
+    def find_package(self, params_hash, platform):
+        def _is_package(entry_name):
+            if entry_name.endswith(PACKAGE_URI_SUFFIX):
+                package_name = entry_name[:-len(PACKAGE_URI_SUFFIX)]
+                parts = slugs.split(package_name)
+                entry_params_hash = parts[-1]
+                # TODO: test case where there are fewer than four parts
+                entry_platform = parts[-4:-1]
+                return entry_params_hash == params_hash and dodge.obj_to_dict(platform).values() == entry_platform
+            else:
+                return False
+        
+        return self._find(_is_package)
     
     def _find_by_name(self, name):
+        return self._find(lambda entry_name: entry_name == name)
+        
+    def _find(self, predicate):
         for entry in self._entries:
-            if entry.name == name:
+            if predicate(entry.name):
                 return entry
+                
         for entry in self._entries:
             url_parts = entry.url.rsplit("/", 1)
-            if url_parts[-1] == name:
+            if predicate(url_parts[-1]):
                 return entry
+                
         return None
 
 

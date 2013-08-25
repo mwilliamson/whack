@@ -24,7 +24,7 @@ class IndexPackageProvider(object):
         
     def provide_package(self, package_request, package_dir):
         index = read_index(self._index_uri)
-        package_entry = index.find_package(package_request)
+        package_entry = index.find_package(package_request.params_hash(), package_request.platform())
         if package_entry is None:
             return None
         else:

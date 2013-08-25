@@ -1,6 +1,7 @@
 from nose.tools import istest, assert_equal
 
 from whack.indices import read_index_string
+from whack.platform import Platform
 
 
 @istest
@@ -71,6 +72,53 @@ def url_uses_domain_of_index_if_href_is_domain_relative():
     )
     index_entry = index.find_package_source_by_name("nginx")
     assert_equal("http://example.com/nginx.whack-source", index_entry.url)
+
+
+@istest
+def can_find_package_by_params_hash_and_platform():
+    index = read_index_string(
+        "http://example.com",
+        _html('<a href="/nginx.whack-source">nginx_linux_x86-64_glibc-2.13_abc.whack-package</a>')
+    )
+    index_entry = index.find_package(params_hash="abc", platform=_platform)
+    assert_equal("http://example.com/nginx.whack-source", index_entry.url)
+
+
+@istest
+def package_entry_is_not_match_if_os_does_not_match():
+    index = read_index_string(
+        "http://example.com",
+        _html('<a href="/nginx.whack-source">nginx_cygwin_x86-64_glibc-2.13_abc.whack-package</a>')
+    )
+    index_entry = index.find_package(params_hash="abc", platform=_platform)
+    assert_equal(None, index_entry)
+
+
+@istest
+def package_entry_is_not_match_if_architecture_does_not_match():
+    index = read_index_string(
+        "http://example.com",
+        _html('<a href="/nginx.whack-source">nginx_linux_i686_glibc-2.13_abc.whack-package</a>')
+    )
+    index_entry = index.find_package(params_hash="abc", platform=_platform)
+    assert_equal(None, index_entry)
+
+
+@istest
+def package_entry_is_not_match_if_libc_does_not_match():
+    index = read_index_string(
+        "http://example.com",
+        _html('<a href="/nginx.whack-source">nginx_linux_x86-64_glibc-2.14_abc.whack-package</a>')
+    )
+    index_entry = index.find_package(params_hash="abc", platform=_platform)
+    assert_equal(None, index_entry)
+
+
+_platform = Platform(
+    os_name="linux",
+    architecture="x86-64",
+    libc="glibc-2.13",
+)
 
 
 def _html(content):
