@@ -93,7 +93,8 @@ There are normally at least three files in each package source:
 
 `whack/whack.json` should be a JSON object containing the following properties:
 
-* `name`: the name of the package, such as `nginx`
+* `name`: the name of the package, such as `nginx`.
+  It should only contain lowercase letters, numbers, and hypens.
 * `sourcePaths` (optional):
   the paths in the source package that are required to build the package.
   Defaults to `["whack"]`.
