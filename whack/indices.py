@@ -6,6 +6,7 @@ import dodge
 
 from .common import SOURCE_URI_SUFFIX, PACKAGE_URI_SUFFIX
 from . import slugs
+from .platform import Platform
 
 
 def read_index(index_uri):
@@ -46,7 +47,7 @@ class Index(object):
                 entry_params_hash = parts[-1]
                 # TODO: test case where there are fewer than four parts
                 entry_platform = parts[-4:-1]
-                return entry_params_hash == params_hash and dodge.obj_to_dict(platform).values() == entry_platform
+                return entry_params_hash == params_hash and platform.can_use(Platform.load_list(entry_platform))
             else:
                 return False
         

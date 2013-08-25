@@ -1,6 +1,9 @@
+import re
+
 import dodge
 
 from .local import local_shell
+from . import slugs
 
 
 def generate_platform():
@@ -28,4 +31,36 @@ class PlatformGenerator(object):
 
 Platform = dodge.data_class("Platform", ["os_name", "architecture", "libc"])
 
+Platform.dumps = lambda self: slugs.join(dodge.obj_to_dict(self).values())
+
+Platform.load_list = staticmethod(lambda values: Platform(*values))
+
+def _platform_can_use(self, other):
+    return (
+        self.os_name == other.os_name and
+        self.architecture == other.architecture and
+        _libc_can_use(self.libc, other.libc)
+    )
     
+    
+def _libc_can_use(first, second):
+    first_version, second_version = map(_glibc_version, (first, second))
+    if first_version is None or second_version is None:
+        return first == second
+    else:
+        return first_version >= second_version
+    
+
+def _glibc_version(libc):
+    result = re.match("^glibc-2.([0-9]+)(?:.([0-9]+))?$", libc)
+    if result:
+        if result.group(2) is None:
+            patch_version = 0
+        else:
+            patch_version = int(result.group(2))
+        return (int(result.group(1)), patch_version)
+    else:
+        return None
+
+
+Platform.can_use = _platform_can_use

@@ -114,6 +114,32 @@ def package_entry_is_not_match_if_libc_does_not_match():
     assert_equal(None, index_entry)
 
 
+@istest
+def earlier_glibc_can_be_used():
+    index = read_index_string(
+        "http://example.com",
+        _html('<a href="/nginx.whack-source">nginx_linux_x86-64_glibc-2.12_abc.whack-package</a>')
+    )
+    index_entry = index.find_package(params_hash="abc", platform=_platform)
+    assert_equal("nginx_linux_x86-64_glibc-2.12_abc.whack-package", index_entry.name)
+
+
+@istest
+def unrecognised_libc_requires_exact_match():
+    index = read_index_string(
+        "http://example.com",
+        _html('<a href="/nginx.whack-source">nginx_linux_x86-64_xlibc-2.12_abc.whack-package</a>')
+    )
+
+    platform = Platform(
+        os_name="linux",
+        architecture="x86-64",
+        libc="xlibc-2.13",
+    )
+    index_entry = index.find_package(params_hash="abc", platform=_platform)
+    assert_equal(None, index_entry)
+
+
 _platform = Platform(
     os_name="linux",
     architecture="x86-64",

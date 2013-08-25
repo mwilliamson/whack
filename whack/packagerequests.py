@@ -53,7 +53,7 @@ class PackageRequest(object):
         
         install_id = self.params_hash()
         
-        return [source_name, param_part] + dodge.obj_to_dict(platform).values() + [install_id]
+        return [source_name, param_part, platform.dumps(), install_id]
     
     def name(self):
         return slugs.join(self._name_parts())
