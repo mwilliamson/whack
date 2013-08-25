@@ -31,7 +31,7 @@ class PackageRequest(object):
         params.update(self._params)
         return params
     
-    def name_parts(self):
+    def _name_parts(self):
         params = self.params()
         source_name = self._package_source.name()
         
@@ -48,7 +48,7 @@ class PackageRequest(object):
         )
     
     def name(self):
-        return "-".join(part for part in self.name_parts())
+        return "_".join(part for part in self._name_parts())
         
     def describe(self):
         return PackageDescription(

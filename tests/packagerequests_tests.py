@@ -55,7 +55,7 @@ def default_params_are_used_in_param_slug_if_param_not_explicitly_set():
 
 def _name_parts_for_package(package_source, params):
     request = PackageRequest(package_source, params, _generate_install_id)
-    return request.name_parts()
+    return request.name().split("_")
 
 
 def _generate_install_id(package_source, params):
