@@ -9,7 +9,7 @@ from whack.sources import PackageSource
 from whack.providers import CachingPackageProvider
 from catchy import DirectoryCacher
 from whack.files import delete_dir
-from whack.packagerequests import PackageRequest
+from whack.packagerequests import create_package_request
 from whack.files import mkdir_p
 
 
@@ -51,7 +51,7 @@ class CachingProviderTests(object):
             cacher=self._cacher,
             underlying_provider=self._underlying_provider,
         )
-        request = PackageRequest(PackageSource.local(package_source_dir), params)
+        request = create_package_request(PackageSource.local(package_source_dir), params)
         package_provider.provide_package(request, target_dir)
 
     def _number_of_builds(self):

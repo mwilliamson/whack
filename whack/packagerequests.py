@@ -8,6 +8,10 @@ from .platform import generate_platform, Platform
 from . import slugs
 
 
+def create_package_request(package_source, params=None):
+    return PackageRequest(package_source, params)
+    
+
 class PackageRequest(object):
     def __init__(self, package_source, params=None, generate_package_hash=None):
         if params is None:

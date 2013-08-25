@@ -9,7 +9,7 @@ from whack.tempdir import create_temporary_dir
 from whack.files import sh_script_description, plain_file, read_file
 from whack.sources import PackageSource
 from whack.builder import Builder
-from whack.packagerequests import PackageRequest
+from whack.packagerequests import create_package_request
 from whack.errors import FileNotFoundError
 from whack.downloads import Downloader
     
@@ -18,7 +18,7 @@ from whack.downloads import Downloader
 def build_uses_params_as_environment_variables_in_build():
     with _package_source("echo $VERSION > $1/version", {}) as package_source:
         with create_temporary_dir() as target_dir:
-            build(PackageRequest(package_source, {"version": "42"}), target_dir)
+            build(create_package_request(package_source, {"version": "42"}), target_dir)
             assert_equal("42\n", read_file(os.path.join(target_dir, "version")))
 
 
@@ -27,7 +27,7 @@ def build_uses_default_value_for_param_if_param_not_explicitly_set():
     description = {"defaultParams": {"version": "42"}}
     with _package_source("echo $VERSION > $1/version", description) as package_source:
         with create_temporary_dir() as target_dir:
-            build(PackageRequest(package_source, {}), target_dir)
+            build(create_package_request(package_source, {}), target_dir)
             assert_equal("42\n", read_file(os.path.join(target_dir, "version")))
 
 
@@ -36,7 +36,7 @@ def explicit_params_override_default_params():
     description = {"defaultParams": {"version": "42"}}
     with _package_source("echo $VERSION > $1/version", description) as package_source:
         with create_temporary_dir() as target_dir:
-            build(PackageRequest(package_source, {"version": "43"}), target_dir)
+            build(create_package_request(package_source, {"version": "43"}), target_dir)
             assert_equal("43\n", read_file(os.path.join(target_dir, "version")))
 
 
@@ -47,7 +47,7 @@ def error_is_raised_if_build_script_is_missing():
     ]
     with create_temporary_dir(files) as package_source_dir:
         package_source = PackageSource.local(package_source_dir)
-        request = PackageRequest(package_source, {})
+        request = create_package_request(package_source, {})
         with create_temporary_dir() as target_dir:
             assert_raises(
                 FileNotFoundError,

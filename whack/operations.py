@@ -9,7 +9,7 @@ from .deployer import PackageDeployer
 from .tempdir import create_temporary_dir
 from .files import read_file
 from .tarballs import create_tarball
-from .packagerequests import PackageRequest, PackageDescription
+from .packagerequests import create_package_request, PackageDescription
 from .caching import create_cacher_factory
 from .testing import TestResult
 from .env import params_to_env
@@ -43,7 +43,7 @@ class Operations(object):
         
     def get_package(self, source_name, install_dir, params=None):
         with self._package_source_fetcher.fetch(source_name) as package_source:
-            request = PackageRequest(package_source, params)
+            request = create_package_request(package_source, params)
             if not self._package_provider.provide_package(request, install_dir):
                 raise PackageNotAvailableError()
         
