@@ -23,9 +23,8 @@ class IndexPackageProvider(object):
         self._index_uri = index_uri
         
     def provide_package(self, package_request, package_dir):
-        package_name = package_request.name()
         index = read_index(self._index_uri)
-        package_entry = index.find_by_name("{0}.whack-package".format(package_name))
+        package_entry = index.find_package(package_request)
         if package_entry is None:
             return None
         else:

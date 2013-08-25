@@ -34,9 +34,13 @@ class Index(object):
     
     def find_package_source_by_name(self, name):
         package_source_filename = name + SOURCE_URI_SUFFIX
-        return self.find_by_name(package_source_filename)
+        return self._find_by_name(package_source_filename)
+        
+    def find_package(self, package_request):
+        name = package_request.name()
+        return self._find_by_name("{0}.whack-package".format(name))
     
-    def find_by_name(self, name):
+    def _find_by_name(self, name):
         for entry in self._entries:
             if entry.name == name:
                 return entry
