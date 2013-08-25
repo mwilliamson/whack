@@ -31,9 +31,9 @@ class PlatformGenerator(object):
 
 Platform = dodge.data_class("Platform", ["os_name", "architecture", "libc"])
 
-Platform.dumps = lambda self: slugs.join(dodge.obj_to_dict(self).values())
+Platform.dumps = lambda self: slugs.join(dodge.obj_to_flat_list(self))
 
-Platform.load_list = staticmethod(lambda values: Platform(*values))
+Platform.load_list = staticmethod(lambda values: dodge.flat_list_to_obj(values, Platform))
 
 def _platform_can_use(self, other):
     return (
