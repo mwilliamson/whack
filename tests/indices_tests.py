@@ -14,7 +14,7 @@ def can_find_source_entry_if_link_text_is_exactly_desired_name():
 
 
 @istest
-def can_find_entry_if_href_is_exactly_desired_name():
+def can_find_source_entry_if_href_is_exactly_desired_name():
     index = read_index_string(
         "http://example.com",
         _html('<a href="nginx.whack-source">n</a>')
@@ -24,7 +24,7 @@ def can_find_entry_if_href_is_exactly_desired_name():
 
 
 @istest
-def can_find_entry_if_filename_of_href_is_exactly_desired_name():
+def can_find_source_entry_if_filename_of_href_is_exactly_desired_name():
     index = read_index_string(
         "http://example.com",
         _html('<a href="source/nginx.whack-source">n</a>')
