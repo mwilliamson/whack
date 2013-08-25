@@ -5,6 +5,7 @@ import dodge
 from .hashes import Hasher
 from . import local
 from .platform import generate_platform, Platform
+from . import slugs
 
 
 class PackageRequest(object):
@@ -36,19 +37,16 @@ class PackageRequest(object):
         source_name = self._package_source.name()
         
         param_slug = self._package_source.description().param_slug()
-        param_part = self._generate_param_part(param_slug, params)
+        param_part = self._generate_param_part(param_slug, params) or ""
         
         platform = generate_platform()
         
         install_id = self._generate_package_hash(self._package_source, params)
         
-        return filter(
-            lambda part: part,
-            [source_name, param_part] + dodge.obj_to_dict(platform).values() + [install_id],
-        )
+        return [source_name, param_part] + dodge.obj_to_dict(platform).values() + [install_id]
     
     def name(self):
-        return "_".join(part for part in self._name_parts())
+        return slugs.join(self._name_parts())
         
     def describe(self):
         return PackageDescription(

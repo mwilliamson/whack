@@ -185,16 +185,16 @@ def name_is_stored_in_whack_json():
     
 
 @istest
-def name_of_package_source_is_none_if_not_specified_in_whack_json():
+def name_of_package_source_is_unknown_if_not_specified_in_whack_json():
     with _source_package_with_description({}) as package_source:
-        assert_equal(None, package_source.name())
+        assert_equal("unknown", package_source.name())
     
 
 @istest
-def name_of_package_source_is_none_if_whack_json_does_not_exist():
+def name_of_package_source_is_unknown_if_whack_json_does_not_exist():
     with create_temporary_dir() as package_source_dir:
         package_source = PackageSource.local(package_source_dir)
-        assert_equal(None, package_source.name())
+        assert_equal("unknown", package_source.name())
     
 
 @istest
@@ -202,12 +202,6 @@ def description_of_package_source_contains_param_slug():
     description = {"name": "nginx", "paramSlug": "$nginx_version"}
     with _source_package_with_description(description) as package_source:
         assert_equal("$nginx_version", package_source.description().param_slug())
-
-
-@istest
-def full_name_of_package_source_is_source_hash_if_name_is_none():
-    with _source_package_with_description({}) as package_source:
-        assert_equal(package_source.source_hash(), package_source.full_name())
 
 
 def _convert_to_git_repo(cwd):

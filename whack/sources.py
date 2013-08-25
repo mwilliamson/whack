@@ -14,6 +14,7 @@ from .indices import read_index
 from .errors import FileNotFoundError, WhackUserError
 from .tempdir import create_temporary_dir
 from .uris import is_local_path, is_http_uri
+from . import slugs
 
 
 _whack_source_uri_suffix = ".whack-source"
@@ -66,11 +67,10 @@ class PackageSourceFetcher(object):
             return None
             
     def _verify(self, source_name, package_source):
-        whack_source_uri_regex = \
-            r"(?:^|/|-)([^./-]*){0}$".format(re.escape(_whack_source_uri_suffix))
-        result = re.search(whack_source_uri_regex, source_name)
-        if result:
-            expected_hash = result.group(1)
+        # TODO: test else branch
+        if source_name.endswith(_whack_source_uri_suffix):
+            full_name = source_name[:-len(_whack_source_uri_suffix)]
+            expected_hash = slugs.split(full_name)[-1]
             actual_hash = package_source.source_hash()
             if expected_hash != actual_hash:
                 raise SourceHashMismatch(expected_hash, actual_hash)
@@ -81,7 +81,7 @@ class IndexFetcher(object):
         self._index_uri = index_uri
     
     def can_fetch(self, source_name):
-        return re.match(r"^[a-z0-9\-]+$", source_name)
+        return re.match(r"^[a-z0-9\-_]+$", source_name)
         
     def fetch(self, source_name):
         index = read_index(self._index_uri)
@@ -168,10 +168,7 @@ class PackageSource(object):
     def full_name(self):
         name = self.name()
         source_hash = self.source_hash()
-        if name is None:
-            return source_hash
-        else:
-            return "{0}-{1}".format(name, source_hash)
+        return slugs.join([name, source_hash])
     
     def source_hash(self):
         hasher = Hasher()
@@ -230,7 +227,7 @@ class DictBackedPackageDescription(object):
         self._values = values
         
     def name(self):
-        return self._values.get("name", None)
+        return self._values.get("name", "unknown")
         
     def param_slug(self):
         return self._values.get("paramSlug", None)
