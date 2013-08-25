@@ -66,11 +66,6 @@ class PackageRequest(object):
 
 def _generate_install_id_using_hash(package_source, params):
     hasher = Hasher()
-    
-    platform = generate_platform()
-    for value in dodge.obj_to_dict(platform).values():
-        hasher.update(value)
-        
     hasher.update(package_source.source_hash())
     hasher.update(json.dumps(params, sort_keys=True))
     return hasher.ascii_digest()
