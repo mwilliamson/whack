@@ -65,7 +65,6 @@ class PackageSourceFetcher(object):
             return None
             
     def _verify(self, source_name, package_source):
-        # TODO: test else branch
         if source_name.endswith(SOURCE_URI_SUFFIX):
             full_name = source_name[:-len(SOURCE_URI_SUFFIX)]
             expected_hash = slugs.split(full_name)[-1]
