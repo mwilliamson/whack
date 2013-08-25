@@ -140,6 +140,22 @@ def unrecognised_libc_requires_exact_match():
     assert_equal(None, index_entry)
 
 
+@istest
+def package_entries_without_os_name_are_ignored():
+    index = read_index_string(
+        "http://example.com",
+        _html('<a href="/nginx.whack-source">x86-64_xlibc-2.12_abc.whack-package</a>')
+    )
+
+    platform = Platform(
+        os_name="linux",
+        architecture="x86-64",
+        libc="xlibc-2.13",
+    )
+    index_entry = index.find_package(params_hash="abc", platform=_platform)
+    assert_equal(None, index_entry)
+
+
 _platform = Platform(
     os_name="linux",
     architecture="x86-64",

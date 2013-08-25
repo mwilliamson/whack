@@ -44,10 +44,15 @@ class Index(object):
             if entry_name.endswith(PACKAGE_URI_SUFFIX):
                 package_name = entry_name[:-len(PACKAGE_URI_SUFFIX)]
                 parts = slugs.split(package_name)
-                entry_params_hash = parts[-1]
-                # TODO: test case where there are fewer than four parts
-                entry_platform = parts[-4:-1]
-                return entry_params_hash == params_hash and platform.can_use(Platform.load_list(entry_platform))
+                if len(parts) < 4:
+                    return False
+                else:
+                    entry_params_hash = parts[-1]
+                    entry_platform = parts[-4:-1]
+                    return (
+                        entry_params_hash == params_hash and
+                        platform.can_use(Platform.load_list(entry_platform))
+                    )
             else:
                 return False
         
