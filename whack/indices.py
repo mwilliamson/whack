@@ -3,6 +3,8 @@ import urlparse
 import requests
 from bs4 import BeautifulSoup
 
+from .common import SOURCE_URI_SUFFIX
+
 
 def read_index(index_uri):
     index_response = requests.get(index_uri)
@@ -29,7 +31,11 @@ def read_index_string(index_url, index_string):
 class Index(object):
     def __init__(self, entries):
         self._entries = entries
-        
+    
+    def find_package_source_by_name(self, name):
+        package_source_filename = name + SOURCE_URI_SUFFIX
+        return self.find_by_name(package_source_filename)
+    
     def find_by_name(self, name):
         for entry in self._entries:
             if entry.name == name:

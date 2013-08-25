@@ -15,9 +15,7 @@ from .errors import FileNotFoundError, WhackUserError
 from .tempdir import create_temporary_dir
 from .uris import is_local_path, is_http_uri
 from . import slugs
-
-
-_whack_source_uri_suffix = ".whack-source"
+from .common import SOURCE_URI_SUFFIX
 
 
 class PackageSourceNotFound(WhackUserError):
@@ -68,8 +66,8 @@ class PackageSourceFetcher(object):
             
     def _verify(self, source_name, package_source):
         # TODO: test else branch
-        if source_name.endswith(_whack_source_uri_suffix):
-            full_name = source_name[:-len(_whack_source_uri_suffix)]
+        if source_name.endswith(SOURCE_URI_SUFFIX):
+            full_name = source_name[:-len(SOURCE_URI_SUFFIX)]
             expected_hash = slugs.split(full_name)[-1]
             actual_hash = package_source.source_hash()
             if expected_hash != actual_hash:
@@ -85,8 +83,7 @@ class IndexFetcher(object):
         
     def fetch(self, source_name):
         index = read_index(self._index_uri)
-        package_source_filename = source_name + _whack_source_uri_suffix
-        package_source_entry = index.find_by_name(package_source_filename)
+        package_source_entry = index.find_package_source_by_name(source_name)
         if package_source_entry is None:
             return None
         else:
@@ -246,7 +243,7 @@ def create_source_tarball(package_source, tarball_dir):
     with create_temporary_dir() as source_dir:
         package_source.write_to(source_dir)
         full_name = package_source.full_name()
-        filename = "{0}{1}".format(full_name, _whack_source_uri_suffix)
+        filename = "{0}{1}".format(full_name, SOURCE_URI_SUFFIX)
         path = os.path.join(tarball_dir, filename)
         create_tarball(path, source_dir)
         return SourceTarball(full_name, path)
