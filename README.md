@@ -153,6 +153,7 @@ Examples of package sources:
 * [nginx](https://github.com/mwilliamson/whack-package-nginx)
 * [Apache HTTP server](https://github.com/mwilliamson/whack-package-apache2)
 * [Apache HTTP server with PHP5](https://github.com/mwilliamson/whack-package-apache2-mod-php5)
+* [Python virtualenv](https://github.com/mwilliamson/whack-package-python-virtualenv-env)
 
 ## How does Whack work?
 
