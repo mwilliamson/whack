@@ -8,7 +8,7 @@ from whack.operations import Operations
 from whack.sources import PackageSource
 from whack.providers import create_package_provider
 from whack.deployer import PackageDeployer
-import testing
+from . import testing
 from whack.tempdir import create_temporary_dir
 from whack.caching import NoCacheCachingFactory
 from whack import local
@@ -32,7 +32,7 @@ chmod +x $INSTALL_DIR/bin/hello
 """
     with _temporary_install(_BUILD) as installation:
         output = _check_output(installation.install_path("bin/hello"))
-        assert_equal("Hello there\n", output)
+        assert_equal(b"Hello there\n", output)
 
 
 @test
@@ -55,7 +55,7 @@ chmod +x $INSTALL_DIR/bin/hello
                 _install(package_source_dir, ".")
     
             output = _check_output(os.path.join(install_dir, "bin/hello"))
-            assert_equal("Hello there\n", output)
+            assert_equal(b"Hello there\n", output)
     
 
 @test
@@ -73,7 +73,7 @@ chmod +x $INSTALL_DIR/bin/hello
 """
     with _temporary_install(_BUILD, params={"hello_version": 42}) as installation:
         output = _check_output(installation.install_path("bin/hello"))
-    assert_equal("hello 42\n", output)
+    assert_equal(b"hello 42\n", output)
 
 
 @test
@@ -96,7 +96,7 @@ chmod +x $INSTALL_DIR/bin/hello
             installation.install_path("run"),
             installation.install_path("bin/hello"),
         ])
-    assert_equal("Hello there\n", output)
+    assert_equal(b"Hello there\n", output)
     
 
 @contextlib.contextmanager

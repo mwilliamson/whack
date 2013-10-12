@@ -96,7 +96,7 @@ class CliOperations(object):
             package_not_available_prefix = "{0}:".format(
                 PackageNotAvailableError.__name__
             )
-            if process_error.stderr_output.startswith(package_not_available_prefix):
+            if process_error.stderr_output.decode("ascii").startswith(package_not_available_prefix):
                 raise PackageNotAvailableError()
             else:
                 raise
@@ -111,7 +111,9 @@ class CliOperations(object):
         if not self._enable_build:
             extra_args.append("--disable-build")
             
-        return local_shell.run(["whack"] + list(args) + extra_args)
+        result = local_shell.run(["whack"] + list(args) + extra_args)
+        result.output = result.output.decode("ascii")
+        return result
         
     def _build_params_args(self, params):
         return [

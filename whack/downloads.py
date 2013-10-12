@@ -25,7 +25,7 @@ class Downloader(object):
             )
 
     def download(self, url, destination):
-        url_hash = hashlib.sha1(url).hexdigest()
+        url_hash = hashlib.sha1(url.encode("utf8")).hexdigest()
         mkdir_p(os.path.dirname(destination))
         cache_result = self._cacher.fetch(url_hash, destination)
         if cache_result.cache_hit:

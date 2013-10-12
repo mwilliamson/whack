@@ -3,6 +3,7 @@ import argparse
 import os
 
 from nose.tools import istest, assert_equal
+import six
 
 import whack.args
 
@@ -63,7 +64,7 @@ class Namespace(object):
 @contextlib.contextmanager
 def _updated_env(env):
     original_env = os.environ.copy()
-    for key, value in env.iteritems():
+    for key, value in six.iteritems(env):
         os.environ[key] = value
         
     yield

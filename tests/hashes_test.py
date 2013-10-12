@@ -3,6 +3,7 @@ import tempfile
 import shutil
 import uuid
 
+import six
 from nose.tools import istest, assert_equal, assert_not_equal
 
 from whack.hashes import Hasher, integer_to_ascii
@@ -101,7 +102,7 @@ class TestRunner(object):
     
     def create_files(self, files):
         root = os.path.join(self._test_dir, str(uuid.uuid4()))
-        for name, contents in files.iteritems():
+        for name, contents in six.iteritems(files):
             path = os.path.join(root, name)
             parent_dir = os.path.dirname(path)
             if not os.path.exists(parent_dir):

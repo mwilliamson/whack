@@ -57,7 +57,7 @@ chmod +x hello
         ops,
         build=_TEST_BUILDER_BUILD,
         params={"version": "1"},
-        expected_output="1\n"
+        expected_output=b"1\n"
     )
 
 

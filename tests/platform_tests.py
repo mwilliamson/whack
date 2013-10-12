@@ -88,9 +88,9 @@ def _generate_platform():
 class Shell(object):
     def __init__(self):
         self._results = {
-            ("uname", "--kernel-name"): ExecutionResult("Linux\n"),
-            ("uname", "--machine"): ExecutionResult("x86_64\n"),
-            ("getconf", "GNU_LIBC_VERSION"): ExecutionResult("glibc 2.13"),
+            ("uname", "--kernel-name"): ExecutionResult(b"Linux\n"),
+            ("uname", "--machine"): ExecutionResult(b"x86_64\n"),
+            ("getconf", "GNU_LIBC_VERSION"): ExecutionResult(b"glibc 2.13"),
         }
         
     def run(self, command):
