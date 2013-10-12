@@ -2,13 +2,14 @@ from .builder import Builder
 from .tarballs import extract_tarball
 from .indices import read_index
 from .downloads import Downloader
+from . import lists
 
 
 def create_package_provider(cacher_factory, enable_build=True, indices=None):
     if indices is None:
         indices = []
     
-    underlying_providers = map(IndexPackageProvider, indices)
+    underlying_providers = lists.map(IndexPackageProvider, indices)
     if enable_build:
         downloader = Downloader(cacher_factory.create("downloads"))
         underlying_providers.append(BuildingPackageProvider(Builder(downloader)))

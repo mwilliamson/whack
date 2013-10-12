@@ -1,8 +1,7 @@
 import os.path
 import hashlib
-import urlparse
 import re
-import urllib
+from six.moves.urllib.parse import urlparse
 
 from .tempdir import create_temporary_dir
 from .files import mkdir_p, copy_file
@@ -93,4 +92,4 @@ def _read_download_line(line):
     
 
 def _filename_from_url(url):
-    return urlparse.urlparse(url).path.rpartition("/")[2]
+    return urlparse(url).path.rpartition("/")[2]

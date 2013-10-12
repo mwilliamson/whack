@@ -50,7 +50,7 @@ def _create_directly_executable_dir(install_dir, bin_dir_name):
                     'TARGET="{0}/.{1}/{2}"\n'.format(WHACK_ROOT, bin_dir_name, bin_filename) +
                     'exec "$MY_ROOT/run" "$TARGET" "$@"\n'
                 )
-            os.chmod(bin_file_path, 0755)
+            os.chmod(bin_file_path, 0o755)
 
 def _list_missing_executable_files(root_dir, dot_bin_dir, bin_dir):
     def is_missing(filename):

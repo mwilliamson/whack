@@ -1,4 +1,4 @@
-import urlparse
+from six.moves.urllib.parse import urljoin
 
 import requests
 from bs4 import BeautifulSoup
@@ -24,7 +24,7 @@ def read_index_string(index_url, index_string):
     html_document = BeautifulSoup(index_string)
     
     def link_to_index_entry(link):
-        url = urlparse.urljoin(index_url, link.get("href"))
+        url = urljoin(index_url, link.get("href"))
         link_text = link.get_text().strip()
         return IndexEntry(link_text, url)
     

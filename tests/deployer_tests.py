@@ -23,7 +23,7 @@ def run_script_in_installation_mounts_whack_root_before_running_command():
             deployed_package.path("run"),
             deployed_package.path("bin/hello")
         ]
-        _assert_output(command, "Hello there")
+        _assert_output(command, b"Hello there")
 
 
 @istest
@@ -33,7 +33,7 @@ def path_environment_variable_includes_bin_directory_under_whack_root():
     ])
     with deployed_package:
         command = [deployed_package.path("run"), "hello"]
-        _assert_output(command, "Hello there\n")
+        _assert_output(command, b"Hello there\n")
 
 
 @istest
@@ -43,7 +43,7 @@ def path_environment_variable_includes_sbin_directory_under_whack_root():
     ])
     with deployed_package:
         command = [deployed_package.path("run"), "hello"]
-        _assert_output(command, "Hello there\n")
+        _assert_output(command, b"Hello there\n")
 
 
 @istest
@@ -54,7 +54,7 @@ def placing_executables_under_dot_bin_creates_directly_executable_files_under_bi
     ])
     with deployed_package:
         command = [deployed_package.path("bin/hello")]
-        _assert_output(command, "Hello there")
+        _assert_output(command, b"Hello there")
     
     
 @istest
@@ -65,7 +65,7 @@ def placing_executables_under_dot_sbin_creates_directly_executable_files_under_s
     ])
     with deployed_package:
         command = [deployed_package.path("sbin/hello")]
-        _assert_output(command, "Hello there")
+        _assert_output(command, b"Hello there")
 
 
 @istest
@@ -76,7 +76,7 @@ def files_already_under_bin_are_not_replaced():
     ])
     with deployed_package:
         command = [deployed_package.path("bin/hello")]
-        _assert_output(command, "Hello from bin\n")
+        _assert_output(command, b"Hello from bin\n")
     
     
 @istest
@@ -106,7 +106,7 @@ def working_symlinks_in_dot_bin_to_files_under_whack_root_are_created_in_bin():
     ])
     with deployed_package:
         command = [deployed_package.path("bin/hello-sym")]
-        _assert_output(command, "Hello there\n")
+        _assert_output(command, b"Hello there\n")
         assert not os.path.exists(deployed_package.path("bin/hello-borked"))
     
     
@@ -119,7 +119,7 @@ def relative_symlinks_in_dot_bin_are_created_in_bin():
     ])
     with deployed_package:
         command = [deployed_package.path("bin/hello")]
-        _assert_output(command, "Hello there")
+        _assert_output(command, b"Hello there")
 
 
 @istest
@@ -130,7 +130,7 @@ def broken_symlinked_dot_bin_is_ignored():
     ])
     with deployed_package:
         command = [deployed_package.path("bin/hello")]
-        _assert_output(command, "Hello there\n")
+        _assert_output(command, b"Hello there\n")
 
 
 @istest
@@ -142,7 +142,7 @@ def placing_executables_under_symlinked_dot_bin_creates_directly_executable_file
     ])
     with deployed_package:
         command = [deployed_package.path("bin/hello")]
-        _assert_output(command, "Hello there")
+        _assert_output(command, b"Hello there")
 
 
 @istest
@@ -154,7 +154,7 @@ def whack_root_is_not_remounted_if_executing_scripts_under_whack_root():
     with deployed_package:
         _add_echo_to_run_command(deployed_package)
         command = [deployed_package.path("bin/hello2")]
-        _assert_output(command, "Run!\nHello there\n")
+        _assert_output(command, b"Run!\nHello there\n")
 
 
 @istest
@@ -172,7 +172,7 @@ def whack_root_is_remounted_if_in_different_whack_root():
             _add_echo_to_run_command(first_deployed_package)
             _add_echo_to_run_command(second_deployed_package)
             command = [second_deployed_package.path("bin/hello2")]
-            _assert_output(command, "Run!\nRun!\nHello there")
+            _assert_output(command, b"Run!\nRun!\nHello there")
 
 
 def _add_echo_to_run_command(deployed_package):

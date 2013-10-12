@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import argparse
 import sys
 
@@ -110,8 +112,8 @@ class CreateSourceTarballCommand(object):
             args.package_source,
             args.source_tarball_dir
         )
-        print source_tarball.full_name
-        print source_tarball.path
+        print(source_tarball.full_name)
+        print(source_tarball.path)
 
 
 class GetPackageTarballCommand(object):
@@ -128,7 +130,7 @@ class GetPackageTarballCommand(object):
             args.package_tarball_dir,
             params=args.params,
         )
-        print package_tarball.path
+        print(package_tarball.path)
 
 
 class TestCommand(object):

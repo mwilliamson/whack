@@ -16,6 +16,7 @@ from .tempdir import create_temporary_dir
 from .uris import is_local_path, is_http_uri
 from . import slugs
 from .common import SOURCE_URI_SUFFIX
+from . import lists
 
 
 class PackageSourceNotFound(WhackUserError):
@@ -41,7 +42,7 @@ class PackageSourceFetcher(object):
             self._indices = indices
     
     def fetch(self, source_name):
-        index_fetchers = map(IndexFetcher, self._indices)
+        index_fetchers = lists.map(IndexFetcher, self._indices)
         fetchers = index_fetchers + [
             SourceControlFetcher(),
             HttpFetcher(),

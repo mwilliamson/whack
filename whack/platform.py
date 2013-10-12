@@ -25,7 +25,7 @@ class PlatformGenerator(object):
         return self._run(["uname"] + list(args))
         
     def _run(self, command):
-        output =  self._shell.run(command).output
+        output =  self._shell.run(command).output.decode("ascii")
         return output.strip().lower().replace("_", "-").replace(" ", "-")
 
 

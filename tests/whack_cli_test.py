@@ -3,6 +3,7 @@ import contextlib
 
 from nose.tools import istest, assert_equal
 import spur
+import six
 
 from whack import cli
 from whack.sources import SourceTarball
@@ -44,7 +45,7 @@ def param_without_equal_sign_has_value_of_empty_string():
 def _test_install_arg_parse(argv, **expected_kwargs):
     args = cli.parse_args(argv)
     
-    for key, value in expected_kwargs.iteritems():
+    for key, value in six.iteritems(expected_kwargs):
         assert_equal(value, getattr(args, key))
 
 
@@ -115,7 +116,7 @@ class CliOperations(object):
     def _build_params_args(self, params):
         return [
             "-p{0}={1}".format(key, value)
-            for key, value in (params or {}).iteritems()
+            for key, value in six.iteritems(params or {})
         ]
         
         
@@ -134,7 +135,7 @@ WhackCliOperationsTest = whack_test.create(
 @contextlib.contextmanager
 def _updated_env(env):
     original_env = os.environ.copy()
-    for key, value in env.iteritems():
+    for key, value in six.iteritems(env):
         os.environ[key] = value
         
     yield

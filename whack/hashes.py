@@ -42,7 +42,10 @@ def _all_files(top):
             all_files.append(os.path.join(root, name))
     
     return sorted(all_files)
+    
 
+def _sha1(value):
+    if not isinstance(value, bytes):
+        value = value.encode("utf8")
 
-def _sha1(str):
-    return hashlib.sha1(str).hexdigest()
+    return hashlib.sha1(value).digest()

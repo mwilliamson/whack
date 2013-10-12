@@ -3,6 +3,7 @@ import functools
 import contextlib
 import json
 
+import six
 from nose.tools import assert_equal, assert_raises, nottest
 from nose_test_sets import TestSetBuilder
 
@@ -11,7 +12,7 @@ from whack.errors import PackageNotAvailableError
 import whack.operations
 from whack.tempdir import create_temporary_dir
 from whack.files import sh_script_description, plain_file, write_files
-import testing
+from . import testing
 from .indexserver import start_index_server
 from whack import local
 
@@ -86,7 +87,7 @@ chmod +x hello
             ops.get_package(package_source_dir, target_dir, params={"version": "1"})
         
             output = _check_output([os.path.join(target_dir, "hello")])
-            assert_equal("1\n", output)
+            assert_equal(b"1\n", output)
 
 
 @test_with_operations
@@ -100,7 +101,7 @@ def built_package_can_be_deployed_to_different_directory(ops):
         with create_temporary_dir() as install_dir:
             ops.deploy(package_dir, install_dir)
             output = _check_output([os.path.join(install_dir, "bin/hello")])
-            assert_equal("Hello there", output)
+            assert_equal(b"Hello there", output)
             assert _is_deployed(install_dir)
             assert not _is_deployed(package_dir)
     
@@ -116,7 +117,7 @@ def directory_can_be_deployed_in_place(ops):
     with create_temporary_dir(package_files) as package_dir:
         ops.deploy(package_dir)
         output = _check_output([os.path.join(package_dir, "bin/hello")])
-        assert_equal("Hello there", output)
+        assert_equal(b"Hello there", output)
         assert _is_deployed(package_dir)
 
 
@@ -297,14 +298,14 @@ def _temporary_xdg_cache_dir():
 @contextlib.contextmanager
 def _updated_env(env_updates):
     original_env = {}
-    for key, updated_value in env_updates.iteritems():
+    for key, updated_value in six.iteritems(env_updates):
         original_env[key] = os.environ.get(key)
     os.environ[key] = updated_value
 
     try:
         yield
     finally:
-        for key, original_value in original_env.iteritems():
+        for key, original_value in six.iteritems(original_env):
             if original_value is None:
                 del os.environ[key]
             else:
