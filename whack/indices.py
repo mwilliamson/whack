@@ -7,6 +7,7 @@ import dodge
 from .common import SOURCE_URI_SUFFIX, PACKAGE_URI_SUFFIX
 from . import slugs
 from .platform import Platform
+from . import lists
 
 
 def read_index(index_uri):
@@ -28,7 +29,7 @@ def read_index_string(index_url, index_string):
         link_text = link.get_text().strip()
         return IndexEntry(link_text, url)
     
-    return Index(map(link_to_index_entry, html_document.find_all("a")))
+    return Index(lists.map(link_to_index_entry, html_document.find_all("a")))
     
 
 class Index(object):
@@ -63,11 +64,13 @@ class Index(object):
         
     def _find(self, predicate):
         for entry in self._entries:
+            print(entry.name)
             if predicate(entry.name):
                 return entry
                 
         for entry in self._entries:
             url_parts = entry.url.rsplit("/", 1)
+            print(url_parts[-1])
             if predicate(url_parts[-1]):
                 return entry
                 
