@@ -65,11 +65,13 @@ class Download(object):
 
 def _read_downloads_file(path, build_env):
     if os.path.exists(path):
-        first_line = open(path).readline()
+        with open(path) as f:
+            first_line = f.readline()
         if first_line.startswith("#!"):
             downloads_string = local.run([path], update_env=build_env).output
         else:
-            downloads_string = open(path).read()
+            with open(path) as f:
+                downloads_string = f.read()
             
         return read_downloads_string(downloads_string)
     else:
