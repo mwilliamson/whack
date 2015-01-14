@@ -85,7 +85,7 @@ class CliOperations(object):
         try:
             self._whack("test", source_name, *self._build_params_args(params))
             return TestResult(passed=True)
-        except spur.RunProcessError as process_error:
+        except spur.RunProcessError:
             return TestResult(passed=False)
     
     def _command(self, command_name, package_name, target_dir, params):

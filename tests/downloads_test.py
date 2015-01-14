@@ -63,5 +63,5 @@ def download_fails_if_http_request_returns_404():
                 try:
                     downloader.download(url, download_path)
                     assert False
-                except DownloadError as error:
+                except DownloadError:
                     pass

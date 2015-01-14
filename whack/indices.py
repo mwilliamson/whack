@@ -2,7 +2,6 @@ from six.moves.urllib.parse import urljoin
 
 import requests
 from bs4 import BeautifulSoup
-import dodge
 
 from .common import SOURCE_URI_SUFFIX, PACKAGE_URI_SUFFIX
 from . import slugs
