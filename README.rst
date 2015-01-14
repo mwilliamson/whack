@@ -67,7 +67,7 @@ nginx can then be run with the command:
 
 Package sources can be git or hg repositories (prefix the repository URL
 with ``git+`` and ``hg+`` respectively), tarballs fetched over HTTP
-(detected by the ``http://`` prefix), or local paths (detected by one of
+(detected by the prefixes ``http://`` or ``https://`), or local paths (detected by one of
 the prefixes ``/``, ``./``, or ``../``).
 
 You can pass build parameters using the argument
