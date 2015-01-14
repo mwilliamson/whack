@@ -111,7 +111,7 @@ whack/whack.json
 properties:
 
 -  ``name``: the name of the package, such as ``nginx``. It should only
-   contain lowercase letters, numbers, and hypens.
+   contain lowercase letters, numbers, and hyphens.
 -  ``sourcePaths`` (optional): the paths in the source package that are
    required to build the package. Defaults to ``["whack"]``.
 -  ``defaultParameters`` (optional): an object containing the default
