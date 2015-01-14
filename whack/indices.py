@@ -64,13 +64,11 @@ class Index(object):
         
     def _find(self, predicate):
         for entry in self._entries:
-            print(entry.name)
             if predicate(entry.name):
                 return entry
                 
         for entry in self._entries:
             url_parts = entry.url.rsplit("/", 1)
-            print(url_parts[-1])
             if predicate(url_parts[-1]):
                 return entry
                 
