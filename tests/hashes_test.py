@@ -107,7 +107,8 @@ class TestRunner(object):
             parent_dir = os.path.dirname(path)
             if not os.path.exists(parent_dir):
                 os.makedirs(parent_dir)
-            open(path, "w").write(contents)
+            with open(path, "w") as f:
+                f.write(contents)
         return root
     
     def __enter__(self):
