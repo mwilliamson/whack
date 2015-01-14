@@ -12,7 +12,8 @@ class Hasher(object):
     def update_with_dir(self, dir_path):
         for file_path in _all_files(dir_path):
             self.update(os.path.relpath(file_path, dir_path))
-            self.update(open(file_path).read())
+            with open(file_path) as f:
+                self.update(f.read())
     
     def ascii_digest(self):
         return integer_to_ascii(int(self._hash.hexdigest(), 16))
