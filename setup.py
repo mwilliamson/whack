@@ -16,7 +16,7 @@ setup(
     name='whack',
     version='0.7.0',
     description='Utility for installing binaries from source with a single command',
-    long_description=read("README"),
+    long_description=read("README.rst"),
     author='Michael Williamson',
     url='http://github.com/mwilliamson/whack',
     scripts=["scripts/whack"],
