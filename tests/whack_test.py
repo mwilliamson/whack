@@ -2,6 +2,7 @@ import os
 import functools
 import contextlib
 import json
+import textwrap
 
 import six
 from nose.tools import assert_equal, assert_raises, nottest
@@ -41,6 +42,28 @@ def application_is_installed_by_running_build_script_and_copying_output(ops):
         params={},
         expected_output=testing.HelloWorld.EXPECTED_OUTPUT
     )
+
+
+@test_with_operations
+def deploy_script_is_run_if_present(ops):
+    with create_temporary_dir([
+        sh_script_description("whack/build", ""),
+        sh_script_description("whack/deploy", textwrap.dedent("""
+            cat > hello << EOF
+            #!/bin/sh
+            echo Hello world!
+            EOF
+
+            chmod +x hello
+        """)),
+    ]) as package_source_dir:
+        with create_temporary_dir() as install_dir:
+            ops.install(package_source_dir, install_dir)
+            
+            output = _check_output([
+                os.path.join(install_dir, "hello")
+            ])
+            assert_equal(testing.HelloWorld.EXPECTED_OUTPUT, output)
 
 
 @test_with_operations
