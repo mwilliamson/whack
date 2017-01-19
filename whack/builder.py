@@ -35,10 +35,8 @@ class Builder(object):
         self._fetch_downloads(build_dir, build_env)
         mkdir_p(package_dir)
         build_command = [
-            "whack-run",
-            os.path.abspath(package_dir), # package_dir is mounted at WHACK_ROOT
-            build_script_path, # build_script is executed
-            WHACK_ROOT # WHACK_ROOT is passed as the first argument to build_script
+            build_script_path,
+            os.path.abspath(package_dir),
         ]
         local.run(build_command, cwd=build_dir, update_env=build_env)
         write_file(

@@ -74,29 +74,6 @@ chmod +x $INSTALL_DIR/bin/hello
     with _temporary_install(_BUILD, params={"hello_version": 42}) as installation:
         output = _check_output(installation.install_path("bin/hello"))
     assert_equal(b"hello 42\n", output)
-
-
-@test
-def run_script_in_installation_mounts_whack_root_before_running_command():
-    _BUILD = r"""#!/bin/sh
-set -e
-INSTALL_DIR=$1
-mkdir -p $INSTALL_DIR/bin
-echo 'Hello there' > $INSTALL_DIR/message
-cat > $INSTALL_DIR/bin/hello << EOF
-#!/bin/sh
-cat $INSTALL_DIR/message
-EOF
-
-chmod +x $INSTALL_DIR/bin/hello
-"""
-
-    with _temporary_install(_BUILD) as installation:
-        output = _check_output([
-            installation.install_path("run"),
-            installation.install_path("bin/hello"),
-        ])
-    assert_equal(b"Hello there\n", output)
     
 
 @contextlib.contextmanager
