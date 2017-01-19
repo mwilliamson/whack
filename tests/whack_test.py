@@ -67,6 +67,23 @@ def deploy_script_is_run_if_present(ops):
 
 
 @test_with_operations
+def deploy_script_can_rewrite_c_strings_with_deployment_path(ops):
+    with create_temporary_dir([
+        sh_script_description("whack/build", '/bin/echo -n "$1" > "$1"/path; head -c 1 /dev/zero >> "$1"/path'),
+        sh_script_description("whack/deploy", textwrap.dedent("""
+            whack-rewrite-c-strings path
+        """)),
+    ]) as package_source_dir:
+        with create_temporary_dir() as install_dir:
+            ops.install(package_source_dir, install_dir)
+            
+            with open(os.path.join(install_dir, "path"), "rb") as path_file:
+                # TODO: test that the file length hasn't changed
+                # TODO: test multiple replacement
+                assert path_file.read().startswith(install_dir.encode("ascii") + b"\0")
+
+
+@test_with_operations
 def params_are_passed_to_build_script_during_install(ops):
     _TEST_BUILDER_BUILD = r"""#!/bin/sh
 set -e

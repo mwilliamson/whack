@@ -14,6 +14,8 @@ class Builder(object):
         self._downloader = downloader
         
     def build(self, package_request, package_dir):
+        # TODO: possibly should always create a tarball and pick package_dir ourselves
+        # to ensure it's long enough to allow substitution
         with create_temporary_dir() as build_dir:
             self._build_in_dir(package_request, build_dir, package_dir)
 
@@ -48,6 +50,11 @@ class Builder(object):
         
         mkdir_p(os.path.join(package_dir, "src"))
         package_request.write_source_to(os.path.join(package_dir, "src"))
+        
+        write_file(
+            os.path.join(package_dir, "dist-path"),
+            dist_dir,
+        )
 
 
     def _fetch_downloads(self, build_dir, build_env):
