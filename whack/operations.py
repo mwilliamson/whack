@@ -38,16 +38,17 @@ class Operations(object):
         self._deployer = deployer
         
     def install(self, source_name, install_dir, params=None):
-        self.get_package(source_name, install_dir, params)
-        self.deploy(install_dir)
+        with create_temporary_dir() as package_dir:
+            self.get_package(source_name, package_dir, params)
+            self.deploy(package_dir, install_dir)
         
-    def get_package(self, source_name, install_dir, params=None):
+    def get_package(self, source_name, package_dir, params=None):
         with self._package_source_fetcher.fetch(source_name) as package_source:
             request = create_package_request(package_source, params)
-            if not self._package_provider.provide_package(request, install_dir):
+            if not self._package_provider.provide_package(request, package_dir):
                 raise PackageNotAvailableError()
         
-    def deploy(self, package_dir, target_dir=None):
+    def deploy(self, package_dir, target_dir):
         return self._deployer.deploy(package_dir, target_dir)
         
     def create_source_tarball(self, source_name, tarball_dir):
