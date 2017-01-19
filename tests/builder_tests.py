@@ -19,7 +19,7 @@ def build_uses_params_as_environment_variables_in_build():
     with _package_source("echo $VERSION > $1/version", {}) as package_source:
         with create_temporary_dir() as target_dir:
             build(create_package_request(package_source, {"version": "42"}), target_dir)
-            assert_equal("42\n", read_file(os.path.join(target_dir, "version")))
+            assert_equal("42\n", read_file(os.path.join(target_dir, "dist/version")))
 
 
 @istest
@@ -28,7 +28,7 @@ def build_uses_default_value_for_param_if_param_not_explicitly_set():
     with _package_source("echo $VERSION > $1/version", description) as package_source:
         with create_temporary_dir() as target_dir:
             build(create_package_request(package_source, {}), target_dir)
-            assert_equal("42\n", read_file(os.path.join(target_dir, "version")))
+            assert_equal("42\n", read_file(os.path.join(target_dir, "dist/version")))
 
 
 @istest
@@ -37,7 +37,7 @@ def explicit_params_override_default_params():
     with _package_source("echo $VERSION > $1/version", description) as package_source:
         with create_temporary_dir() as target_dir:
             build(create_package_request(package_source, {"version": "43"}), target_dir)
-            assert_equal("43\n", read_file(os.path.join(target_dir, "version")))
+            assert_equal("43\n", read_file(os.path.join(target_dir, "dist/version")))
 
 
 @istest

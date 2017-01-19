@@ -88,7 +88,7 @@ chmod +x hello
         with create_temporary_dir() as target_dir:
             ops.get_package(package_source_dir, target_dir, params={"version": "1"})
         
-            output = _check_output([os.path.join(target_dir, "hello")])
+            output = _check_output([os.path.join(target_dir, "dist/hello")])
             assert_equal(b"1\n", output)
 
 

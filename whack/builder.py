@@ -33,16 +33,21 @@ class Builder(object):
         
         build_env = params_to_env(params)
         self._fetch_downloads(build_dir, build_env)
-        mkdir_p(package_dir)
+        
+        dist_dir = os.path.join(package_dir, "dist")
+        mkdir_p(dist_dir)
         build_command = [
             build_script_path,
-            os.path.abspath(package_dir),
+            os.path.abspath(dist_dir),
         ]
         local.run(build_command, cwd=build_dir, update_env=build_env)
         write_file(
             os.path.join(package_dir, ".whack-package.json"),
             dodge.dumps(package_request.describe())
         )
+        
+        mkdir_p(os.path.join(package_dir, "src"))
+        package_request.write_source_to(os.path.join(package_dir, "src"))
 
 
     def _fetch_downloads(self, build_dir, build_env):
