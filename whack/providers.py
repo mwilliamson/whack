@@ -1,3 +1,5 @@
+import tempfile
+
 from .builder import Builder
 from .tarballs import extract_tarball
 from .indices import read_index
@@ -54,7 +56,9 @@ class BuildingPackageProvider(object):
         self._builder = builder
     
     def provide_package(self, package_request, package_dir):
-        self._builder.build(package_request, package_dir)
+        with tempfile.NamedTemporaryFile() as fileobj:
+            self._builder.build(package_request, fileobj.name)
+            extract_tarball(fileobj.name, package_dir, strip_components=1)
         return True
 
 

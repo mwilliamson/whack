@@ -12,6 +12,7 @@ from whack.builder import Builder
 from whack.packagerequests import create_package_request
 from whack.errors import FileNotFoundError
 from whack.downloads import Downloader
+from whack.tempdir import create_temporary_dir
     
 
 @istest
@@ -73,7 +74,8 @@ def assert_raises(error_class, args, func):
         assert_equal(error.args, args)
 
 
-def build(*args, **kwargs):
+def build(request, target_dir):
     cacher = NoCachingStrategy()
     builder = Builder(Downloader(cacher))
-    return builder.build(*args, **kwargs)
+    with create_temporary_dir() as temp_dir:
+        return builder._build_in_dir(request, build_dir=temp_dir, package_dir=target_dir)

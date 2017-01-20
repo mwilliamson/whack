@@ -1,4 +1,7 @@
 import os
+import random
+import string
+
 import dodge
 
 from .tempdir import create_temporary_dir
@@ -7,17 +10,30 @@ from .files import mkdir_p, write_file
 from .errors import FileNotFoundError
 from .env import params_to_env
 from . import local
+from .tarballs import create_tarball
 
 
 class Builder(object):
     def __init__(self, downloader):
         self._downloader = downloader
         
-    def build(self, package_request, package_dir):
-        # TODO: possibly should always create a tarball and pick package_dir ourselves
-        # to ensure it's long enough to allow substitution
-        with create_temporary_dir() as build_dir:
+    def build(self, package_request, destination_path):
+        with create_temporary_dir() as temp_dir:
+            build_dir = os.path.join(temp_dir, "build")
+            mkdir_p(build_dir)
+            # Creating a long path makes it likely that the final destination
+            # path will be shorter, allowing the string to be replaced
+            # without affecting other bytes
+            package_dir = os.path.join(temp_dir, self._generate_long_path())
             self._build_in_dir(package_request, build_dir, package_dir)
+            create_tarball(destination_path, source=package_dir)
+
+    def _generate_long_path(self):
+        parts = [
+            "".join(random.choice(string.ascii_lowercase + string.digits) for character_index in range(100))
+            for part_index in range(10)
+        ]
+        return os.path.join(*parts)
 
 
     def _build_in_dir(self, package_request, build_dir, package_dir):

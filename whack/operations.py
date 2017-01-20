@@ -1,6 +1,4 @@
 import os
-import random
-import string
 import sys
 
 import dodge
@@ -40,21 +38,9 @@ class Operations(object):
         self._deployer = deployer
         
     def install(self, source_name, install_dir, params=None):
-        # TODO: create a long build_dir path so that most paths are shorter,
-        # and can be substituted in (and test)
-        # -- should probably push long path generation into the builder, it's
-        # not required when dealing with cached packages
-        with create_temporary_dir() as temp_dir:
-            package_dir = os.path.join(temp_dir, self._generate_long_path())
+        with create_temporary_dir() as package_dir:
             self.get_package(source_name, package_dir, params)
             self.deploy(package_dir, install_dir)
-
-    def _generate_long_path(self):
-        parts = [
-            "".join(random.choice(string.ascii_lowercase + string.digits) for character_index in range(100))
-            for part_index in range(10)
-        ]
-        return os.path.join(*parts)
         
     def get_package(self, source_name, package_dir, params=None):
         with self._package_source_fetcher.fetch(source_name) as package_source:
