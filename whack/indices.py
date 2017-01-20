@@ -21,7 +21,7 @@ def read_index(index_uri):
     
     
 def read_index_string(index_url, index_string):
-    html_document = BeautifulSoup(index_string)
+    html_document = BeautifulSoup(index_string, "html.parser")
     
     def link_to_index_entry(link):
         url = urljoin(index_url, link.get("href"))
