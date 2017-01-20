@@ -1,13 +1,7 @@
 #!/usr/bin/env python
 
 import os
-import sys
 from setuptools import setup
-
-extra = {}
-if sys.version_info >= (3, 0):
-    extra["use_2to3"] = True
-
 
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
@@ -30,5 +24,4 @@ setup(
         "dodge>=0.1.5,<0.2",
         "six>=1.4.1,<2.0"
     ],
-    **extra
 )
