@@ -12,7 +12,6 @@ from whack.builder import Builder
 from whack.packagerequests import create_package_request
 from whack.errors import FileNotFoundError
 from whack.downloads import Downloader
-from whack.tempdir import create_temporary_dir
     
 
 @istest

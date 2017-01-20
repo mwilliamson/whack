@@ -1,8 +1,6 @@
 import os
-import stat
 import textwrap
 
-from .common import WHACK_ROOT
 from .files import copy_dir
 from .tempdir import create_temporary_dir
 from . import local

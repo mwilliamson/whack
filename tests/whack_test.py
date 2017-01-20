@@ -8,11 +8,10 @@ import six
 from nose.tools import assert_equal, assert_raises, nottest
 from nose_test_sets import TestSetBuilder
 
-from whack.common import WHACK_ROOT
 from whack.errors import PackageNotAvailableError
 import whack.operations
 from whack.tempdir import create_temporary_dir
-from whack.files import sh_script_description, plain_file, write_files
+from whack.files import sh_script_description, plain_file
 from . import testing
 from .indexserver import start_index_server
 from whack import local
@@ -111,7 +110,6 @@ def getting_package_leaves_undeployed_build_in_target_directory(ops):
         
             output = _check_output([os.path.join(target_dir, "hello")])
             assert_equal(testing.HelloWorld.EXPECTED_OUTPUT, output)
-            assert not _is_deployed(target_dir)
 
 
 @test_with_operations
@@ -138,7 +136,7 @@ def built_package_can_be_deployed_to_different_directory(ops):
     return
     package_files = [
         plain_file("message", "Hello there"),
-        sh_script_description("bin/hello", "cat {0}/message".format(WHACK_ROOT)),
+        sh_script_description("bin/hello", "cat {0}/message".format("WHACK_ROOT")),
     ]
     
     with create_temporary_dir(package_files) as package_dir:

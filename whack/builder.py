@@ -5,7 +5,6 @@ import string
 import dodge
 
 from .tempdir import create_temporary_dir
-from .common import WHACK_ROOT
 from .files import mkdir_p, write_file
 from .errors import FileNotFoundError
 from .env import params_to_env
