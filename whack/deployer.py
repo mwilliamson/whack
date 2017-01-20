@@ -35,7 +35,8 @@ class PackageDeployer(object):
                         # TODO: don't read the entire file in one go
                         with open(target, "rb") as fileobj:
                             contents = fileobj.read()
-                            
+                        
+                        # TODO: handle substrings
                         with open(target, "wb") as fileobj:
                             fileobj.write(contents.replace(dist_path + b"\0", install_path + b"\0" * (len(dist_path) - len(install_path) + 1)))
                     """).strip())
