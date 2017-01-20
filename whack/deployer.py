@@ -23,8 +23,8 @@ class PackageDeployer(object):
                         import os
                         import sys
                         
-                        dist_path = os.environ["WHACK_DIST_PATH"]
-                        install_path = os.environ["WHACK_INSTALL_PATH"]
+                        dist_path = os.environ["WHACK_DIST_PATH"].encode(sys.getfilesystemencoding())
+                        install_path = os.environ["WHACK_INSTALL_PATH"].encode(sys.getfilesystemencoding())
                         
                         assert len(dist_path) > len(install_path)
                         
@@ -37,11 +37,11 @@ class PackageDeployer(object):
                         # TODO: handle substrings
                         with open(target, "wb") as fileobj:
                             fileobj.write(contents.replace(dist_path + b"\0", install_path + b"\0" * (len(dist_path) - len(install_path) + 1)))
-                    """).strip())
+                    """).strip().encode("ascii"))
                 os.chmod(rewrite_c_strings_path, 0o755)
             
                 local.run([deploy_path], cwd=target_dir, update_env={
-                    "PATH": "{}{}{}".format(util_dir, os.pathsep, os.environ["PATH"]),
+                    "PATH": "{0}{1}{2}".format(util_dir, os.pathsep, os.environ["PATH"]),
                     "WHACK_DIST_PATH": original_dist_path,
                     "WHACK_INSTALL_PATH": target_dir,
                 })
